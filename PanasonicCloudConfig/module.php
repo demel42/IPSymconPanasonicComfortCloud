@@ -5,10 +5,10 @@ declare(strict_types=1);
 require_once __DIR__ . '/../libs/common.php';
 require_once __DIR__ . '/../libs/local.php';
 
-class ModuleTemplateDevice extends IPSModule
+class PanasonicCloudConfig extends IPSModule
 {
-    use ModuleTemplate\StubsCommonLib;
-    use ModuleTemplateLocalLib;
+    use PanasonicCloud\StubsCommonLib;
+    use PanasonicCloudLocalLib;
 
     public function Create()
     {
@@ -115,7 +115,7 @@ class ModuleTemplateDevice extends IPSModule
 
     protected function GetFormElements()
     {
-        $formElements = $this->GetCommonFormElements('ModulTemplate Device');
+        $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud Device');
 
         if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
             return $formElements;

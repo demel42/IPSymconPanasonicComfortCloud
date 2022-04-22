@@ -1,0 +1,14 @@
+{
+	"id": "{A972DA17-4989-9CAD-2680-0CB492645050}",
+	"name": "PanasonicCloudDevice",
+	"type": 3,
+	"vendor": "Panasonic",
+	"aliases": [
+		"Panasonic Comfort Cloud Device"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "PanasonicCloud",
+	"url": "https://github.com/demel42/PanasonicComfortCloud/blob/master/README.md"
+}

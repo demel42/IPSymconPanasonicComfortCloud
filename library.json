@@ -1,8 +1,8 @@
 {
-	"id": "{0DCE4B6F-9176-DC9A-5502-1AF2B7573EB5}",
-	"name": "ModuleTemplate",
+	"id": "{B2C42DAE-0ECA-62EE-9F56-B037A99A2F41}",
+	"name": "Panasonic ComfortCloud",
 	"author": "Ch. Damsky",
-	"url": "https://github.com/demel42/ModuleTenmplate.git",
+	"url": "https://github.com/demel42/PanasonicComfortCloud.git",
 	"compatibility": {
 		"version": "6.0"
 	},

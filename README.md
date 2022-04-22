@@ -24,8 +24,8 @@
 
 ### a. Installation des Moduls
 
-Im [Module Store](https://www.symcon.de/service/dokumentation/komponenten/verwaltungskonsole/module-store/) ist das Modul unter dem Suchbegriff *ModuleTemplate* zu finden.<br>
-Alternativ kann das Modul über [Module Control](https://www.symcon.de/service/dokumentation/modulreferenz/module-control/) unter Angabe der URL `https://github.com/demel42/ModuleTemplate.git` installiert werden.
+Im [Module Store](https://www.symcon.de/service/dokumentation/komponenten/verwaltungskonsole/module-store/) ist das Modul unter dem Suchbegriff *Panasonic ComfortCloud* zu finden.<br>
+Alternativ kann das Modul über [Module Control](https://www.symcon.de/service/dokumentation/modulreferenz/module-control/) unter Angabe der URL `https://github.com/demel42/PanasonicComfortCloud.git` installiert werden.
 
 ### b. Einrichtung in IPS
 
@@ -35,7 +35,7 @@ alle Funktionen sind über _RequestAction_ der jew. Variablen ansteuerbar
 
 ## 5. Konfiguration
 
-### ModuleTemplate Device
+### PanasonicComfortCloud Device
 
 #### Properties
 
@@ -60,9 +60,11 @@ Es werden folgende Variablenprofile angelegt:
 ## 6. Anhang
 
 ### GUIDs
-- Modul: `{0DCE4B6F-9176-DC9A-5502-1AF2B7573EB5}`
+- Modul: `{B2C42DAE-0ECA-62EE-9F56-B037A99A2F41}`
 - Instanzen:
-  - ModuleTemplateDevice: `{B052AEAB-2687-02EB-DF40-74191E242A0B}`
+  - PanasonicCloudIO: `{FA9B3ACC-2056-06B5-4DA6-0C7D375A89FB}`
+  - PanasonicCloudConfig: `{85693205-4AF7-C720-B108-05AD5815060D}`
+  - PanasonicCloudDevice: `{A972DA17-4989-9CAD-2680-0CB492645050}`
 - Nachrichten:
 
 ### Quellen

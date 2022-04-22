@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-trait ModuleTemplateLocalLib
+trait PanasonicCloudLocalLib
 {
     private function GetFormStatus()
     {

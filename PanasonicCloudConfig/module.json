@@ -1,0 +1,14 @@
+{
+	"id": "{85693205-4AF7-C720-B108-05AD5815060D}",
+	"name": "PanasonicCloudConfig",
+	"type": 4,
+	"vendor": "Panasonic",
+	"aliases": [
+		"Panasonic Comfort Cloud Konfigurator"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "PanasonicCloud",
+	"url": "https://github.com/demel42/PanasonicComfortCloud/blob/master/README.md"
+}

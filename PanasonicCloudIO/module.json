@@ -1,0 +1,14 @@
+{
+	"id": "{FA9B3ACC-2056-06B5-4DA6-0C7D375A89FB}",
+	"name": "PanasonicCloudIO",
+	"type": 1,
+	"vendor": "Panasonic",
+	"aliases": [
+		"Panasonic Comfort Cloud I/O"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "PanasonicCloud",
+	"url": "https://github.com/demel42/PanasonicComfortCloud/blob/master/README.md"
+}
