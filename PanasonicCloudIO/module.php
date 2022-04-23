@@ -10,36 +10,57 @@ class PanasonicCloudIO extends IPSModule
     use PanasonicCloud\StubsCommonLib;
     use PanasonicCloudLocalLib;
 
+    private static $base_url = 'https://accsmart.panasonic.com';
+
+    private static $auth_endpoint = '/auth/login/';
+    private static $group_endpoint = '/device/group';
+
+    private static $x_app_type = 1;
+    private static $x_app_version = '1.20.0';
+    private static $user_agent = 'G-RAC';
+
+    private static $login_interval = 10800000;
+
     public function Create()
     {
         parent::Create();
 
         $this->RegisterPropertyBoolean('module_disable', false);
 
-        $this->RegisterPropertyInteger('update_interval', 60);
+        $this->RegisterPropertyString('username', '');
+        $this->RegisterPropertyString('password', '');
 
         $this->RegisterAttributeString('UpdateInfo', '');
-        $this->RegisterAttributeString('external_update_interval', '');
+
+        $this->RegisterAttributeString('AccessToken', '');
 
         $this->InstallVarProfiles(false);
-
-        $this->RegisterTimer('UpdateStatus', 0, $this->GetModulePrefix() . '_UpdateStatus(' . $this->InstanceID . ');');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
 
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    public function MessageSink($timestamp, $senderID, $message, $data)
     {
-        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
+        parent::MessageSink($timestamp, $senderID, $message, $data);
 
-        if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
-            $this->OverwriteUpdateInterval();
+        if ($message == IPS_KERNELMESSAGE && $data[0] == KR_READY) {
         }
     }
 
     private function CheckModulePrerequisites()
     {
         $r = [];
+
+        $username = $this->ReadPropertyString('username');
+        if ($username == '') {
+            $this->SendDebug(__FUNCTION__, '"username" is needed', 0);
+            $r[] = $this->Translate('Username must be specified');
+        }
+        $password = $this->ReadPropertyString('password');
+        if ($password == '') {
+            $this->SendDebug(__FUNCTION__, '"password" is needed', 0);
+            $r[] = $this->Translate('Password must be specified');
+        }
 
         return $r;
     }
@@ -68,13 +89,11 @@ class PanasonicCloudIO extends IPSModule
         parent::ApplyChanges();
 
         if ($this->CheckPrerequisites() != false) {
-            $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
             return;
         }
 
         if ($this->CheckUpdate() != false) {
-            $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
         }
@@ -92,7 +111,6 @@ class PanasonicCloudIO extends IPSModule
         }
 
         if ($this->CheckConfiguration() != false) {
-            $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_INVALIDCONFIG);
             return;
         }
@@ -109,13 +127,12 @@ class PanasonicCloudIO extends IPSModule
         $this->SetStatus(IS_ACTIVE);
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
-            $this->OverwriteUpdateInterval();
         }
     }
 
     protected function GetFormElements()
     {
-        $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud Device');
+        $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud I/O');
 
         if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
             return $formElements;
@@ -128,11 +145,20 @@ class PanasonicCloudIO extends IPSModule
         ];
 
         $formElements[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'update_interval',
-            'suffix'  => 'Seconds',
-            'minimum' => 0,
-            'caption' => 'Update interval',
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Access data',
+            'items'   => [
+                [
+                    'name'    => 'username',
+                    'type'    => 'ValidationTextBox',
+                    'caption' => 'User-ID (email)'
+                ],
+                [
+                    'name'    => 'password',
+                    'type'    => 'PasswordTextBox',
+                    'caption' => 'Password'
+                ],
+            ],
         ];
 
         return $formElements;
@@ -153,8 +179,8 @@ class PanasonicCloudIO extends IPSModule
 
         $formActions[] = [
             'type'    => 'Button',
-            'caption' => 'Update status',
-            'onClick' => $this->GetModulePrefix() . '_UpdateStatus($id);'
+            'caption' => 'Test access',
+            'onClick' => $this->GetModulePrefix() . '_TestAccount($id);'
         ];
 
         $formActions[] = [
@@ -187,45 +213,6 @@ class PanasonicCloudIO extends IPSModule
         return $formActions;
     }
 
-    private function SetUpdateInterval(int $sec = null)
-    {
-        if (is_null($sec)) {
-            $sec = $this->ReadAttributeString('external_update_interval');
-            if ($sec == '') {
-                $sec = $this->ReadPropertyInteger('update_interval');
-            }
-        }
-        $this->MaintainTimer('UpdateStatus', $sec * 1000);
-    }
-
-    public function OverwriteUpdateInterval(int $sec = null)
-    {
-        if (is_null($sec)) {
-            $this->WriteAttributeString('external_update_interval', '');
-        } else {
-            $this->WriteAttributeString('external_update_interval', $sec);
-        }
-        $this->SetUpdateInterval($sec);
-    }
-
-    public function UpdateStatus()
-    {
-        if ($this->CheckStatus() == self::$STATUS_INVALID) {
-            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
-            return;
-        }
-
-        /*
-        if ($this->HasActiveParent() == false) {
-            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
-            $this->LogMessage('has no active parent instance', KL_WARNING);
-            return;
-        }
-         */
-
-        $this->SendDebug(__FUNCTION__, $this->PrintTimer('UpdateStatus'), 0);
-    }
-
     public function RequestAction($ident, $value)
     {
         if ($this->CommonRequestAction($ident, $value)) {
@@ -248,5 +235,253 @@ class PanasonicCloudIO extends IPSModule
         if ($r) {
             $this->SetValue($ident, $value);
         }
+    }
+
+    protected function SendData($data)
+    {
+        $this->SendDebug(__FUNCTION__, 'data=' . print_r($data, true), 0);
+        $this->SendDataToChildren(json_encode(['DataID' => '{FE8D32D1-6A63-D55B-FC77-8C34A637A5E0}', 'Buffer' => $data]));
+    }
+
+    public function ForwardData($data)
+    {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
+            return;
+        }
+
+        $jdata = json_decode($data, true);
+        $this->SendDebug(__FUNCTION__, 'data=' . print_r($jdata, true), 0);
+
+        $ret = '';
+        if (isset($jdata['Function'])) {
+            switch ($jdata['Function']) {
+                case 'GetGroups':
+                    $ret = $this->GetGroups();
+                    break;
+                /*
+                case 'MowerStatus':
+                    $ret = $this->GetMowerStatus($jdata['id']);
+                    break;
+                case 'MowerCmd':
+                    $ret = $this->DoMowerCmd($jdata['id'], $jdata['command'], $jdata['data']);
+                    break;
+                 */
+                default:
+                    $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
+                    break;
+                }
+        } else {
+            $this->SendDebug(__FUNCTION__, 'unknown message-structure', 0);
+        }
+
+        $this->SendDebug(__FUNCTION__, 'ret=' . print_r($ret, true), 0);
+        return $ret;
+    }
+
+    private function do_HttpRequest($endpoint, $postfields, $params, $header_add)
+    {
+        $url = self::$base_url . $endpoint;
+
+        if ($params != '') {
+            $this->SendDebug(__FUNCTION__, 'params=' . print_r($params, true), 0);
+            $n = 0;
+            foreach ($params as $param => $value) {
+                $url .= ($n++ ? '&' : '?') . $param . '=' . rawurlencode(strval($value));
+            }
+        }
+
+        $header_base = [
+            'Accept'            => 'application/json',
+            'Content-Type'      => 'application/json',
+            'User-Agent'        => self::$user_agent,
+            'X-APP-TYPE'        => self::$x_app_type,
+            'X-APP-VERSION'     => self::$x_app_version,
+        ];
+        if ($header_add != '') {
+            foreach ($header_add as $key => $val) {
+                $header_base[$key] = $val;
+            }
+        }
+        $header = [];
+        foreach ($header_base as $key => $val) {
+            $header[] = $key . ': ' . $val;
+        }
+
+        $mode = $postfields != '' ? 'post' : 'get';
+        $this->SendDebug(__FUNCTION__, 'http-' . $mode . ', url=' . $url, 0);
+        $this->SendDebug(__FUNCTION__, '... header=' . print_r($header, true), 0);
+        if ($postfields != '') {
+            $this->SendDebug(__FUNCTION__, '... postfields=' . print_r($postfields, true), 0);
+        }
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        if ($postfields != '') {
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postfields));
+        }
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+        $cdata = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        if ($cerrno) {
+            $statuscode = self::$IS_SERVERERROR;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode == 401) {
+                $statuscode = self::$IS_UNAUTHORIZED;
+                $err = 'got http-code ' . $httpcode . ' (unauthorized)';
+            } elseif ($httpcode == 403) {
+                $statuscode = self::$IS_INVALIDACCOUNT;
+                $err = 'got http-code ' . $httpcode . ' (forbidden)';
+            } elseif ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            if ($cdata == '' || ctype_print($cdata)) {
+                $this->SendDebug(__FUNCTION__, ' => body=' . $cdata, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, ' => body potentially contains binary data, size=' . strlen($cdata), 0);
+            }
+        }
+        if ($statuscode == 0) {
+            if ($cdata == 'Token expires') {
+                $this->WriteAttributeString('AccessToken', '');
+                $statuscode = self::$IS_UNAUTHORIZED;
+            }
+        }
+        if ($statuscode == 0) {
+            $jdata = json_decode($cdata, true);
+            if ($jdata == '') {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'malformed response';
+            }
+        }
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->SetStatus($statuscode);
+            return false;
+        }
+        return $jdata;
+    }
+
+    private function GetAccessToken()
+    {
+        $data = $this->ReadAttributeString('AccessToken');
+        if ($data != '') {
+            $jtoken = json_decode($data, true);
+            $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
+            $expireѕ = isset($jtoken['expireѕ']) ? $jtoken['expireѕ'] : 0;
+            if ($access_token != '') {
+                $this->SendDebug(__FUNCTION__, 'access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expireѕ), 0);
+                return $access_token;
+            }
+        } else {
+            $this->SendDebug(__FUNCTION__, 'no saved access_token', 0);
+        }
+
+        $username = $this->ReadPropertyString('username');
+        $password = $this->ReadPropertyString('password');
+        $postfields = [
+            'language' => 0,
+            'loginId'  => $username,
+            'password' => $password,
+        ];
+        $jdata = $this->do_HttpRequest(self::$auth_endpoint, $postfields, '', '');
+        if ($jdata == false) {
+            $this->WriteAttributeString('AccessToken', '');
+            return false;
+        }
+
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        $access_token = $this->GetArrayElem($jdata, 'uToken', '');
+        $client_id = $this->GetArrayElem($jdata, 'clientId', '');
+        $expireѕ = time() + self::$login_interval;
+        $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expireѕ), 0);
+        $jtoken = [
+            'access_token' => $access_token,
+            'client_id'    => $client_id,
+            'expireѕ'      => $expireѕ,
+        ];
+        $this->WriteAttributeString('AccessToken', json_encode($jtoken));
+        return $access_token;
+    }
+
+    public function TestAccount()
+    {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
+            echo $this->GetStatusText() . PHP_EOL;
+            return;
+        }
+
+        $access_token = $this->GetAccessToken();
+        if ($access_token == false) {
+            $this->SetStatus(self::$IS_UNAUTHORIZED);
+            echo $this->translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
+            return;
+        }
+
+        $msg = $this->translate('valid account-data') . PHP_EOL;
+        $msg .= PHP_EOL;
+
+        $groups = json_decode($this->GetGroups(), true);
+        if (is_array($groups)) {
+            foreach ($groups as $group) {
+                $this->SendDebug(__FUNCTION__, 'group=' . print_r($group, true), 0);
+                $groupName = $this->GetArrayElem($group, 'groupName', '');
+                $msg .= $groupName . PHP_EOL;
+                $devices = $this->GetArrayElem($group, 'deviceList', '');
+                if (is_array($devices)) {
+                    foreach ($devices as $device) {
+                        $this->SendDebug(__FUNCTION__, 'device=' . print_r($device, true), 0);
+                        $deviceName = $this->GetArrayElem($device, 'deviceName', '');
+                        $deviceType = $this->GetArrayElem($device, 'deviceType', 0);
+                        $deviceModule = $this->GetArrayElem($device, 'deviceModuleNumber', '');
+                        $deviceGuid = $this->GetArrayElem($device, 'deviceGuid', '');
+                        $msg .= ' - ' . $deviceName . ' (' . $deviceModule . ')' . PHP_EOL;
+                    }
+                }
+            }
+        }
+        echo $msg;
+    }
+
+    public function GetGroups()
+    {
+        $access_token = $this->GetAccessToken();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $header_add = [
+            'X-User-Authorization' => $access_token,
+        ];
+        $jdata = $this->do_HttpRequest(self::$group_endpoint, '', '', $header_add);
+        if ($jdata == false) {
+            return false;
+        }
+        $groups = $this->GetArrayElem($jdata, 'groupList', '');
+        $this->SendDebug(__FUNCTION__, 'groups=' . print_r($groups, true), 0);
+        return json_encode($groups);
     }
 }

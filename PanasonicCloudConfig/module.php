@@ -14,53 +14,13 @@ class PanasonicCloudConfig extends IPSModule
     {
         parent::Create();
 
-        $this->RegisterPropertyBoolean('module_disable', false);
-
-        $this->RegisterPropertyInteger('update_interval', 60);
+        $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
         $this->RegisterAttributeString('UpdateInfo', '');
-        $this->RegisterAttributeString('external_update_interval', '');
 
         $this->InstallVarProfiles(false);
 
-        $this->RegisterTimer('UpdateStatus', 0, $this->GetModulePrefix() . '_UpdateStatus(' . $this->InstanceID . ');');
-
-        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
-    }
-
-    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
-    {
-        parent::MessageSink($TimeStamp, $SenderID, $Message, $Data);
-
-        if ($Message == IPS_KERNELMESSAGE && $Data[0] == KR_READY) {
-            $this->OverwriteUpdateInterval();
-        }
-    }
-
-    private function CheckModulePrerequisites()
-    {
-        $r = [];
-
-        return $r;
-    }
-
-    private function CheckModuleConfiguration()
-    {
-        $r = [];
-
-        return $r;
-    }
-
-    private function CheckModuleUpdate(array $oldInfo, array $newInfo)
-    {
-        $r = [];
-
-        return $r;
-    }
-
-    private function CompleteModuleUpdate(array $oldInfo, array $newInfo)
-    {
-        return '';
+        $this->ConnectParent('{FA9B3ACC-2056-06B5-4DA6-0C7D375A89FB}');
     }
 
     public function ApplyChanges()
@@ -83,7 +43,7 @@ class PanasonicCloudConfig extends IPSModule
         foreach ($refs as $ref) {
             $this->UnregisterReference($ref);
         }
-        $propertyNames = [];
+        $propertyNames = ['ImportCategoryID'];
         foreach ($propertyNames as $name) {
             $oid = $this->ReadPropertyInteger($name);
             if ($oid >= 10000) {
@@ -92,47 +52,183 @@ class PanasonicCloudConfig extends IPSModule
         }
 
         if ($this->CheckConfiguration() != false) {
-            $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_INVALIDCONFIG);
             return;
         }
 
-        $vops = 0;
-
-        $module_disable = $this->ReadPropertyBoolean('module_disable');
-        if ($module_disable) {
-            $this->MaintainTimer('UpdateStatus', 0);
-            $this->SetStatus(self::$IS_DEACTIVATED);
-            return;
-        }
-
         $this->SetStatus(IS_ACTIVE);
+    }
 
-        if (IPS_GetKernelRunlevel() == KR_READY) {
-            $this->OverwriteUpdateInterval();
+    private function SetLocation()
+    {
+        $catID = $this->ReadPropertyInteger('ImportCategoryID');
+        $tree_position = [];
+        if ($catID >= 10000 && IPS_ObjectExists($catID)) {
+            $tree_position[] = IPS_GetName($catID);
+            $parID = IPS_GetObject($catID)['ParentID'];
+            while ($parID > 0) {
+                if ($parID > 0) {
+                    $tree_position[] = IPS_GetName($parID);
+                }
+                $parID = IPS_GetObject($parID)['ParentID'];
+            }
+            $tree_position = array_reverse($tree_position);
         }
+        $this->SendDebug(__FUNCTION__, 'tree_position=' . print_r($tree_position, true), 0);
+        return $tree_position;
+    }
+
+    private function getConfiguratorValues()
+    {
+        $entries = [];
+
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
+            return $entries;
+        }
+
+        if ($this->HasActiveParent() == false) {
+            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
+            return $entries;
+        }
+
+        // an PanasonicCloudIO
+        $sdata = [
+            'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+            'Function' => 'GetGroups'
+        ];
+        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
+        $data = $this->SendDataToParent(json_encode($sdata));
+        $groups = $data != '' ? json_decode($data, true) : '';
+        $this->SendDebug(__FUNCTION__, 'groups=' . print_r($groups, true), 0);
+
+        $guid = '{A972DA17-4989-9CAD-2680-0CB492645050}';
+        $instIDs = IPS_GetInstanceListByModuleID($guid);
+
+        if (is_array($groups)) {
+            foreach ($groups as $group) {
+                $this->SendDebug(__FUNCTION__, 'group=' . print_r($group, true), 0);
+                $groupName = $this->GetArrayElem($group, 'groupName', '');
+                $devices = $this->GetArrayElem($group, 'deviceList', '');
+                if ($devices != '') {
+                    foreach ($devices as $device) {
+                        $deviceGuid = $this->GetArrayElem($device, 'deviceGuid', '');
+                        $deviceName = $this->GetArrayElem($device, 'deviceName', '');
+                        $deviceType = $this->GetArrayElem($device, 'deviceType', 0);
+                        $deviceModule = $this->GetArrayElem($device, 'deviceModuleNumber', '');
+                        $type = $this->deviceType2str($deviceType);
+
+                        $instanceID = 0;
+                        foreach ($instIDs as $instID) {
+                            if (IPS_GetProperty($instID, 'guid') == $deviceGuid) {
+                                $this->SendDebug(__FUNCTION__, 'device found: ' . utf8_decode(IPS_GetName($instID)) . ' (' . $instID . ')', 0);
+                                $instanceID = $instID;
+                                break;
+                            }
+                        }
+                        $entry = [
+                            'instanceID'      => $instanceID,
+                            'name'            => $groupName . ' - ' . $deviceName,
+                            'type'            => $type,
+                            'model'           => $deviceModule,
+                            'guid'            => $deviceGuid,
+                            'create'          => [
+                                'moduleID'      => $guid,
+                                'location'      => $this->SetLocation(),
+                                'info'          => $type . ' ' . $deviceModule,
+                                'configuration' => [
+                                    'guid'          => (string) $deviceGuid,
+                                    'type'          => $deviceType,
+                                    'model'         => (string) $deviceModule,
+                                ],
+                            ],
+                        ];
+
+                        $entries[] = $entry;
+                        $this->SendDebug(__FUNCTION__, 'entry=' . print_r($entry, true), 0);
+                    }
+                }
+            }
+        }
+        foreach ($instIDs as $instID) {
+            $fnd = false;
+            foreach ($entries as $entry) {
+                if ($entry['instanceID'] == $instID) {
+                    $fnd = true;
+                    break;
+                }
+            }
+            if ($fnd) {
+                continue;
+            }
+
+            $name = IPS_GetName($instID);
+            $deviceType = IPS_GetProperty($instID, 'type');
+            $deviceModule = IPS_GetProperty($instID, 'model');
+            $deviceGuid = IPS_GetProperty($instID, 'guid');
+            $type = $this->deviceType2str($deviceType);
+
+            $entry = [
+                'instanceID'      => $instID,
+                'name'            => $name,
+                'type'            => $type,
+                'model'           => $deviceModule,
+                'guid'            => $deviceGuid,
+            ];
+
+            $entries[] = $entry;
+            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
+        }
+
+        return $entries;
     }
 
     protected function GetFormElements()
     {
-        $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud Device');
+        $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud Configurator');
 
         if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
             return $formElements;
         }
 
         $formElements[] = [
-            'type'    => 'CheckBox',
-            'name'    => 'module_disable',
-            'caption' => 'Disable instance'
+            'type'    => 'SelectCategory',
+            'name'    => 'ImportCategoryID',
+            'caption' => 'category for devices to be created'
         ];
 
+        $entries = $this->getConfiguratorValues();
         $formElements[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'update_interval',
-            'suffix'  => 'Seconds',
-            'minimum' => 0,
-            'caption' => 'Update interval',
+            'type'     => 'Configurator',
+            'name'     => 'devices',
+            'caption'  => 'Devices',
+            'rowCount' => count($entries),
+
+            'add'     => false,
+            'delete'  => false,
+            'columns' => [
+                [
+                    'caption' => 'Name',
+                    'name'    => 'name',
+                    'width'   => 'auto'
+                ],
+                [
+                    'caption' => 'Type',
+                    'name'    => 'type',
+                    'width'   => '200px'
+                ],
+                [
+                    'caption' => 'Model',
+                    'name'    => 'model',
+                    'width'   => '300px'
+                ],
+                [
+                    'caption' => 'Device-ID',
+                    'name'    => 'guid',
+                    'width'   => '350px'
+                ],
+            ],
+            'values' => $entries,
         ];
 
         return $formElements;
@@ -151,79 +247,10 @@ class PanasonicCloudConfig extends IPSModule
             return $formActions;
         }
 
-        $formActions[] = [
-            'type'    => 'Button',
-            'caption' => 'Update status',
-            'onClick' => $this->GetModulePrefix() . '_UpdateStatus($id);'
-        ];
-
-        $formActions[] = [
-            'type'      => 'ExpansionPanel',
-            'caption'   => 'Expert area',
-            'expanded ' => false,
-            'items'     => [
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Re-install variable-profiles',
-                    'onClick' => $this->GetModulePrefix() . '_InstallVarProfiles($id, true);'
-                ],
-            ],
-        ];
-
-        $formActions[] = [
-            'type'      => 'ExpansionPanel',
-            'caption'   => 'Test area',
-            'expanded ' => false,
-            'items'     => [
-                [
-                    'type'    => 'TestCenter',
-                ],
-            ]
-        ];
-
         $formActions[] = $this->GetInformationFormAction();
         $formActions[] = $this->GetReferencesFormAction();
 
         return $formActions;
-    }
-
-    private function SetUpdateInterval(int $sec = null)
-    {
-        if (is_null($sec)) {
-            $sec = $this->ReadAttributeString('external_update_interval');
-            if ($sec == '') {
-                $sec = $this->ReadPropertyInteger('update_interval');
-            }
-        }
-        $this->MaintainTimer('UpdateStatus', $sec * 1000);
-    }
-
-    public function OverwriteUpdateInterval(int $sec = null)
-    {
-        if (is_null($sec)) {
-            $this->WriteAttributeString('external_update_interval', '');
-        } else {
-            $this->WriteAttributeString('external_update_interval', $sec);
-        }
-        $this->SetUpdateInterval($sec);
-    }
-
-    public function UpdateStatus()
-    {
-        if ($this->CheckStatus() == self::$STATUS_INVALID) {
-            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
-            return;
-        }
-
-        /*
-        if ($this->HasActiveParent() == false) {
-            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
-            $this->LogMessage('has no active parent instance', KL_WARNING);
-            return;
-        }
-         */
-
-        $this->SendDebug(__FUNCTION__, $this->PrintTimer('UpdateStatus'), 0);
     }
 
     public function RequestAction($ident, $value)
@@ -231,22 +258,10 @@ class PanasonicCloudConfig extends IPSModule
         if ($this->CommonRequestAction($ident, $value)) {
             return;
         }
-
-        if ($this->GetStatus() == IS_INACTIVE) {
-            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
-            return;
-        }
-
-        $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', value=' . $value, 0);
-
-        $r = false;
         switch ($ident) {
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
                 break;
-        }
-        if ($r) {
-            $this->SetValue($ident, $value);
         }
     }
 }

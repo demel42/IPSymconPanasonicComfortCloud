@@ -66,6 +66,8 @@ Es werden folgende Variablenprofile angelegt:
   - PanasonicCloudConfig: `{85693205-4AF7-C720-B108-05AD5815060D}`
   - PanasonicCloudDevice: `{A972DA17-4989-9CAD-2680-0CB492645050}`
 - Nachrichten:
+  - {34871A78-6B14-6BD4-3BE2-192BCB0B150D}: an PanasonicCloudIO
+  - {FE8D32D1-6A63-D55B-FC77-8C34A637A5E0}: an PanasonicCloudConfig, PanasonicCloudDevice
 
 ### Quellen
 

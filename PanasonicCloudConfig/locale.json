@@ -23,12 +23,15 @@
 
 			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
 
+			"category for devices to be created": "Kategorie für das zu erstellende Geräte",
+			"Devices": "Geräte",
+			"Name": "Bezeichnung",
+			"Type": "Typ",
+			"Model": "Modell",
+			"Device-ID": "Geräte-ID",
 
-			"Disable instance": "Instanz deaktivieren",
-			"Update interval": "Aktualisierungsintervall",
-			"Seconds": "Sekunden",
-
-			"Update status": "Aktualisiere Status",
+			"Air conditioner": "Klimaanlage",
+			"Unknown type": "Unbekannter Typ",
 
 			"Expert area": "Experten-Bereich",
 			"Re-install variable-profiles": "Variablenprofile erneut einrichten",

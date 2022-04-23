@@ -4,6 +4,8 @@
 			"Panasonic ComfortCloud I/O": "Panasonic ComfortCloud I/O",
 
 			"The following system prerequisites are missing": "Folgende Systemvoraussetzungen fehlen",
+			"Username must be specified": "Benutzerkennung muss angegeben sein",
+			"Password must be specified": "Passwort muss angegeben sein",
 
 			"The following points of the configuration are incorrect": "Die folgenden Punkte der Konfiguration sind fehlerhaft",
 
@@ -23,12 +25,15 @@
 
 			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
 
-
 			"Disable instance": "Instanz deaktivieren",
-			"Update interval": "Aktualisierungsintervall",
-			"Seconds": "Sekunden",
 
-			"Update status": "Aktualisiere Status",
+			"Access data": "Zugangsdaten",
+			"User-ID (email)": "Benutzerkennung (Mail-Adresse)",
+			"Password": "Passwort",
+
+			"Test access": "Zugriff testen",
+			"Invalid login-data at Panasonic Comfort Cloud": "Ungültige Anmeldedaten bei Panasonic Comfort Cloud",
+			"valid account-data": "gültige Zugangsdaten",
 
 			"Expert area": "Experten-Bereich",
 			"Re-install variable-profiles": "Variablenprofile erneut einrichten",
@@ -75,7 +80,13 @@
 			"Instance is inactive (update not completed)": "Instanz ist inaktiv (Update nicht abgeschlossen)",
 			"Instance is inactive (invalid configuration)": "Instanz ist inaktiv (ungültige Konfiguration)",
 			"Instance is inactive (deactivated)": "Instanz ist inaktiv (deaktiviert)",
-			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)"
+			"Instance is inactive (no Symcon-Connect)": "Instanz ist inaktiv (kein Symcon-Connect)",
+
+			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
+			"Instance is inactive (server error)": "Instanz ist inaktiv (Serverfehler)",
+			"Instance is inactive (http error)": "Instanz ist inaktiv (HTTP-Fehler)",
+			"Instance is inactive (invalid data)": "Instanz ist inaktiv (ungültige Daten)",
+			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)"
 		}
 	}
 }

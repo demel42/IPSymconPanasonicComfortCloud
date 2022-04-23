@@ -16,6 +16,10 @@ class PanasonicCloudDevice extends IPSModule
 
         $this->RegisterPropertyBoolean('module_disable', false);
 
+        $this->RegisterPropertyString('guid', '');
+        $this->RegisterPropertyInteger('type', 0);
+        $this->RegisterPropertyString('module', '');
+
         $this->RegisterPropertyInteger('update_interval', 60);
 
         $this->RegisterAttributeString('UpdateInfo', '');

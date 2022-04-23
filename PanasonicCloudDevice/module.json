@@ -6,9 +6,13 @@
 	"aliases": [
 		"Panasonic Comfort Cloud Device"
 	],
-	"parentRequirements": [],
+	"parentRequirements": [
+		"{34871A78-6B14-6BD4-3BE2-192BCB0B150D}"
+	],
 	"childRequirements": [],
-	"implemented": [],
+	"implemented": [
+		"{FE8D32D1-6A63-D55B-FC77-8C34A637A5E0}"
+	],
 	"prefix": "PanasonicCloud",
 	"url": "https://github.com/demel42/PanasonicComfortCloud/blob/master/README.md"
 }
