@@ -47,23 +47,159 @@ trait PanasonicCloudLocalLib
         return $class;
     }
 
+    public static $OPERATION_MODE_AUTO = 0;
+    public static $OPERATION_MODE_DRY = 1;
+    public static $OPERATION_MODE_COOL = 2;
+    public static $OPERATION_MODE_HEAT = 3;
+    public static $OPERATION_MODE_FAN = 4;
+
+    public static $ECO_MODE_AUTO = 0;
+    public static $ECO_MODE_POWERFUL = 1;
+    public static $ECO_MODE_QUIET = 2;
+
+    public static $FAN_SPEED_AUTO = 0;
+    public static $FAN_SPEED_LOW = 1;
+    public static $FAN_SPEED_LOW_MIN = 2;
+    public static $FAN_SPEED_MID = 3;
+    public static $FAN_SPEED_HIGH_MID = 4;
+    public static $FAN_SPEED_HIGH = 5;
+
+    public static $AIR_SWING_UD_UP = 0;
+    public static $AIR_SWING_UD_DOWN = 1;
+    public static $AIR_SWING_UD_MID = 2;
+    public static $AIR_SWING_UD_UP_MID = 3;
+    public static $AIR_SWING_UD_DOWN_MID = 4;
+
+    public static $AIR_SWING_LR_LEFT = 0;
+    public static $AIR_SWING_LR_RIGHT = 1;
+    public static $AIR_SWING_LR_MID = 2;
+    public static $AIR_SWING_LR_RIGHT_MID = 3;
+    public static $AIR_SWING_LR_LEFT_MID = 4;
+
+    public static $FAN_MODE_SWING_AUTO = 0;
+    public static $FAN_MODE_DISABLED = 1;
+    public static $FAN_MODE_SWING_UD = 2;
+    public static $FAN_MODE_SWING_LR = 3;
+
+    public static $NANOE_MODE_UNAVAIL = 0;
+    public static $NANOE_MODE_OFF = 1;
+    public static $NANOE_MODE_ON = 2;
+    public static $NANOE_MODE_MODE_G = 3;
+    public static $NANOE_MODE_ALL = 4;
+
+    /*
+
+    export enum dataMode {
+        Day = 0,
+        Week = 1,
+        Month = 2,
+        Year = 4,
+    }
+
+     */
+
     public function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
             $this->SendDebug(__FUNCTION__, 'reInstall=' . $this->bool2str($reInstall), 0);
         }
+
+        $this->CreateVarProfile('PanasonicCloud.Power', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 0, '', [], $reInstall);
+
+        $associations = [
+            ['Wert' => self::$OPERATION_MODE_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_DRY, 'Name' => $this->Translate('Dry'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_COOL, 'Name' => $this->Translate('Cool'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_HEAT, 'Name' => $this->Translate('Heat'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_FAN, 'Name' => $this->Translate('Fan'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.OperationMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$ECO_MODE_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
+            ['Wert' => self::$ECO_MODE_POWERFUL, 'Name' => $this->Translate('Powerful'), 'Farbe' => -1],
+            ['Wert' => self::$ECO_MODE_QUIET, 'Name' => $this->Translate('Quiet'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.EcoMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$FAN_SPEED_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_SPEED_LOW, 'Name' => $this->Translate('Low'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_SPEED_LOW_MIN, 'Name' => $this->Translate('Low middle'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_SPEED_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_SPEED_HIGH_MID, 'Name' => $this->Translate('High middle'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_SPEED_HIGH, 'Name' => $this->Translate('High'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.FanSpeed', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$AIR_SWING_UD_UP, 'Name' => $this->Translate('Up'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_UD_DOWN, 'Name' => $this->Translate('Down'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_UD_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_UD_UP_MID, 'Name' => $this->Translate('Up middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_UD_DOWN_MID, 'Name' => $this->Translate('Down middle'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.AirSwingUD', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$AIR_SWING_LR_LEFT, 'Name' => $this->Translate('Left'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_LR_RIGHT, 'Name' => $this->Translate('Right'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_LR_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_LR_RIGHT_MID, 'Name' => $this->Translate('Right middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_LR_LEFT_MID, 'Name' => $this->Translate('Left middle'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.AirSwingLR', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$FAN_MODE_SWING_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_MODE_DISABLED, 'Name' => $this->Translate('Disabed'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_MODE_SWING_UD, 'Name' => $this->Translate('Up down'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_MODE_SWING_LR, 'Name' => $this->Translate('Left right'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.FanMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self:: $NANOE_MODE_UNAVAIL, 'Name' => $this->Translate('Unavail'), 'Farbe' => -1],
+            ['Wert' => self:: $NANOE_MODE_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self:: $NANOE_MODE_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
+            ['Wert' => self:: $NANOE_MODE_MODE_G, 'Name' => $this->Translate('Mode G'), 'Farbe' => -1],
+            ['Wert' => self:: $NANOE_MODE_ALL, 'Name' => $this->Translate('All'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.NanoeMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
     }
 
-    private function deviceType2str($deviceType)
+    public static $DEVICE_TYPE_AIR_CONDITIONER = 3;
+
+    private function DeviceTypeMapping()
     {
-        switch ($deviceType) {
-            case 3:
-                $type = $this->Translate('Air conditioner');
-                break;
-            default:
-                $type = $this->Translate('Unknown type') . ' ' . $deviceType;
-                break;
+        return [
+            self::$DEVICE_TYPE_AIR_CONDITIONER => [
+                'caption' => 'Air conditioner',
+            ],
+        ];
+    }
+
+    private function DeviceTypeAsOptions()
+    {
+        $maps = $this->DeviceTypeMapping();
+        $opts = [];
+        foreach ($maps as $u => $e) {
+            $opts[] = [
+                'caption' => $e['caption'],
+                'value'   => $u,
+            ];
         }
-        return $type;
+        return $opts;
+    }
+
+    private function DeviceType2String($deviceType)
+    {
+        $maps = $this->DeviceTypeMapping();
+        if (isset($maps[$deviceType])) {
+            $ret = $this->Translate($maps[$deviceType]['caption']);
+        } else {
+            $ret = $this->Translate('Unknown type') . ' ' . $deviceType;
+        }
+        return $ret;
     }
 }

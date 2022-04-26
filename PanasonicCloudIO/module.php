@@ -15,6 +15,10 @@ class PanasonicCloudIO extends IPSModule
     private static $auth_endpoint = '/auth/login/';
     private static $group_endpoint = '/device/group';
 
+    // +guid
+    private static $device_status_endpoint = '/deviceStatus/';
+    private static $device_status_now_endpoint = '/deviceStatus/now/';
+
     private static $x_app_type = 1;
     private static $x_app_version = '1.20.0';
     private static $user_agent = 'G-RAC';
@@ -88,6 +92,8 @@ class PanasonicCloudIO extends IPSModule
     {
         parent::ApplyChanges();
 
+        $this->MaintainReferences();
+
         if ($this->CheckPrerequisites() != false) {
             $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
             return;
@@ -96,18 +102,6 @@ class PanasonicCloudIO extends IPSModule
         if ($this->CheckUpdate() != false) {
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
-        }
-
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = [];
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
         }
 
         if ($this->CheckConfiguration() != false) {
@@ -120,7 +114,7 @@ class PanasonicCloudIO extends IPSModule
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
             $this->MaintainTimer('UpdateStatus', 0);
-            $this->SetStatus(self::$IS_DEACTIVATED);
+            $this->SetStatus(IS_INACTIVE);
             return;
         }
 
@@ -259,14 +253,12 @@ class PanasonicCloudIO extends IPSModule
                 case 'GetGroups':
                     $ret = $this->GetGroups();
                     break;
-                /*
-                case 'MowerStatus':
-                    $ret = $this->GetMowerStatus($jdata['id']);
+                case 'GetDeviceStatus':
+                    $ret = $this->GetDeviceStatus($jdata['Guid'], false);
                     break;
-                case 'MowerCmd':
-                    $ret = $this->DoMowerCmd($jdata['id'], $jdata['command'], $jdata['data']);
+                case 'GetDeviceStatusNow':
+                    $ret = $this->GetDeviceStatus($jdata['Guid'], true);
                     break;
-                 */
                 default:
                     $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
                     break;
@@ -437,11 +429,11 @@ class PanasonicCloudIO extends IPSModule
         $access_token = $this->GetAccessToken();
         if ($access_token == false) {
             $this->SetStatus(self::$IS_UNAUTHORIZED);
-            echo $this->translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
+            echo $this->Translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
             return;
         }
 
-        $msg = $this->translate('valid account-data') . PHP_EOL;
+        $msg = $this->Translate('valid account-data') . PHP_EOL;
         $msg .= PHP_EOL;
 
         $groups = json_decode($this->GetGroups(), true);
@@ -483,5 +475,26 @@ class PanasonicCloudIO extends IPSModule
         $groups = $this->GetArrayElem($jdata, 'groupList', '');
         $this->SendDebug(__FUNCTION__, 'groups=' . print_r($groups, true), 0);
         return json_encode($groups);
+    }
+
+    public function GetDeviceStatus(string $guid, bool $now)
+    {
+        $access_token = $this->GetAccessToken();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $header_add = [
+            'X-User-Authorization' => $access_token,
+        ];
+
+        $url = $now ? self::$device_status_now_endpoint : self::$device_status_endpoint;
+        $url .= $guid;
+        $jdata = $this->do_HttpRequest($url, '', '', $header_add);
+        if ($jdata == false) {
+            return false;
+        }
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        return json_encode($jdata);
     }
 }

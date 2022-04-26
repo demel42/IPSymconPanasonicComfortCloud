@@ -23,6 +23,13 @@
 
 			"Instance has no active parent instance": "Instanz hat keine aktive übergeordnete Instanz",
 
+			"Basic configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
+			"Model": "Modell",
+			"Type": "Typ",
+			"Device-ID": "Geräte-ID",
+
+			"Air conditioner": "Klimaanlage",
+			"Unknown type": "Unbekannter Typ",
 
 			"Disable instance": "Instanz deaktivieren",
 			"Update interval": "Aktualisierungsintervall",

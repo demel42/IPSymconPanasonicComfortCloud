@@ -27,6 +27,9 @@ class PanasonicCloudConfig extends IPSModule
     {
         parent::ApplyChanges();
 
+        $propertyNames = ['ImportCategoryID'];
+        $this->MaintainReferences($propertyNames);
+
         if ($this->CheckPrerequisites() != false) {
             $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
@@ -37,18 +40,6 @@ class PanasonicCloudConfig extends IPSModule
             $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
-        }
-
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = ['ImportCategoryID'];
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
         }
 
         if ($this->CheckConfiguration() != false) {
@@ -116,7 +107,7 @@ class PanasonicCloudConfig extends IPSModule
                         $deviceName = $this->GetArrayElem($device, 'deviceName', '');
                         $deviceType = $this->GetArrayElem($device, 'deviceType', 0);
                         $deviceModule = $this->GetArrayElem($device, 'deviceModuleNumber', '');
-                        $type = $this->deviceType2str($deviceType);
+                        $type = $this->DeviceType2String($deviceType);
 
                         $instanceID = 0;
                         foreach ($instIDs as $instID) {
@@ -138,7 +129,7 @@ class PanasonicCloudConfig extends IPSModule
                                 'info'          => $type . ' ' . $deviceModule,
                                 'configuration' => [
                                     'guid'          => (string) $deviceGuid,
-                                    'type'          => $deviceType,
+                                    'type'          => (int) $deviceType,
                                     'model'         => (string) $deviceModule,
                                 ],
                             ],
@@ -166,7 +157,7 @@ class PanasonicCloudConfig extends IPSModule
             $deviceType = IPS_GetProperty($instID, 'type');
             $deviceModule = IPS_GetProperty($instID, 'model');
             $deviceGuid = IPS_GetProperty($instID, 'guid');
-            $type = $this->deviceType2str($deviceType);
+            $type = $this->DeviceType2String($deviceType);
 
             $entry = [
                 'instanceID'      => $instID,

@@ -30,6 +30,8 @@ class PanasonicCloudDevice extends IPSModule
         $this->RegisterTimer('UpdateStatus', 0, $this->GetModulePrefix() . '_UpdateStatus(' . $this->InstanceID . ');');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+
+        $this->ConnectParent('{FA9B3ACC-2056-06B5-4DA6-0C7D375A89FB}');
     }
 
     public function MessageSink($timeStamp, $senderID, $message, $data)
@@ -39,13 +41,6 @@ class PanasonicCloudDevice extends IPSModule
         if ($message == IPS_KERNELMESSAGE && $data[0] == KR_READY) {
             $this->OverwriteUpdateInterval();
         }
-    }
-
-    private function CheckModulePrerequisites()
-    {
-        $r = [];
-
-        return $r;
     }
 
     private function CheckModuleConfiguration()
@@ -71,6 +66,8 @@ class PanasonicCloudDevice extends IPSModule
     {
         parent::ApplyChanges();
 
+        $this->MaintainReferences();
+
         if ($this->CheckPrerequisites() != false) {
             $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
@@ -81,18 +78,6 @@ class PanasonicCloudDevice extends IPSModule
             $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
-        }
-
-        $refs = $this->GetReferenceList();
-        foreach ($refs as $ref) {
-            $this->UnregisterReference($ref);
-        }
-        $propertyNames = [];
-        foreach ($propertyNames as $name) {
-            $oid = $this->ReadPropertyInteger($name);
-            if ($oid >= 10000) {
-                $this->RegisterReference($oid);
-            }
         }
 
         if ($this->CheckConfiguration() != false) {
@@ -106,9 +91,19 @@ class PanasonicCloudDevice extends IPSModule
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
             $this->MaintainTimer('UpdateStatus', 0);
-            $this->SetStatus(self::$IS_DEACTIVATED);
+            $this->SetStatus(IS_INACTIVE);
             return;
         }
+
+        $s = '';
+        $guid = $this->ReadPropertyString('guid');
+        if ($guid != '') {
+            $r = explode('+', $guid);
+            if (is_array($r) && count($r) == 2) {
+                $s = $r[0] . '(#' . $r[1] . ')';
+            }
+        }
+        $this->SetSummary($s);
 
         $this->SetStatus(IS_ACTIVE);
 
@@ -129,6 +124,31 @@ class PanasonicCloudDevice extends IPSModule
             'type'    => 'CheckBox',
             'name'    => 'module_disable',
             'caption' => 'Disable instance'
+        ];
+
+        $formElements[] = [
+            'type'    => 'ExpansionPanel',
+            'caption' => 'Basic configuration (don\'t change)',
+            'items'   => [
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'guid',
+                    'caption' => 'Device-ID',
+                    'enabled' => false
+                ],
+                [
+                    'type'    => 'ValidationTextBox',
+                    'name'    => 'model',
+                    'caption' => 'Model',
+                    'enabled' => false
+                ],
+                [
+                    'type'     => 'Select',
+                    'options'  => $this->DeviceTypeAsOptions(),
+                    'caption'  => 'Type',
+                    'enabled'  => false
+                ],
+            ],
         ];
 
         $formElements[] = [
@@ -225,7 +245,83 @@ class PanasonicCloudDevice extends IPSModule
             return;
         }
 
+        $guid = $this->ReadPropertyString('guid');
+
+        $sdata = [
+            'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+            'Function' => 'GetDeviceStatusNow',
+            'Guid'     => $guid,
+        ];
+        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
+        $data = $this->SendDataToParent(json_encode($sdata));
+        $jdata = json_decode($data, true);
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+
         $this->SendDebug(__FUNCTION__, $this->PrintTimer('UpdateStatus'), 0);
+        /*
+
+        (
+            [dryTempMin] => -1
+            [modeAvlList] => Array
+                (
+                    [autoMode] => 1
+                    [fanMode] => 1
+                )
+
+            [airSwingLR] => 1
+            [nanoe] =>
+            [autoMode] => 1
+            [autoSwingUD] =>
+            [ecoNavi] =>
+            [heatTempMax] => -1
+            [temperatureUnit] => 0
+            [iAutoX] =>
+            [coolTempMin] => -1
+            [autoTempMin] => -1
+            [quietMode] => 1
+            [powerfulMode] => 1
+            [timestamp] => 1650726664000
+            [fanMode] =>
+            [coolMode] => 1
+            [summerHouse] => 0
+            [coolTempMax] => -1
+            [permission] => 3
+            [dryMode] => 1
+            [nanoeStandAlone] =>
+            [heatMode] => 1
+            [fanSpeedMode] => -1
+            [dryTempMax] => -1
+            [autoTempMax] => -1
+            [fanDirectionMode] => -1
+            [ecoFunction] => 0
+            [heatTempMin] => -1
+            [pairedFlg] =>
+            [parameters] => Array
+                (
+                    [ecoFunctionData] => 0
+                    [airSwingLR] => 2
+                    [nanoe] => 0
+                    [lastSettingMode] => 0
+                    [ecoNavi] => 0
+                    [ecoMode] => 2
+                    [operationMode] => 2
+                    [fanAutoMode] => 3
+                    [temperatureSet] => 23
+                    [fanSpeed] => 0
+                    [iAuto] => 0
+                    [airQuality] => 0
+                    [insideTemperature] => 26
+                    [outTemperature] => 17
+                    [operate] => 0
+                    [airDirection] => 1
+                    [actualNanoe] => 0
+                    [airSwingUD] => 0
+                )
+
+        )
+
+
+         */
     }
 
     public function RequestAction($ident, $value)
