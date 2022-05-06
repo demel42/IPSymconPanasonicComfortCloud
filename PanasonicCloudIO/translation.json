@@ -1,0 +1,27 @@
+{
+	"translations": {
+		"de": {
+			"Panasonic ComfortCloud I/O": "Panasonic ComfortCloud I/O",
+
+			"__function__": "CheckConfiguration",
+			"Username must be specified": "Benutzerkennung muss angegeben sein",
+			"Password must be specified": "Passwort muss angegeben sein",
+
+			"__elements__": "",
+			"Disable instance": "Instanz deaktivieren",
+
+			"Access data": "Zugangsdaten",
+			"User-ID (email)": "Benutzerkennung (Mail-Adresse)",
+			"Password": "Passwort",
+
+			"__actions__": "",
+			"Test access": "Zugriff testen",
+			"Invalid login-data at Panasonic Comfort Cloud": "Ungültige Anmeldedaten bei Panasonic Comfort Cloud",
+
+			"__function__": "TestAccess",
+			"valid account-data": "gültige Zugangsdaten",
+
+			"__end__": ""
+		}
+	}
+}

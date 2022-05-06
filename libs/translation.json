@@ -1,0 +1,18 @@
+{
+	"translations": {
+		"de": {
+			"__function__": "DeviceTypeMapping",
+			"Air conditioner": "Klimaanlage",
+			"Unknown type": "Unbekannter Typ",
+
+			"__status__": "",
+			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
+			"Instance is inactive (server error)": "Instanz ist inaktiv (Serverfehler)",
+			"Instance is inactive (http error)": "Instanz ist inaktiv (HTTP-Fehler)",
+			"Instance is inactive (invalid data)": "Instanz ist inaktiv (ungültige Daten)",
+			"Instance is inactive (not logged in)": "Instanz ist inaktiv (nicht angemeldet)",
+
+			"__end__": ""
+		}
+	}
+}

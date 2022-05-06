@@ -1,0 +1,23 @@
+{
+	"translations": {
+		"de": {
+			"Panasonic ComfortCloud Device": "Panasonic ComfortCloud Gerät",
+
+			"__elements__": "",
+			"Disable instance": "Instanz deaktivieren",
+
+			"Basic configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
+			"Model": "Modell",
+			"Type": "Typ",
+			"Device-ID": "Geräte-ID",
+
+			"Update interval": "Aktualisierungsintervall",
+			"Seconds": "Sekunden",
+
+			"__actions__": "",
+			"Update status": "Aktualisiere Status",
+
+			"__end__": ""
+		}
+	}
+}

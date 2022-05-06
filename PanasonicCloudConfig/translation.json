@@ -1,0 +1,18 @@
+{
+	"translations": {
+		"de": {
+			"Panasonic ComfortCloud Configurator": "Panasonic ComfortCloud Konfigrator",
+
+			"__elements__": "",
+			"category for devices to be created": "Kategorie für das zu erstellende Geräte",
+
+			"Devices": "Geräte",
+			"Name": "Bezeichnung",
+			"Type": "Typ",
+			"Model": "Modell",
+			"Device-ID": "Geräte-ID",
+
+			"__end__": ""
+		}
+	}
+}
