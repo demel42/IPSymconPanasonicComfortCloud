@@ -95,7 +95,22 @@ class PanasonicCloudDevice extends IPSModule
             return;
         }
 
-        $vops = 0;
+        $vpos = 0;
+
+        $this->MaintainVariable('Operate', $this->Translate('Operate'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Power', $vpos++, true);
+        $this->MaintainVariable('OperationMode', $this->Translate('Operation mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.OperationMode', $vpos++, true);
+        $this->MaintainVariable('EcoMode', $this->Translate('Eco mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.EcoMode', $vpos++, true);
+        $this->MaintainVariable('TemperatureTarget', $this->Translate('Target temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
+        $this->MaintainVariable('TemperatureIn', $this->Translate('inside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
+        $this->MaintainVariable('TemperatureOut', $this->Translate('outside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
+
+        $this->MaintainVariable('FanMode', $this->Translate('Fan mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanMode', $vpos++, true);
+        $this->MaintainVariable('FanSpeed', $this->Translate('Fan speed'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanSpeed', $vpos++, true);
+        $this->MaintainVariable('AirSwingUD', $this->Translate('Fan swing vertical'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingUD', $vpos++, true);
+        $this->MaintainVariable('AirSwingLR', $this->Translate('Fan swing horizontal'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingLR', $vpos++, true);
+
+        $this->MaintainVariable('LastUpdate', $this->Translate('Last update'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
+        $this->MaintainVariable('LastChange', $this->Translate('Last change'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
@@ -307,30 +322,207 @@ class PanasonicCloudDevice extends IPSModule
             [pairedFlg] =>
             [parameters] => Array
                 (
-                    [ecoFunctionData] => 0
+                    [actualNanoe] => 0
+                    [airDirection] => 1
+                    [airQuality] => 0
                     [airSwingLR] => 2
-                    [nanoe] => 0
-                    [lastSettingMode] => 0
-                    [ecoNavi] => 0
+                    [airSwingUD] => 0
+                    [ecoFunctionData] => 0
                     [ecoMode] => 2
-                    [operationMode] => 2
+                    [ecoNavi] => 0
                     [fanAutoMode] => 3
-                    [temperatureSet] => 23
                     [fanSpeed] => 0
                     [iAuto] => 0
-                    [airQuality] => 0
                     [insideTemperature] => 26
-                    [outTemperature] => 17
+                    [lastSettingMode] => 0
+                    [nanoe] => 0
                     [operate] => 0
-                    [airDirection] => 1
-                    [actualNanoe] => 0
-                    [airSwingUD] => 0
+                    [operationMode] => 2
+                    [outTemperature] => 17
+                    [temperatureSet] => 23
                 )
 
         )
 
 
+
+07.05.2022, 18:40:01 |         UpdateStatus | jdata=Array
+(
+    [airSwingLR] => 1
+    [autoMode] => 1
+    [autoSwingUD] =>
+    [autoTempMax] => -1
+    [autoTempMin] => -1
+    [coolMode] => 1
+    [coolTempMax] => -1
+    [coolTempMin] => -1
+    [dryMode] => 1
+    [dryTempMax] => -1
+    [dryTempMin] => -1
+    [ecoFunction] => 0
+    [ecoNavi] =>
+    [fanDirectionMode] => -1
+    [fanMode] =>
+    [fanSpeedMode] => -1
+    [heatMode] => 1
+    [heatTempMax] => -1
+    [heatTempMin] => -1
+    [iAutoX] =>
+    [modeAvlList] => Array
+        (
+            [autoMode] => 1
+            [fanMode] => 1
+        )
+    [nanoe] =>
+    [nanoeList] => Array
+        (
+            [visualizationShow] => 0
+        )
+    [nanoeStandAlone] =>
+    [pairedFlg] =>
+    [permission] => 3
+    [powerfulMode] => 1
+    [quietMode] => 1
+    [summerHouse] => 0
+    [temperatureUnit] => 0
+    [timestamp] => 1651941486000
+    [parameters] => Array
+        (
+            [ecoFunctionData] => 0
+            [airSwingLR] => 2
+            [nanoe] => 0
+            [lastSettingMode] => 0
+            [ecoNavi] => 0
+            [ecoMode] => 2
+            [operationMode] => 2
+            [fanAutoMode] => 0
+            [errorStatus] => -255
+            [temperatureSet] => 23
+            [fanSpeed] => 0
+            [iAuto] => 0
+            [airQuality] => 0
+            [insideTemperature] => 22
+            [outTemperature] => 17
+            [operate] => 1
+            [airDirection] => 1
+            [actualNanoe] => 0
+            [airSwingUD] => 2
+        )
+
+)
+
+
+
+
+    if (device.nanoe && device.parameters.nanoe !== undefined) parameters.nanoe = device.parameters.nanoe;
+    if (device.nanoeStandAlone && device.parameters.actualNanoe !== undefined) parameters.actualNanoe = device.parameters.actualNanoe;
+    $this->MaintainVariable('NanoeMode', $this->Translate('Nanoe  mode', VARIABLETYPE_INTEGER, 'PanasonicCloud.NanoeMode', $vpos++, false);
+
+
+        if (device.parameters.operate !== undefined) parameters.operate = device.parameters.operate;
+        if (device.parameters.fanAutoMode !== undefined) parameters.fanAutoMode = device.parameters.fanAutoMode;
+        if (device.parameters.airDirection !== undefined) parameters.airDirection = device.parameters.airDirection;
+        if (device.parameters.airSwingLR !== undefined) parameters.airSwingLR = device.parameters.airSwingLR;
+        if (device.parameters.airSwingUD !== undefined) parameters.airSwingUD = device.parameters.airSwingUD;
+        if (device.parameters.fanSpeed !== undefined) parameters.fanSpeed = device.parameters.fanSpeed;
+
+        if (device.parameters.ecoFunctionData !== undefined) parameters.ecoFunctionData = device.parameters.ecoFunctionData;
+        if (device.parameters.ecoMode !== undefined) parameters.ecoMode = device.parameters.ecoMode;
+
+
+
+        if (
+            (device.autoMode && device.parameters.operationMode === OperationMode.Auto) ||
+            (device.coolMode && device.parameters.operationMode === OperationMode.Cool) ||
+            (device.dryMode && device.parameters.operationMode === OperationMode.Dry) ||
+            (device.heatMode && device.parameters.operationMode === OperationMode.Heat) ||
+            (device.fanMode && device.parameters.operationMode === OperationMode.Fan)
+        )
+            parameters.operationMode = device.parameters.operationMode;
          */
+
+        $now = time();
+        $is_changed = false;
+        $fnd = false;
+
+        $used_fields = [];
+        $missing_fields = [];
+        $ignored_fields = [];
+
+        $operate = $this->GetArrayElem($jdata, 'parameters.operate', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.operate';
+            $this->SendDebug(__FUNCTION__, '... Operate (operate)=' . $operate, 0);
+            $this->SaveValue('Operate', (bool) $operate, $is_changed);
+        }
+
+        $operationMode = $this->GetArrayElem($jdata, 'parameters.operationMode', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.operationMode';
+            $this->SendDebug(__FUNCTION__, '... OperationMode (operationMode)=' . $operationMode, 0);
+            $this->SaveValue('OperationMode', (int) $operationMode, $is_changed);
+        }
+
+        $ecoMode = $this->GetArrayElem($jdata, 'parameters.ecoMode', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.ecoMode';
+            $this->SendDebug(__FUNCTION__, '... EcoMode (ecoMode)=' . $ecoMode, 0);
+            $this->SaveValue('EcoMode', (int) $ecoMode, $is_changed);
+        }
+
+        $fanAutoMode = (string) $this->GetArrayElem($jdata, 'parameters.fanAutoMode', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.fanAutoMode';
+            $this->SendDebug(__FUNCTION__, '... FanMode (fanAutoMode)=' . $fanAutoMode, 0);
+            $this->SaveValue('FanMode', (int) $fanAutoMode, $is_changed);
+        }
+
+        $fanSpeed = $this->GetArrayElem($jdata, 'parameters.fanSpeed', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.fanSpeed';
+            $this->SendDebug(__FUNCTION__, '... FanSpeed (fanSpeed)=' . $fanSpeed, 0);
+            $this->SaveValue('FanSpeed', (int) $fanSpeed, $is_changed);
+        }
+
+        $airSwingUD = $this->GetArrayElem($jdata, 'parameters.airSwingUD', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.airSwingUD';
+            $this->SendDebug(__FUNCTION__, '... AirSwingUD (airSwingUD)=' . $airSwingUD, 0);
+            $this->SaveValue('AirSwingUD', (int) $airSwingUD, $is_changed);
+        }
+
+        $airSwingLR = $this->GetArrayElem($jdata, 'parameters.airSwingLR', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.airSwingLR';
+            $this->SendDebug(__FUNCTION__, '... AirSwingLR (airSwingLR)=' . $airSwingLR, 0);
+            $this->SaveValue('AirSwingLR', (int) $airSwingLR, $is_changed);
+        }
+
+        $temperatureSet = $this->GetArrayElem($jdata, 'parameters.temperatureSet', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.temperatureSet';
+            $this->SendDebug(__FUNCTION__, '... TemperatureTarget (temperatureSet)=' . $temperatureSet, 0);
+            $this->SaveValue('TemperatureTarget', (float) $temperatureSet, $is_changed);
+        }
+
+        $insideTemperature = $this->GetArrayElem($jdata, 'parameters.insideTemperature', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.insideTemperature';
+            $this->SendDebug(__FUNCTION__, '... TemperatureIn (insideTemperature)=' . $insideTemperature, 0);
+            $this->SaveValue('TemperatureIn', (float) $insideTemperature, $is_changed);
+        }
+
+        $outTemperature = $this->GetArrayElem($jdata, 'parameters.outTemperature', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'parameters.outTemperature';
+            $this->SendDebug(__FUNCTION__, '... TemperatureOut (outTemperature)=' . $outTemperature, 0);
+            $this->SaveValue('TemperatureOut', (float) $outTemperature, $is_changed);
+        }
+
+        $this->SetValue('LastUpdate', $now);
+        if ($is_changed) {
+            $this->SetValue('LastChange', (int) $jdata['timestamp']);
+        }
     }
 
     public function RequestAction($ident, $value)

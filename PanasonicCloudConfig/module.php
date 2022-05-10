@@ -59,25 +59,6 @@ class PanasonicCloudConfig extends IPSModule
         $this->SetStatus(IS_ACTIVE);
     }
 
-    private function SetLocation()
-    {
-        $catID = $this->ReadPropertyInteger('ImportCategoryID');
-        $tree_position = [];
-        if ($catID >= 10000 && IPS_ObjectExists($catID)) {
-            $tree_position[] = IPS_GetName($catID);
-            $parID = IPS_GetObject($catID)['ParentID'];
-            while ($parID > 0) {
-                if ($parID > 0) {
-                    $tree_position[] = IPS_GetName($parID);
-                }
-                $parID = IPS_GetObject($parID)['ParentID'];
-            }
-            $tree_position = array_reverse($tree_position);
-        }
-        $this->SendDebug(__FUNCTION__, 'tree_position=' . print_r($tree_position, true), 0);
-        return $tree_position;
-    }
-
     private function getConfiguratorValues()
     {
         $entries = [];
@@ -91,6 +72,8 @@ class PanasonicCloudConfig extends IPSModule
             $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
             return $entries;
         }
+
+        $catID = $this->ReadPropertyInteger('ImportCategoryID');
 
         // an PanasonicCloudIO
         $sdata = [
@@ -121,7 +104,7 @@ class PanasonicCloudConfig extends IPSModule
                         $instanceID = 0;
                         foreach ($instIDs as $instID) {
                             if (IPS_GetProperty($instID, 'guid') == $deviceGuid) {
-                                $this->SendDebug(__FUNCTION__, 'device found: ' . utf8_decode(IPS_GetName($instID)) . ' (' . $instID . ')', 0);
+                                $this->SendDebug(__FUNCTION__, 'device found: ' . IPS_GetName($instID) . ' (' . $instID . ')', 0);
                                 $instanceID = $instID;
                                 break;
                             }
@@ -134,7 +117,7 @@ class PanasonicCloudConfig extends IPSModule
                             'guid'            => $deviceGuid,
                             'create'          => [
                                 'moduleID'      => $guid,
-                                'location'      => $this->SetLocation(),
+                                'location'      => $this->GetConfiguratorLocation($catID),
                                 'info'          => $type . ' ' . $deviceModule,
                                 'configuration' => [
                                     'guid'          => (string) $deviceGuid,

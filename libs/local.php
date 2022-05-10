@@ -104,7 +104,11 @@ trait PanasonicCloudLocalLib
             $this->SendDebug(__FUNCTION__, 'reInstall=' . $this->bool2str($reInstall), 0);
         }
 
-        $this->CreateVarProfile('PanasonicCloud.Power', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 0, '', [], $reInstall);
+        $associations = [
+            ['Wert' => false, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => true, 'Name' => $this->Translate('On'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.Power', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
             ['Wert' => self::$OPERATION_MODE_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
@@ -166,6 +170,12 @@ trait PanasonicCloudLocalLib
             ['Wert' => self:: $NANOE_MODE_ALL, 'Name' => $this->Translate('All'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('PanasonicCloud.NanoeMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => -273.15, 'Name' => '-', 'Farbe' => -1],
+            ['Wert' => -272, 'Name' => '%.0f °C', 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, '', 0, 0, 0, 0, 'Temperature', $associations, $reInstall);
     }
 
     public static $DEVICE_TYPE_AIR_CONDITIONER = 3;
