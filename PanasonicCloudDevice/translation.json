@@ -14,6 +14,20 @@
 			"Update interval": "Aktualisierungsintervall",
 			"Seconds": "Sekunden",
 
+			"__variables__": "",
+			"Operate": "Betrieb",
+			"Operation mode": "Betriebsart",
+			"Eco mode": "Öko-Modus",
+			"Target temperature": "Soll-Temperatur",
+			"Actual temperature": "Temperatur",
+			"Outside temperature": "Außentemperatur",
+			"Fan mode": "Lüftungs-Modus",
+			"Fan speed": "Lüftergeschwindigkeit",
+			"Vertical air swing": "vertikale Luftbewegung",
+			"Horizontal air swing": "horizontale Luftbewegung",
+			"Last update": "Letzte Aktualisierung",
+			"Last change": "Letzte Änderung",
+
 			"__actions__": "",
 			"Update status": "Aktualisiere Status",
 

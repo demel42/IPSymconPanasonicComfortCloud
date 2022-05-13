@@ -19,6 +19,8 @@ class PanasonicCloudIO extends IPSModule
     private static $device_status_endpoint = '/deviceStatus/';
     private static $device_status_now_endpoint = '/deviceStatus/now/';
 
+    private static $device_control_endpoint = '/deviceStatus/control//';
+
     private static $x_app_type = 1;
     private static $x_app_version = '1.20.0';
     private static $user_agent = 'G-RAC';
@@ -60,7 +62,7 @@ class PanasonicCloudIO extends IPSModule
         }
     }
 
-    private function CheckModulePrerequisites()
+    private function CheckModuleConfiguration()
     {
         $r = [];
 
@@ -76,25 +78,6 @@ class PanasonicCloudIO extends IPSModule
         }
 
         return $r;
-    }
-
-    private function CheckModuleConfiguration()
-    {
-        $r = [];
-
-        return $r;
-    }
-
-    private function CheckModuleUpdate(array $oldInfo, array $newInfo)
-    {
-        $r = [];
-
-        return $r;
-    }
-
-    private function CompleteModuleUpdate(array $oldInfo, array $newInfo)
-    {
-        return '';
     }
 
     public function ApplyChanges()
@@ -122,7 +105,6 @@ class PanasonicCloudIO extends IPSModule
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
-            $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(IS_INACTIVE);
             return;
         }
@@ -268,6 +250,9 @@ class PanasonicCloudIO extends IPSModule
                 case 'GetDeviceStatusNow':
                     $ret = $this->GetDeviceStatus($jdata['Guid'], true);
                     break;
+                case 'ControlDevice':
+                    $ret = $this->ControlDevice($jdata['Guid'], $jdata['Parameters']);
+                    break;
                 default:
                     $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
                     break;
@@ -347,7 +332,7 @@ class PanasonicCloudIO extends IPSModule
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
             } elseif ($httpcode == 403) {
-                $statuscode = self::$IS_INVALIDACCOUNT;
+                $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
                 $statuscode = self::$IS_SERVERERROR;
@@ -474,10 +459,13 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
 
+        $url = self::$group_endpoint;
+
         $header_add = [
             'X-User-Authorization' => $access_token,
         ];
-        $jdata = $this->do_HttpRequest(self::$group_endpoint, '', '', $header_add);
+
+        $jdata = $this->do_HttpRequest($url, '', '', $header_add);
         if ($jdata == false) {
             return false;
         }
@@ -493,13 +481,40 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
 
+        $url = $now ? self::$device_status_now_endpoint : self::$device_status_endpoint;
+        $url .= $guid;
+
         $header_add = [
             'X-User-Authorization' => $access_token,
         ];
 
-        $url = $now ? self::$device_status_now_endpoint : self::$device_status_endpoint;
-        $url .= $guid;
         $jdata = $this->do_HttpRequest($url, '', '', $header_add);
+        if ($jdata == false) {
+            return false;
+        }
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        return json_encode($jdata);
+    }
+
+    public function ControlDevice(string $guid, string $parameters)
+    {
+        $access_token = $this->GetAccessToken();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $url = self::$device_control_endpoint;
+
+        $postfields = [
+            'deviceGuid' => $guid,
+            'parameters' => json_decode($parameters, true),
+        ];
+
+        $header_add = [
+            'X-User-Authorization' => $access_token,
+        ];
+
+        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add);
         if ($jdata == false) {
             return false;
         }

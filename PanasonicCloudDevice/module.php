@@ -31,8 +31,10 @@ class PanasonicCloudDevice extends IPSModule
 
         $this->RegisterPropertyInteger('update_interval', 60);
 
-        $this->RegisterAttributeString('UpdateInfo', '');
+        $this->RegisterAttributeString('device_options', '');
         $this->RegisterAttributeString('external_update_interval', '');
+
+        $this->RegisterAttributeString('UpdateInfo', '');
 
         $this->InstallVarProfiles(false);
 
@@ -57,18 +59,6 @@ class PanasonicCloudDevice extends IPSModule
         $r = [];
 
         return $r;
-    }
-
-    private function CheckModuleUpdate(array $oldInfo, array $newInfo)
-    {
-        $r = [];
-
-        return $r;
-    }
-
-    private function CompleteModuleUpdate(array $oldInfo, array $newInfo)
-    {
-        return '';
     }
 
     public function ApplyChanges()
@@ -97,17 +87,20 @@ class PanasonicCloudDevice extends IPSModule
 
         $vpos = 0;
 
-        $this->MaintainVariable('Operate', $this->Translate('Operate'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Power', $vpos++, true);
+        $this->MaintainVariable('Operate', $this->Translate('Operate'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainAction('Operate', true);
+
         $this->MaintainVariable('OperationMode', $this->Translate('Operation mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.OperationMode', $vpos++, true);
+
         $this->MaintainVariable('EcoMode', $this->Translate('Eco mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.EcoMode', $vpos++, true);
-        $this->MaintainVariable('TemperatureTarget', $this->Translate('Target temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
-        $this->MaintainVariable('TemperatureIn', $this->Translate('inside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
-        $this->MaintainVariable('TemperatureOut', $this->Translate('outside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
+        $this->MaintainVariable('TargetTemperature', $this->Translate('Target temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
+        $this->MaintainVariable('ActualTemperature', $this->Translate('Actual temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
+        $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
 
         $this->MaintainVariable('FanMode', $this->Translate('Fan mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanMode', $vpos++, true);
         $this->MaintainVariable('FanSpeed', $this->Translate('Fan speed'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanSpeed', $vpos++, true);
-        $this->MaintainVariable('AirSwingUD', $this->Translate('Fan swing vertical'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingUD', $vpos++, true);
-        $this->MaintainVariable('AirSwingLR', $this->Translate('Fan swing horizontal'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingLR', $vpos++, true);
+        $this->MaintainVariable('AirSwingVertical', $this->Translate('Vertical air swing'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingVertical', $vpos++, true);
+        $this->MaintainVariable('AirSwingHorizontal', $this->Translate('Horizontal air swing'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingHorizontal', $vpos++, true);
 
         $this->MaintainVariable('LastUpdate', $this->Translate('Last update'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('LastChange', $this->Translate('Last change'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
@@ -130,6 +123,8 @@ class PanasonicCloudDevice extends IPSModule
         $this->SetSummary($s);
 
         $this->SetStatus(IS_ACTIVE);
+
+        $this->AdjustActions();
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->OverwriteUpdateInterval();
@@ -284,68 +279,6 @@ class PanasonicCloudDevice extends IPSModule
         $this->SendDebug(__FUNCTION__, $this->PrintTimer('UpdateStatus'), 0);
         /*
 
-        (
-            [dryTempMin] => -1
-            [modeAvlList] => Array
-                (
-                    [autoMode] => 1
-                    [fanMode] => 1
-                )
-
-            [airSwingLR] => 1
-            [nanoe] =>
-            [autoMode] => 1
-            [autoSwingUD] =>
-            [ecoNavi] =>
-            [heatTempMax] => -1
-            [temperatureUnit] => 0
-            [iAutoX] =>
-            [coolTempMin] => -1
-            [autoTempMin] => -1
-            [quietMode] => 1
-            [powerfulMode] => 1
-            [timestamp] => 1650726664000
-            [fanMode] =>
-            [coolMode] => 1
-            [summerHouse] => 0
-            [coolTempMax] => -1
-            [permission] => 3
-            [dryMode] => 1
-            [nanoeStandAlone] =>
-            [heatMode] => 1
-            [fanSpeedMode] => -1
-            [dryTempMax] => -1
-            [autoTempMax] => -1
-            [fanDirectionMode] => -1
-            [ecoFunction] => 0
-            [heatTempMin] => -1
-            [pairedFlg] =>
-            [parameters] => Array
-                (
-                    [actualNanoe] => 0
-                    [airDirection] => 1
-                    [airQuality] => 0
-                    [airSwingLR] => 2
-                    [airSwingUD] => 0
-                    [ecoFunctionData] => 0
-                    [ecoMode] => 2
-                    [ecoNavi] => 0
-                    [fanAutoMode] => 3
-                    [fanSpeed] => 0
-                    [iAuto] => 0
-                    [insideTemperature] => 26
-                    [lastSettingMode] => 0
-                    [nanoe] => 0
-                    [operate] => 0
-                    [operationMode] => 2
-                    [outTemperature] => 17
-                    [temperatureSet] => 23
-                )
-
-        )
-
-
-
 07.05.2022, 18:40:01 |         UpdateStatus | jdata=Array
 (
     [airSwingLR] => 1
@@ -487,42 +420,71 @@ class PanasonicCloudDevice extends IPSModule
         $airSwingUD = $this->GetArrayElem($jdata, 'parameters.airSwingUD', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.airSwingUD';
-            $this->SendDebug(__FUNCTION__, '... AirSwingUD (airSwingUD)=' . $airSwingUD, 0);
-            $this->SaveValue('AirSwingUD', (int) $airSwingUD, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... AirSwingVertical (airSwingUD)=' . $airSwingUD, 0);
+            $this->SaveValue('AirSwingVertical', (int) $airSwingUD, $is_changed);
         }
 
         $airSwingLR = $this->GetArrayElem($jdata, 'parameters.airSwingLR', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.airSwingLR';
-            $this->SendDebug(__FUNCTION__, '... AirSwingLR (airSwingLR)=' . $airSwingLR, 0);
-            $this->SaveValue('AirSwingLR', (int) $airSwingLR, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... AirSwingHorizontal (airSwingLR)=' . $airSwingLR, 0);
+            $this->SaveValue('AirSwingHorizontal', (int) $airSwingLR, $is_changed);
         }
 
         $temperatureSet = $this->GetArrayElem($jdata, 'parameters.temperatureSet', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.temperatureSet';
-            $this->SendDebug(__FUNCTION__, '... TemperatureTarget (temperatureSet)=' . $temperatureSet, 0);
-            $this->SaveValue('TemperatureTarget', (float) $temperatureSet, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... TargetTemperature (temperatureSet)=' . $temperatureSet, 0);
+            $this->SaveValue('TargetTemperature', (float) $temperatureSet, $is_changed);
         }
 
         $insideTemperature = $this->GetArrayElem($jdata, 'parameters.insideTemperature', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.insideTemperature';
-            $this->SendDebug(__FUNCTION__, '... TemperatureIn (insideTemperature)=' . $insideTemperature, 0);
-            $this->SaveValue('TemperatureIn', (float) $insideTemperature, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... ActualTemperature (insideTemperature)=' . $insideTemperature, 0);
+            $this->SaveValue('ActualTemperature', (float) $insideTemperature, $is_changed);
         }
 
         $outTemperature = $this->GetArrayElem($jdata, 'parameters.outTemperature', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.outTemperature';
-            $this->SendDebug(__FUNCTION__, '... TemperatureOut (outTemperature)=' . $outTemperature, 0);
-            $this->SaveValue('TemperatureOut', (float) $outTemperature, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... OutsideTemperature (outTemperature)=' . $outTemperature, 0);
+            $this->SaveValue('OutsideTemperature', (float) $outTemperature, $is_changed);
         }
 
         $this->SetValue('LastUpdate', $now);
         if ($is_changed) {
             $this->SetValue('LastChange', (int) $jdata['timestamp']);
         }
+
+        $optNames = [
+            'autoMode',
+            'coolMode',
+            'dryMode',
+            'fanMode',
+            'heatMode',
+            'powerfulMode',
+            'quietMode',
+
+            'airSwingLR',
+            'autoSwingUD',
+            'fanDirectionMode',
+            'fanSpeedMode',
+            'nanoeStandAlone',
+        ];
+        $options = [];
+        foreach ($optNames as $name) {
+            $options[$name] = isset($jdata[$name]) ? $jdata[$name] : '';
+        }
+        $s = json_encode($options);
+        $this->SendDebug(__FUNCTION__, 'options=' . print_r($options, true), 0);
+        if ($this->ReadAttributeString('device_options') != $s) {
+            $this->WriteAttributeString('device_options', $s);
+        }
+
+        $this->AdjustActions();
+
+        $this->SetUpdateInterval();
     }
 
     public function RequestAction($ident, $value)
@@ -540,12 +502,227 @@ class PanasonicCloudDevice extends IPSModule
 
         $r = false;
         switch ($ident) {
+            case 'Operate':
+                $r = $this->SetOperate((bool) $value);
+                break;
+            case 'OperationMode':
+                $r = $this->SetOperateMode((int) $value);
+                break;
+            case 'EcoMode':
+                $r = $this->SetEcoMode((int) $value);
+                break;
+            case 'TargetTemperature':
+                $r = $this->SetTargetTemperature((int) $value);
+                break;
+            case 'FanMode':
+                $r = $this->SetFanMode((int) $value);
+                break;
+            case 'FanSpeed':
+                $r = $this->SetFanSpeed((int) $value);
+                break;
+            case 'AirSwingVertical':
+                $r = $this->SetAirSwingVertical((int) $value);
+                break;
+            case 'AirSwingHorizontal':
+                $r = $this->SetAirSwingHorizontal((int) $value);
+                break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
                 break;
         }
         if ($r) {
             $this->SetValue($ident, $value);
+            $this->MaintainTimer('UpdateStatus', 250);
         }
+    }
+
+    private function CheckAction($func, $verbose)
+    {
+        $enabled = false;
+
+        // $this->SendDebug(__FUNCTION__, 'action "' . $func . '" is ' . ($enabled ? 'enabled' : 'disabled'), 0);
+        return true;
+    }
+
+    private function AdjustActions()
+    {
+        $chg = false;
+
+        $operate = $this->GetValue('Operate');
+        $fanMode = $this->GetValue('FanMode');
+
+        $chg |= $this->AdjustAction('OperationMode', $operate);
+        $chg |= $this->AdjustAction('EcoMode', $operate);
+        $chg |= $this->AdjustAction('TargetTemperature', $operate);
+        $chg |= $this->AdjustAction('FanMode', $operate);
+        $chg |= $this->AdjustAction('FanSpeed', $operate);
+        $chg |= $this->AdjustAction('AirSwingVertical', $operate);
+        $chg |= $this->AdjustAction('AirSwingHorizontal', $operate);
+
+        if ($chg) {
+            $this->ReloadForm();
+        }
+    }
+
+    public function SetOperate(bool $state)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $parameters = [
+            'operate' => $state ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetOperateMode(int $value)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $options = json_decode($this->ReadAttributeString('device_options'), true);
+        if (is_array($options)) {
+            $map = [
+                self::$OPERATION_MODE_AUTO => 'autoMode',
+                self::$OPERATION_MODE_DRY  => 'dryMode',
+                self::$OPERATION_MODE_COOL => 'coolMode',
+                self::$OPERATION_MODE_FAN  => 'fanMode',
+                self::$OPERATION_MODE_HEAT => 'heatMode',
+            ];
+            if (isset($map[$value]) && $options[$map[$value]] != 1) {
+                $s = $this->CheckVarProfile4Value('PanasonicCloud.OperationMode', $value);
+                $this->SendDebug(__FUNCTION__, 'mode ' . $value . '(' . $s . ') is not allowed on this device/in this context', 0);
+                return false;
+            }
+        }
+
+        $parameters = [
+            'operationMode' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetEcoMode(int $value)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $options = json_decode($this->ReadAttributeString('device_options'), true);
+        if (is_array($options)) {
+            $map = [
+                self::$ECO_MODE_POWERFUL => 'powerfulMode',
+                self::$ECO_MODE_QUIET    => 'quietMode',
+            ];
+            if (isset($map[$value]) && $options[$map[$value]] != 1) {
+                $s = $this->CheckVarProfile4Value('PanasonicCloud.EcoMode', $value);
+                $this->SendDebug(__FUNCTION__, 'mode ' . $value . '(' . $s . ') is not allowed on this device/in this context', 0);
+                return false;
+            }
+        }
+
+        $parameters = [
+            'ecoMode' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetTargetTemperature(int $value)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $parameters = [
+            'temperatureSet' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetFanMode(int $value)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $parameters = [
+            'fanAutoMode' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetFanSpeed(int $value)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $parameters = [
+            'fanSpeed' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetAirSwingVertical(int $value)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $parameters = [
+            'airSwingUD' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetAirSwingHorizontal(int $value)
+    {
+        if (!$this->CheckAction(__FUNCTION__, true)) {
+            return false;
+        }
+
+        $parameters = [
+            'airSwingLR' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    private function ControlDevice($func, array $parameters)
+    {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
+            return;
+        }
+
+        if ($this->HasActiveParent() == false) {
+            $this->SendDebug(__FUNCTION__, 'has no active parent', 0);
+            $this->LogMessage('has no active parent instance', KL_WARNING);
+            return;
+        }
+
+        $guid = $this->ReadPropertyString('guid');
+
+        $sdata = [
+            'DataID'     => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+            'Function'   => 'ControlDevice',
+            'Guid'       => $guid,
+            'Parameters' => json_encode($parameters),
+        ];
+        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
+        $data = $this->SendDataToParent(json_encode($sdata));
+        $jdata = json_decode($data, true);
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+
+        return isset($jdata['result']) && $jdata['result'] == 0;
     }
 }

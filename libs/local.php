@@ -64,22 +64,22 @@ trait PanasonicCloudLocalLib
     public static $FAN_SPEED_HIGH_MID = 4;
     public static $FAN_SPEED_HIGH = 5;
 
-    public static $AIR_SWING_UD_UP = 0;
-    public static $AIR_SWING_UD_DOWN = 1;
-    public static $AIR_SWING_UD_MID = 2;
-    public static $AIR_SWING_UD_UP_MID = 3;
-    public static $AIR_SWING_UD_DOWN_MID = 4;
+    public static $AIR_SWING_VERTICAL_UP = 0;
+    public static $AIR_SWING_VERTICAL_DOWN = 1;
+    public static $AIR_SWING_VERTICAL_MID = 2;
+    public static $AIR_SWING_VERTICAL_UP_MID = 3;
+    public static $AIR_SWING_VERTICAL_DOWN_MID = 4;
 
-    public static $AIR_SWING_LR_LEFT = 0;
-    public static $AIR_SWING_LR_RIGHT = 1;
-    public static $AIR_SWING_LR_MID = 2;
-    public static $AIR_SWING_LR_RIGHT_MID = 3;
-    public static $AIR_SWING_LR_LEFT_MID = 4;
+    public static $AIR_SWING_HORIZONTAL_LEFT = 0;
+    public static $AIR_SWING_HORIZONTAL_RIGHT = 1;
+    public static $AIR_SWING_HORIZONTAL_MID = 2;
+    public static $AIR_SWING_HORIZONTAL_RIGHT_MID = 3;
+    public static $AIR_SWING_HORIZONTAL_LEFT_MID = 4;
 
     public static $FAN_MODE_SWING_AUTO = 0;
     public static $FAN_MODE_DISABLED = 1;
-    public static $FAN_MODE_SWING_UD = 2;
-    public static $FAN_MODE_SWING_LR = 3;
+    public static $FAN_MODE_SWING_VERTICAL = 2;
+    public static $FAN_MODE_SWING_HORIZONTAL = 3;
 
     public static $NANOE_MODE_UNAVAIL = 0;
     public static $NANOE_MODE_OFF = 1;
@@ -108,7 +108,7 @@ trait PanasonicCloudLocalLib
             ['Wert' => false, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
             ['Wert' => true, 'Name' => $this->Translate('On'), 'Farbe' => -1],
         ];
-        $this->CreateVarProfile('PanasonicCloud.Power', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 0, '', $associations, $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.Operate', VARIABLETYPE_BOOLEAN, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
             ['Wert' => self::$OPERATION_MODE_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
@@ -137,28 +137,28 @@ trait PanasonicCloudLocalLib
         $this->CreateVarProfile('PanasonicCloud.FanSpeed', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
-            ['Wert' => self::$AIR_SWING_UD_UP, 'Name' => $this->Translate('Up'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_UD_DOWN, 'Name' => $this->Translate('Down'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_UD_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_UD_UP_MID, 'Name' => $this->Translate('Up middle'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_UD_DOWN_MID, 'Name' => $this->Translate('Down middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_VERTICAL_UP, 'Name' => $this->Translate('Up'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_VERTICAL_DOWN, 'Name' => $this->Translate('Down'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_VERTICAL_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_VERTICAL_UP_MID, 'Name' => $this->Translate('Up middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_VERTICAL_DOWN_MID, 'Name' => $this->Translate('Down middle'), 'Farbe' => -1],
         ];
-        $this->CreateVarProfile('PanasonicCloud.AirSwingUD', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.AirSwingVertical', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
-            ['Wert' => self::$AIR_SWING_LR_LEFT, 'Name' => $this->Translate('Left'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_LR_RIGHT, 'Name' => $this->Translate('Right'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_LR_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_LR_RIGHT_MID, 'Name' => $this->Translate('Right middle'), 'Farbe' => -1],
-            ['Wert' => self::$AIR_SWING_LR_LEFT_MID, 'Name' => $this->Translate('Left middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_HORIZONTAL_LEFT, 'Name' => $this->Translate('Left'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_HORIZONTAL_RIGHT, 'Name' => $this->Translate('Right'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_HORIZONTAL_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_HORIZONTAL_RIGHT_MID, 'Name' => $this->Translate('Right middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIR_SWING_HORIZONTAL_LEFT_MID, 'Name' => $this->Translate('Left middle'), 'Farbe' => -1],
         ];
-        $this->CreateVarProfile('PanasonicCloud.AirSwingLR', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.AirSwingHorizontal', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
             ['Wert' => self::$FAN_MODE_SWING_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
-            ['Wert' => self::$FAN_MODE_DISABLED, 'Name' => $this->Translate('Disabed'), 'Farbe' => -1],
-            ['Wert' => self::$FAN_MODE_SWING_UD, 'Name' => $this->Translate('Up down'), 'Farbe' => -1],
-            ['Wert' => self::$FAN_MODE_SWING_LR, 'Name' => $this->Translate('Left right'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_MODE_DISABLED, 'Name' => $this->Translate('Disabled'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_MODE_SWING_VERTICAL, 'Name' => $this->Translate('Vertical'), 'Farbe' => -1],
+            ['Wert' => self::$FAN_MODE_SWING_HORIZONTAL, 'Name' => $this->Translate('Horizontal'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('PanasonicCloud.FanMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 

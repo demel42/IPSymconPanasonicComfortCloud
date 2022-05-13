@@ -5,7 +5,7 @@
 			"Air conditioner": "Klimaanlage",
 			"Unknown type": "Unbekannter Typ",
 
-			"__variableprofile__": "PanasonicCloud.Power",
+			"__variableprofile__": "PanasonicCloud.Operate",
 			"Off": "Aus",
 			"On": "Ein",
 
@@ -29,19 +29,32 @@
 			"High middle": "Hoch",
 			"High": "Maximal",
 
-			"__variableprofile__": "PanasonicCloud.AirSwingUD",
+			"__variableprofile__": "PanasonicCloud.FanMode",
+			"Automatic": "Automatisch",
+			"Disabled": "Deaktiviert",
+			"Vertical": "Vertikal",
+			"Horizontal": "Horizontal",
+
+			"__variableprofile__": "PanasonicCloud.AirSwingVertical",
 			"Up": "Oben",
 			"Down": "Unten",
 			"Middle": "Mitte",
 			"Up middle": "Halb oben",
 			"Down middle": "Halb unten",
 
-			"__variableprofile__": "PanasonicCloud.AirSwingLR",
+			"__variableprofile__": "PanasonicCloud.AirSwingHorizontal",
 			"Left": "Links",
 			"Right": "Rechts",
 			"Middle": "Mitte",
 			"Right middle": "Halb rechts",
 			"Left middle": "Halb links",
+
+			"__variableprofile__": "PanasonicCloud.NanoeMode",
+			"Unavail": "Nicht verfügbar",
+			"Off": "Aus",
+			"On": "Ein",
+			"Mode G": "Modus G",
+			"All": "Alle",
 
 			"__status__": "",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
