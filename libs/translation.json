@@ -29,7 +29,7 @@
 			"High middle": "Hoch",
 			"High": "Maximal",
 
-			"__variableprofile__": "PanasonicCloud.FanMode",
+			"__variableprofile__": "PanasonicCloud.AirflowDirection",
 			"Automatic": "Automatisch",
 			"Disabled": "Deaktiviert",
 			"Vertical": "Vertikal",

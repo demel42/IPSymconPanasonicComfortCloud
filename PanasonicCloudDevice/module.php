@@ -85,6 +85,9 @@ class PanasonicCloudDevice extends IPSModule
             return;
         }
 
+        $options = json_decode($this->ReadAttributeString('device_options'), true);
+        $with_nanoe = isset($options['nanoe']) ? $options['nanoe'] : true;
+
         $vpos = 0;
 
         $this->MaintainVariable('Operate', $this->Translate('Operate'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
@@ -97,10 +100,12 @@ class PanasonicCloudDevice extends IPSModule
         $this->MaintainVariable('ActualTemperature', $this->Translate('Actual temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
         $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
 
-        $this->MaintainVariable('FanMode', $this->Translate('Fan mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanMode', $vpos++, true);
         $this->MaintainVariable('FanSpeed', $this->Translate('Fan speed'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanSpeed', $vpos++, true);
-        $this->MaintainVariable('AirSwingVertical', $this->Translate('Vertical air swing'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingVertical', $vpos++, true);
-        $this->MaintainVariable('AirSwingHorizontal', $this->Translate('Horizontal air swing'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirSwingHorizontal', $vpos++, true);
+        $this->MaintainVariable('AirflowDirection', $this->Translate('Airflow direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowDirection', $vpos++, true);
+        $this->MaintainVariable('AirflowVertical', $this->Translate('Vertical direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowVertical', $vpos++, true);
+        $this->MaintainVariable('AirflowHorizontal', $this->Translate('Horizontal direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowHorizontal', $vpos++, true);
+
+        $this->MaintainVariable('NanoeMode', $this->Translate('nanoe X-function'), VARIABLETYPE_INTEGER, 'PanasonicCloud.NanoeMode', $vpos++, $with_nanoe);
 
         $this->MaintainVariable('LastUpdate', $this->Translate('Last update'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('LastChange', $this->Translate('Last change'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
@@ -276,105 +281,10 @@ class PanasonicCloudDevice extends IPSModule
         $jdata = json_decode($data, true);
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
-        $this->SendDebug(__FUNCTION__, $this->PrintTimer('UpdateStatus'), 0);
-        /*
-
-07.05.2022, 18:40:01 |         UpdateStatus | jdata=Array
-(
-    [airSwingLR] => 1
-    [autoMode] => 1
-    [autoSwingUD] =>
-    [autoTempMax] => -1
-    [autoTempMin] => -1
-    [coolMode] => 1
-    [coolTempMax] => -1
-    [coolTempMin] => -1
-    [dryMode] => 1
-    [dryTempMax] => -1
-    [dryTempMin] => -1
-    [ecoFunction] => 0
-    [ecoNavi] =>
-    [fanDirectionMode] => -1
-    [fanMode] =>
-    [fanSpeedMode] => -1
-    [heatMode] => 1
-    [heatTempMax] => -1
-    [heatTempMin] => -1
-    [iAutoX] =>
-    [modeAvlList] => Array
-        (
-            [autoMode] => 1
-            [fanMode] => 1
-        )
-    [nanoe] =>
-    [nanoeList] => Array
-        (
-            [visualizationShow] => 0
-        )
-    [nanoeStandAlone] =>
-    [pairedFlg] =>
-    [permission] => 3
-    [powerfulMode] => 1
-    [quietMode] => 1
-    [summerHouse] => 0
-    [temperatureUnit] => 0
-    [timestamp] => 1651941486000
-    [parameters] => Array
-        (
-            [ecoFunctionData] => 0
-            [airSwingLR] => 2
-            [nanoe] => 0
-            [lastSettingMode] => 0
-            [ecoNavi] => 0
-            [ecoMode] => 2
-            [operationMode] => 2
-            [fanAutoMode] => 0
-            [errorStatus] => -255
-            [temperatureSet] => 23
-            [fanSpeed] => 0
-            [iAuto] => 0
-            [airQuality] => 0
-            [insideTemperature] => 22
-            [outTemperature] => 17
-            [operate] => 1
-            [airDirection] => 1
-            [actualNanoe] => 0
-            [airSwingUD] => 2
-        )
-
-)
-
-
-
-
-    if (device.nanoe && device.parameters.nanoe !== undefined) parameters.nanoe = device.parameters.nanoe;
-    if (device.nanoeStandAlone && device.parameters.actualNanoe !== undefined) parameters.actualNanoe = device.parameters.actualNanoe;
-    $this->MaintainVariable('NanoeMode', $this->Translate('Nanoe  mode', VARIABLETYPE_INTEGER, 'PanasonicCloud.NanoeMode', $vpos++, false);
-
-
-        if (device.parameters.operate !== undefined) parameters.operate = device.parameters.operate;
-        if (device.parameters.fanAutoMode !== undefined) parameters.fanAutoMode = device.parameters.fanAutoMode;
-        if (device.parameters.airDirection !== undefined) parameters.airDirection = device.parameters.airDirection;
-        if (device.parameters.airSwingLR !== undefined) parameters.airSwingLR = device.parameters.airSwingLR;
-        if (device.parameters.airSwingUD !== undefined) parameters.airSwingUD = device.parameters.airSwingUD;
-        if (device.parameters.fanSpeed !== undefined) parameters.fanSpeed = device.parameters.fanSpeed;
-
-        if (device.parameters.ecoFunctionData !== undefined) parameters.ecoFunctionData = device.parameters.ecoFunctionData;
-        if (device.parameters.ecoMode !== undefined) parameters.ecoMode = device.parameters.ecoMode;
-
-
-
-        if (
-            (device.autoMode && device.parameters.operationMode === OperationMode.Auto) ||
-            (device.coolMode && device.parameters.operationMode === OperationMode.Cool) ||
-            (device.dryMode && device.parameters.operationMode === OperationMode.Dry) ||
-            (device.heatMode && device.parameters.operationMode === OperationMode.Heat) ||
-            (device.fanMode && device.parameters.operationMode === OperationMode.Fan)
-        )
-            parameters.operationMode = device.parameters.operationMode;
-         */
-
         $now = time();
+
+        $options = json_decode($this->ReadAttributeString('device_options'), true);
+
         $is_changed = false;
         $fnd = false;
 
@@ -406,8 +316,8 @@ class PanasonicCloudDevice extends IPSModule
         $fanAutoMode = (string) $this->GetArrayElem($jdata, 'parameters.fanAutoMode', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.fanAutoMode';
-            $this->SendDebug(__FUNCTION__, '... FanMode (fanAutoMode)=' . $fanAutoMode, 0);
-            $this->SaveValue('FanMode', (int) $fanAutoMode, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... AirflowDirection (fanAutoMode)=' . $fanAutoMode, 0);
+            $this->SaveValue('AirflowDirection', (int) $fanAutoMode, $is_changed);
         }
 
         $fanSpeed = $this->GetArrayElem($jdata, 'parameters.fanSpeed', '', $fnd);
@@ -420,15 +330,15 @@ class PanasonicCloudDevice extends IPSModule
         $airSwingUD = $this->GetArrayElem($jdata, 'parameters.airSwingUD', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.airSwingUD';
-            $this->SendDebug(__FUNCTION__, '... AirSwingVertical (airSwingUD)=' . $airSwingUD, 0);
-            $this->SaveValue('AirSwingVertical', (int) $airSwingUD, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... AirflowVertical (airSwingUD)=' . $airSwingUD, 0);
+            $this->SaveValue('AirflowVertical', (int) $airSwingUD, $is_changed);
         }
 
         $airSwingLR = $this->GetArrayElem($jdata, 'parameters.airSwingLR', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'parameters.airSwingLR';
-            $this->SendDebug(__FUNCTION__, '... AirSwingHorizontal (airSwingLR)=' . $airSwingLR, 0);
-            $this->SaveValue('AirSwingHorizontal', (int) $airSwingLR, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... AirflowHorizontal (airSwingLR)=' . $airSwingLR, 0);
+            $this->SaveValue('AirflowHorizontal', (int) $airSwingLR, $is_changed);
         }
 
         $temperatureSet = $this->GetArrayElem($jdata, 'parameters.temperatureSet', '', $fnd);
@@ -452,6 +362,16 @@ class PanasonicCloudDevice extends IPSModule
             $this->SaveValue('OutsideTemperature', (float) $outTemperature, $is_changed);
         }
 
+        @$with_nanoe = $this->GetIDForIdent('NanoeMode') > 0;
+        if ($with_nanoe) {
+            $nanoe = $this->GetArrayElem($jdata, 'parameters.nanoe', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'parameters.nanoe';
+                $this->SendDebug(__FUNCTION__, '... NanoeMode (nanoe)=' . $nanoe, 0);
+                $this->SaveValue('NanoeMode', (int) $nanoe, $is_changed);
+            }
+        }
+
         $this->SetValue('LastUpdate', $now);
         if ($is_changed) {
             $this->SetValue('LastChange', (int) $jdata['timestamp']);
@@ -465,6 +385,8 @@ class PanasonicCloudDevice extends IPSModule
             'heatMode',
             'powerfulMode',
             'quietMode',
+
+            'nanoe',
 
             'airSwingLR',
             'autoSwingUD',
@@ -514,17 +436,20 @@ class PanasonicCloudDevice extends IPSModule
             case 'TargetTemperature':
                 $r = $this->SetTargetTemperature((int) $value);
                 break;
-            case 'FanMode':
-                $r = $this->SetFanMode((int) $value);
+            case 'AirflowDirection':
+                $r = $this->SetAirflowDirection((int) $value);
                 break;
             case 'FanSpeed':
                 $r = $this->SetFanSpeed((int) $value);
                 break;
-            case 'AirSwingVertical':
-                $r = $this->SetAirSwingVertical((int) $value);
+            case 'AirflowVertical':
+                $r = $this->SetAirflowVertical((int) $value);
                 break;
-            case 'AirSwingHorizontal':
-                $r = $this->SetAirSwingHorizontal((int) $value);
+            case 'AirflowHorizontal':
+                $r = $this->SetAirflowHorizontal((int) $value);
+                break;
+            case 'NanoeMode':
+                $r = $this->SetNanoeMode((int) $value);
                 break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
@@ -532,15 +457,12 @@ class PanasonicCloudDevice extends IPSModule
         }
         if ($r) {
             $this->SetValue($ident, $value);
-            $this->MaintainTimer('UpdateStatus', 250);
+            $this->MaintainTimer('UpdateStatus', 500);
         }
     }
 
     private function CheckAction($func, $verbose)
     {
-        $enabled = false;
-
-        // $this->SendDebug(__FUNCTION__, 'action "' . $func . '" is ' . ($enabled ? 'enabled' : 'disabled'), 0);
         return true;
     }
 
@@ -549,15 +471,29 @@ class PanasonicCloudDevice extends IPSModule
         $chg = false;
 
         $operate = $this->GetValue('Operate');
-        $fanMode = $this->GetValue('FanMode');
+        $ecoMode = $this->GetValue('EcoMode');
+        $airflowDirection = $this->GetValue('AirflowDirection');
 
         $chg |= $this->AdjustAction('OperationMode', $operate);
+
         $chg |= $this->AdjustAction('EcoMode', $operate);
+
+        $b = $operate && $ecoMode == self::$ECO_MODE_DISABLED;
+        $chg |= $this->AdjustAction('FanSpeed', $b);
+
+        $chg |= $this->AdjustAction('AirflowDirection', $operate);
+
+        $b = $operate && $airflowDirection == self::$AIRFLOW_DIRECTION_VERTICAL;
+        $chg |= $this->AdjustAction('AirflowVertical', $b);
+        $b = $operate && $airflowDirection == self::$AIRFLOW_DIRECTION_HORIZONTAL;
+        $chg |= $this->AdjustAction('AirflowHorizontal', $b);
+
         $chg |= $this->AdjustAction('TargetTemperature', $operate);
-        $chg |= $this->AdjustAction('FanMode', $operate);
-        $chg |= $this->AdjustAction('FanSpeed', $operate);
-        $chg |= $this->AdjustAction('AirSwingVertical', $operate);
-        $chg |= $this->AdjustAction('AirSwingHorizontal', $operate);
+
+        @$with_nanoe = $this->GetIDForIdent('NanoeMode') > 0;
+        if ($with_nanoe) {
+            $chg |= $this->AdjustAction('NanoeMode', $operate);
+        }
 
         if ($chg) {
             $this->ReloadForm();
@@ -566,7 +502,7 @@ class PanasonicCloudDevice extends IPSModule
 
     public function SetOperate(bool $state)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
         }
 
@@ -579,7 +515,7 @@ class PanasonicCloudDevice extends IPSModule
 
     public function SetOperateMode(int $value)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
         }
 
@@ -608,7 +544,7 @@ class PanasonicCloudDevice extends IPSModule
 
     public function SetEcoMode(int $value)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
         }
 
@@ -634,7 +570,7 @@ class PanasonicCloudDevice extends IPSModule
 
     public function SetTargetTemperature(int $value)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
         }
 
@@ -645,14 +581,35 @@ class PanasonicCloudDevice extends IPSModule
         return $this->ControlDevice(__FUNCTION__, $parameters);
     }
 
-    public function SetFanMode(int $value)
+    public function SetAirflowDirection(int $value)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
+        }
+
+        switch ($value) {
+            case self::$AIRFLOW_DIRECTION_AUTO:
+                $airSwingLR = self::$AIRFLOW_HORIZONTAL_MID;
+                $airSwingUD = self::$AIRFLOW_VERTICAL_MID;
+                break;
+            case self::$AIRFLOW_DIRECTION_DISABLED:
+                $airSwingLR = self::$AIRFLOW_HORIZONTAL_MID;
+                $airSwingUD = self::$AIRFLOW_VERTICAL_UP;
+                break;
+            case self::$AIRFLOW_DIRECTION_HORIZONTAL:
+                $airSwingLR = $this->GetValue('AirflowHorizontal');
+                $airSwingUD = self::$AIRFLOW_VERTICAL_MID;
+                break;
+            case self::$AIRFLOW_DIRECTION_VERTICAL:
+                $airSwingLR = self::$AIRFLOW_HORIZONTAL_MID;
+                $airSwingUD = $this->GetValue('AirflowVertical');
+                break;
         }
 
         $parameters = [
             'fanAutoMode' => $value,
+            'airSwingLR'  => $airSwingLR,
+            'airSwingUD'  => $airSwingUD,
         ];
 
         return $this->ControlDevice(__FUNCTION__, $parameters);
@@ -660,7 +617,7 @@ class PanasonicCloudDevice extends IPSModule
 
     public function SetFanSpeed(int $value)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
         }
 
@@ -671,9 +628,9 @@ class PanasonicCloudDevice extends IPSModule
         return $this->ControlDevice(__FUNCTION__, $parameters);
     }
 
-    public function SetAirSwingVertical(int $value)
+    public function SetAirflowVertical(int $value)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
         }
 
@@ -684,14 +641,27 @@ class PanasonicCloudDevice extends IPSModule
         return $this->ControlDevice(__FUNCTION__, $parameters);
     }
 
-    public function SetAirSwingHorizontal(int $value)
+    public function SetAirflowHorizontal(int $value)
     {
-        if (!$this->CheckAction(__FUNCTION__, true)) {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
             return false;
         }
 
         $parameters = [
             'airSwingLR' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetNanoeMode(int $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'nanoe' => $value,
         ];
 
         return $this->ControlDevice(__FUNCTION__, $parameters);
