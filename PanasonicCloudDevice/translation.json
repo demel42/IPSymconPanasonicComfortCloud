@@ -6,10 +6,14 @@
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",
 
-			"Basic configuration (don't change)": "Basis-Konfiguration (nicht ändern)",
+			"Basic configuration": "Basis-Konfiguration",
 			"Model": "Modell",
 			"Type": "Typ",
 			"Device-ID": "Geräte-ID",
+			"Airflow direction swing": "Luftstromrichtungswechsel",
+			"vertical only": "nur vertikal",
+			"vertical and horizontal": "vertikal und horizontal",
+			"has nanoe™ X technology": "hat nanoe™ X-Technologie",
 
 			"Update interval": "Aktualisierungsintervall",
 			"Seconds": "Sekunden",

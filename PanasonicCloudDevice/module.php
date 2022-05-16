@@ -19,6 +19,9 @@ class PanasonicCloudDevice extends IPSModule
         $this->ModuleDir = __DIR__;
     }
 
+    public static $AIRFLOW_SWING_UD = 0;
+    public static $AIRFLOW_SWING_UD_LR = 1;
+
     public function Create()
     {
         parent::Create();
@@ -28,6 +31,9 @@ class PanasonicCloudDevice extends IPSModule
         $this->RegisterPropertyString('guid', '');
         $this->RegisterPropertyInteger('type', 0);
         $this->RegisterPropertyString('model', '');
+
+        $this->RegisterPropertyInteger('airflow_swing', self::$AIRFLOW_SWING_UD);
+        $this->RegisterPropertyBoolean('with_nanoe', false);
 
         $this->RegisterPropertyInteger('update_interval', 60);
 
@@ -85,9 +91,6 @@ class PanasonicCloudDevice extends IPSModule
             return;
         }
 
-        $options = json_decode($this->ReadAttributeString('device_options'), true);
-        $with_nanoe = isset($options['nanoe']) ? $options['nanoe'] : true;
-
         $vpos = 0;
 
         $this->MaintainVariable('Operate', $this->Translate('Operate'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
@@ -101,10 +104,33 @@ class PanasonicCloudDevice extends IPSModule
         $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
 
         $this->MaintainVariable('FanSpeed', $this->Translate('Fan speed'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanSpeed', $vpos++, true);
-        $this->MaintainVariable('AirflowDirection', $this->Translate('Airflow direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowDirection', $vpos++, true);
-        $this->MaintainVariable('AirflowVertical', $this->Translate('Vertical direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowVertical', $vpos++, true);
-        $this->MaintainVariable('AirflowHorizontal', $this->Translate('Horizontal direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowHorizontal', $vpos++, true);
 
+        $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
+        switch ($airflow_swing) {
+            case self::$AIRFLOW_SWING_UD:
+                $varprof = 'PanasonicCloud.AirflowDirection_0';
+                $with_swing = true;
+                $with_vertical = true;
+                $with_horizontal = false;
+                break;
+            case self::$AIRFLOW_SWING_UD_LR:
+                $varprof = 'PanasonicCloud.AirflowDirection_1';
+                $with_swing = true;
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+            default:
+                $with_swing = false;
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+        }
+
+        $this->MaintainVariable('AirflowDirection', $this->Translate('Airflow direction'), VARIABLETYPE_INTEGER, $varprof, $vpos++, $with_swing);
+        $this->MaintainVariable('AirflowVertical', $this->Translate('Vertical direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowVertical', $vpos++, $with_vertical);
+        $this->MaintainVariable('AirflowHorizontal', $this->Translate('Horizontal direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowHorizontal', $vpos++, $with_horizontal);
+
+        $with_nanoe = $this->ReadPropertyBoolean('with_nanoe');
         $this->MaintainVariable('NanoeMode', $this->Translate('nanoe X-function'), VARIABLETYPE_INTEGER, 'PanasonicCloud.NanoeMode', $vpos++, $with_nanoe);
 
         $this->MaintainVariable('LastUpdate', $this->Translate('Last update'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
@@ -152,7 +178,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $formElements[] = [
             'type'    => 'ExpansionPanel',
-            'caption' => 'Basic configuration (don\'t change)',
+            'caption' => 'Basic configuration',
             'items'   => [
                 [
                     'type'    => 'ValidationTextBox',
@@ -173,6 +199,26 @@ class PanasonicCloudDevice extends IPSModule
                     'enabled'  => false
                 ],
             ],
+        ];
+
+        $formElements[] = [
+            'type'     => 'Select',
+            'options'  => [
+                [
+                    'caption' => $this->Translate('vertical only'),
+                    'value'   => self::$AIRFLOW_SWING_UD,
+                ],
+                [
+                    'caption' => $this->Translate('vertical and horizontal'),
+                    'value'   => self::$AIRFLOW_SWING_UD_LR,
+                ],
+            ],
+            'caption'  => 'Airflow direction swing',
+        ];
+        $formElements[] = [
+            'type'     => 'CheckBox',
+            'name'     => 'with_nanoe',
+            'caption'  => 'has nanoe™ X technology',
         ];
 
         $formElements[] = [
@@ -283,8 +329,6 @@ class PanasonicCloudDevice extends IPSModule
 
         $now = time();
 
-        $options = json_decode($this->ReadAttributeString('device_options'), true);
-
         $is_changed = false;
         $fnd = false;
 
@@ -362,7 +406,7 @@ class PanasonicCloudDevice extends IPSModule
             $this->SaveValue('OutsideTemperature', (float) $outTemperature, $is_changed);
         }
 
-        @$with_nanoe = $this->GetIDForIdent('NanoeMode') > 0;
+        $with_nanoe = $this->ReadPropertyBoolean('with_nanoe');
         if ($with_nanoe) {
             $nanoe = $this->GetArrayElem($jdata, 'parameters.nanoe', '', $fnd);
             if ($fnd) {
@@ -490,7 +534,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $chg |= $this->AdjustAction('TargetTemperature', $operate);
 
-        @$with_nanoe = $this->GetIDForIdent('NanoeMode') > 0;
+        $with_nanoe = $this->ReadPropertyBoolean('with_nanoe');
         if ($with_nanoe) {
             $chg |= $this->AdjustAction('NanoeMode', $operate);
         }
@@ -657,6 +701,13 @@ class PanasonicCloudDevice extends IPSModule
     public function SetNanoeMode(int $value)
     {
         if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $options = json_decode($this->ReadAttributeString('device_options'), true);
+        $with_nanoe = isset($options['nanoe']) ? $options['nanoe'] : true;
+        if ($with_nanoe == false) {
+            $this->SendDebug(__FUNCTION__, 'nanoe X-technology is not avail on this device', 0);
             return false;
         }
 
