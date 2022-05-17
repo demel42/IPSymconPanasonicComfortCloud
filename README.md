@@ -132,5 +132,9 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.0.1 @ 17.05.2022 15:38
+  - update submodule CommonStubs
+    Fix: Absicherung gegen fehlende Objekte
+
 - 1.0 @ 16.05.2022 11:26
   - Initiale Version
