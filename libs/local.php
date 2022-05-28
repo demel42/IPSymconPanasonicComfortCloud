@@ -87,7 +87,7 @@ trait PanasonicCloudLocalLib
     public static $NANOE_MODE_MODE_G = 3;
     public static $NANOE_MODE_ALL = 4;
 
-    public function InstallVarProfiles(bool $reInstall = false)
+    private function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
             $this->SendDebug(__FUNCTION__, 'reInstall=' . $this->bool2str($reInstall), 0);

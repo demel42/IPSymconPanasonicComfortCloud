@@ -115,7 +115,7 @@ class PanasonicCloudIO extends IPSModule
         }
     }
 
-    protected function GetFormElements()
+    private function GetFormElements()
     {
         $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud I/O');
 
@@ -149,7 +149,7 @@ class PanasonicCloudIO extends IPSModule
         return $formElements;
     }
 
-    protected function GetFormActions()
+    private function GetFormActions()
     {
         $formActions = [];
 
@@ -165,7 +165,7 @@ class PanasonicCloudIO extends IPSModule
         $formActions[] = [
             'type'    => 'Button',
             'caption' => 'Test access',
-            'onClick' => $this->GetModulePrefix() . '_TestAccount($id);'
+            'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "TestAccount", "");',
         ];
 
         $formActions[] = [
@@ -173,11 +173,7 @@ class PanasonicCloudIO extends IPSModule
             'caption'   => 'Expert area',
             'expanded ' => false,
             'items'     => [
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Re-install variable-profiles',
-                    'onClick' => $this->GetModulePrefix() . '_InstallVarProfiles($id, true);'
-                ],
+                $this->GetInstallVarProfilesFormItem(),
             ],
         ];
 
@@ -213,6 +209,9 @@ class PanasonicCloudIO extends IPSModule
 
         $r = false;
         switch ($ident) {
+            case 'TestAccount':
+                $this->TestAccount();
+                break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
                 break;
@@ -412,18 +411,20 @@ class PanasonicCloudIO extends IPSModule
         return $access_token;
     }
 
-    public function TestAccount()
+    private function TestAccount()
     {
         if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
-            echo $this->GetStatusText() . PHP_EOL;
+            $msg = $this->GetStatusText() . PHP_EOL;
+            $this->PopupMessage($msg);
             return;
         }
 
         $access_token = $this->GetAccessToken();
         if ($access_token == false) {
             $this->SetStatus(self::$IS_UNAUTHORIZED);
-            echo $this->Translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
+            $msg = $this->Translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
+            $this->PopupMessage($msg);
             return;
         }
 
@@ -449,10 +450,10 @@ class PanasonicCloudIO extends IPSModule
                 }
             }
         }
-        echo $msg;
+        $this->PopupMessage($msg);
     }
 
-    public function GetGroups()
+    private function GetGroups()
     {
         $access_token = $this->GetAccessToken();
         if ($access_token == false) {
@@ -474,7 +475,7 @@ class PanasonicCloudIO extends IPSModule
         return json_encode($groups);
     }
 
-    public function GetDeviceStatus(string $guid, bool $now)
+    private function GetDeviceStatus(string $guid, bool $now)
     {
         $access_token = $this->GetAccessToken();
         if ($access_token == false) {
@@ -496,7 +497,7 @@ class PanasonicCloudIO extends IPSModule
         return json_encode($jdata);
     }
 
-    public function ControlDevice(string $guid, string $parameters)
+    private function ControlDevice(string $guid, string $parameters)
     {
         $access_token = $this->GetAccessToken();
         if ($access_token == false) {

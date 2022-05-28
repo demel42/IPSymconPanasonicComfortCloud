@@ -44,11 +44,11 @@ class PanasonicCloudDevice extends IPSModule
 
         $this->InstallVarProfiles(false);
 
-        $this->RegisterTimer('UpdateStatus', 0, $this->GetModulePrefix() . '_UpdateStatus(' . $this->InstanceID . ');');
+        $this->ConnectParent('{FA9B3ACC-2056-06B5-4DA6-0C7D375A89FB}');
+
+        $this->RegisterTimer('UpdateStatus', 0, 'IPS_RequestAction(' . $this->InstanceID . ', "UpdateStatus", "");');
 
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
-
-        $this->ConnectParent('{FA9B3ACC-2056-06B5-4DA6-0C7D375A89FB}');
     }
 
     public function MessageSink($timeStamp, $senderID, $message, $data)
@@ -162,7 +162,7 @@ class PanasonicCloudDevice extends IPSModule
         }
     }
 
-    protected function GetFormElements()
+    private function GetFormElements()
     {
         $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud Device');
 
@@ -232,7 +232,7 @@ class PanasonicCloudDevice extends IPSModule
         return $formElements;
     }
 
-    protected function GetFormActions()
+    private function GetFormActions()
     {
         $formActions = [];
 
@@ -248,7 +248,7 @@ class PanasonicCloudDevice extends IPSModule
         $formActions[] = [
             'type'    => 'Button',
             'caption' => 'Update status',
-            'onClick' => $this->GetModulePrefix() . '_UpdateStatus($id);'
+            'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "UpdateStatus", "");',
         ];
 
         $formActions[] = [
@@ -256,11 +256,7 @@ class PanasonicCloudDevice extends IPSModule
             'caption'   => 'Expert area',
             'expanded ' => false,
             'items'     => [
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Re-install variable-profiles',
-                    'onClick' => $this->GetModulePrefix() . '_InstallVarProfiles($id, true);'
-                ],
+                $this->GetInstallVarProfilesFormItem(),
             ],
         ];
 
@@ -302,7 +298,7 @@ class PanasonicCloudDevice extends IPSModule
         $this->SetUpdateInterval($sec);
     }
 
-    public function UpdateStatus()
+    private function UpdateStatus()
     {
         if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
@@ -316,6 +312,25 @@ class PanasonicCloudDevice extends IPSModule
         }
 
         $guid = $this->ReadPropertyString('guid');
+
+        $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
+        switch ($airflow_swing) {
+            case self::$AIRFLOW_SWING_UD:
+                $with_swing = true;
+                $with_vertical = true;
+                $with_horizontal = false;
+                break;
+            case self::$AIRFLOW_SWING_UD_LR:
+                $with_swing = true;
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+            default:
+                $with_swing = false;
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+        }
 
         $sdata = [
             'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
@@ -358,7 +373,7 @@ class PanasonicCloudDevice extends IPSModule
         }
 
         $fanAutoMode = (string) $this->GetArrayElem($jdata, 'parameters.fanAutoMode', '', $fnd);
-        if ($fnd) {
+        if ($with_swing && $fnd) {
             $used_fields[] = 'parameters.fanAutoMode';
             $this->SendDebug(__FUNCTION__, '... AirflowDirection (fanAutoMode)=' . $fanAutoMode, 0);
             $this->SaveValue('AirflowDirection', (int) $fanAutoMode, $is_changed);
@@ -372,14 +387,14 @@ class PanasonicCloudDevice extends IPSModule
         }
 
         $airSwingUD = $this->GetArrayElem($jdata, 'parameters.airSwingUD', '', $fnd);
-        if ($fnd) {
+        if ($with_vertical && $fnd) {
             $used_fields[] = 'parameters.airSwingUD';
             $this->SendDebug(__FUNCTION__, '... AirflowVertical (airSwingUD)=' . $airSwingUD, 0);
             $this->SaveValue('AirflowVertical', (int) $airSwingUD, $is_changed);
         }
 
         $airSwingLR = $this->GetArrayElem($jdata, 'parameters.airSwingLR', '', $fnd);
-        if ($fnd) {
+        if ($with_horizontal && $fnd) {
             $used_fields[] = 'parameters.airSwingLR';
             $this->SendDebug(__FUNCTION__, '... AirflowHorizontal (airSwingLR)=' . $airSwingLR, 0);
             $this->SaveValue('AirflowHorizontal', (int) $airSwingLR, $is_changed);
@@ -495,6 +510,9 @@ class PanasonicCloudDevice extends IPSModule
             case 'NanoeMode':
                 $r = $this->SetNanoeMode((int) $value);
                 break;
+            case 'UpdateStatus':
+                $this->UpdateStatus();
+                break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
                 break;
@@ -525,12 +543,37 @@ class PanasonicCloudDevice extends IPSModule
         $b = $operate && $ecoMode == self::$ECO_MODE_DISABLED;
         $chg |= $this->AdjustAction('FanSpeed', $b);
 
-        $chg |= $this->AdjustAction('AirflowDirection', $operate);
+        $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
+        switch ($airflow_swing) {
+            case self::$AIRFLOW_SWING_UD:
+                $with_swing = true;
+                $with_vertical = true;
+                $with_horizontal = false;
+                break;
+            case self::$AIRFLOW_SWING_UD_LR:
+                $with_swing = true;
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+            default:
+                $with_swing = false;
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+        }
 
-        $b = $operate && $airflowDirection == self::$AIRFLOW_DIRECTION_VERTICAL;
-        $chg |= $this->AdjustAction('AirflowVertical', $b);
-        $b = $operate && $airflowDirection == self::$AIRFLOW_DIRECTION_HORIZONTAL;
-        $chg |= $this->AdjustAction('AirflowHorizontal', $b);
+        if ($with_swing) {
+            $chg |= $this->AdjustAction('AirflowDirection', $operate);
+        }
+
+        if ($with_vertical) {
+            $b = $operate && $airflowDirection == self::$AIRFLOW_DIRECTION_VERTICAL;
+            $chg |= $this->AdjustAction('AirflowVertical', $b);
+        }
+        if ($with_horizontal) {
+            $b = $operate && $airflowDirection == self::$AIRFLOW_DIRECTION_HORIZONTAL;
+            $chg |= $this->AdjustAction('AirflowHorizontal', $b);
+        }
 
         $chg |= $this->AdjustAction('TargetTemperature', $operate);
 

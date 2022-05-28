@@ -166,7 +166,7 @@ class PanasonicCloudConfig extends IPSModule
         return $entries;
     }
 
-    protected function GetFormElements()
+    private function GetFormElements()
     {
         $formElements = $this->GetCommonFormElements('Panasonic ComfortCloud Configurator');
 
@@ -217,7 +217,7 @@ class PanasonicCloudConfig extends IPSModule
         return $formElements;
     }
 
-    protected function GetFormActions()
+    private function GetFormActions()
     {
         $formActions = [];
 
