@@ -132,6 +132,10 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.2 @ 22.06.2022 10:22
+  - Fix: Angabe der Kompatibilität auf 6.2 korrigiert
+  - Fix: unbekannter Timer in 'PanasonicCloudConfig'
+
 - 1.1 @ 28.05.2022 12:15
   - update submodule CommonStubs
     Fix: Ausgabe des nächsten Timer-Zeitpunkts

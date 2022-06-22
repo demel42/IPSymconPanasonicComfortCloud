@@ -4,9 +4,9 @@
 	"author": "Ch. Damsky",
 	"url": "https://github.com/demel42/IPSymconPanasonicComfortCloud.git",
 	"compatibility": {
-		"version": "6.0"
+		"version": "6.2"
 	},
-	"version": "1.1",
+	"version": "1.2",
 	"build": 0,
-	"date": 1653732957
+	"date": 1655886120
 }

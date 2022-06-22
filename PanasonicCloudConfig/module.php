@@ -40,13 +40,11 @@ class PanasonicCloudConfig extends IPSModule
         $this->MaintainReferences($propertyNames);
 
         if ($this->CheckPrerequisites() != false) {
-            $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_INVALIDPREREQUISITES);
             return;
         }
 
         if ($this->CheckUpdate() != false) {
-            $this->MaintainTimer('UpdateStatus', 0);
             $this->SetStatus(self::$IS_UPDATEUNCOMPLETED);
             return;
         }
