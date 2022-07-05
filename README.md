@@ -132,6 +132,9 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.3 @ 05.07.2022 15:36
+  - Verbesserung: IPS-Status wird nur noch gesetzt, wenn er sich ändert
+
 - 1.2 @ 22.06.2022 10:22
   - Fix: Angabe der Kompatibilität auf 6.2 korrigiert
   - Fix: unbekannter Timer in 'PanasonicCloudConfig'
