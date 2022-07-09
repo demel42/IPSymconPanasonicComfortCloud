@@ -433,7 +433,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $this->SetValue('LastUpdate', $now);
         if ($is_changed) {
-            $this->SetValue('LastChange', (int) $jdata['timestamp']);
+            $this->SetValue('LastChange', floor(intval($jdata['timestamp']) / 1000));
         }
 
         $optNames = [
@@ -468,14 +468,31 @@ class PanasonicCloudDevice extends IPSModule
         $this->SetUpdateInterval();
     }
 
+    private function LocalRequestAction($ident, $value)
+    {
+        $r = true;
+        switch ($ident) {
+            case 'UpdateStatus':
+                $this->UpdateStatus();
+                break;
+            default:
+                $r = false;
+                break;
+        }
+        return $r;
+    }
+
     public function RequestAction($ident, $value)
     {
+        if ($this->LocalRequestAction($ident, $value)) {
+            return;
+        }
         if ($this->CommonRequestAction($ident, $value)) {
             return;
         }
 
         if ($this->GetStatus() == IS_INACTIVE) {
-            $this->SendDebug(__FUNCTION__, 'instance is inactive, skip', 0);
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
             return;
         }
 
@@ -509,9 +526,6 @@ class PanasonicCloudDevice extends IPSModule
                 break;
             case 'NanoeMode':
                 $r = $this->SetNanoeMode((int) $value);
-                break;
-            case 'UpdateStatus':
-                $this->UpdateStatus();
                 break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);

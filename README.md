@@ -132,6 +132,9 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.4 @ 09.07.2022 09:51
+  - Fix: "Zeitpunkt der letzen Änderung" korrigiert (wird als Millisekunden geliefert)
+
 - 1.3 @ 05.07.2022 15:36
   - Verbesserung: IPS-Status wird nur noch gesetzt, wenn er sich ändert
 
