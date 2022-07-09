@@ -510,7 +510,7 @@ class PanasonicCloudDevice extends IPSModule
                 $r = $this->SetEcoMode((int) $value);
                 break;
             case 'TargetTemperature':
-                $r = $this->SetTargetTemperature((int) $value);
+                $r = $this->SetTargetTemperature((float) $value);
                 break;
             case 'AirflowDirection':
                 $r = $this->SetAirflowDirection((int) $value);

@@ -132,6 +132,9 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.4.1 @ 15:03
+  - Fix: Übernahme der Soll-Temperatur als float
+
 - 1.4 @ 09.07.2022 09:51
   - Fix: "Zeitpunkt der letzen Änderung" korrigiert (wird als Millisekunden geliefert)
 
