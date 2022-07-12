@@ -213,6 +213,7 @@ class PanasonicCloudDevice extends IPSModule
                     'value'   => self::$AIRFLOW_SWING_UD_LR,
                 ],
             ],
+            'name'     => 'airflow_swing',
             'caption'  => 'Airflow direction swing',
         ];
         $formElements[] = [

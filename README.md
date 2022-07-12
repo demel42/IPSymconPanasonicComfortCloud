@@ -132,7 +132,10 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
-- 1.4.1 @ 15:03
+- 1.4.2 @ 12.07.2022 17:48
+  - Fix: Property "airflow_swing" (Luftstromrichtungswechsel) wurde nicht gesetzt
+
+- 1.4.1 @ 09.07.2022 15:03
   - Fix: Übernahme der Soll-Temperatur als float
 
 - 1.4 @ 09.07.2022 09:51
