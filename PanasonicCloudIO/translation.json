@@ -20,6 +20,7 @@
 
 			"__function__": "TestAccess",
 			"valid account-data": "gültige Zugangsdaten",
+			"Clear Token": "Token löschen",
 
 			"__end__": ""
 		}

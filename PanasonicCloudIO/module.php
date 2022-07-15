@@ -22,7 +22,7 @@ class PanasonicCloudIO extends IPSModule
     private static $device_control_endpoint = '/deviceStatus/control//';
 
     private static $x_app_type = 1;
-    private static $x_app_version = '1.20.0';
+    private static $x_app_version = '1.15.1';
     private static $user_agent = 'G-RAC';
 
     private static $login_interval = 10800000;
@@ -174,18 +174,12 @@ class PanasonicCloudIO extends IPSModule
             'expanded ' => false,
             'items'     => [
                 $this->GetInstallVarProfilesFormItem(),
-            ],
-        ];
-
-        $formActions[] = [
-            'type'      => 'ExpansionPanel',
-            'caption'   => 'Test area',
-            'expanded ' => false,
-            'items'     => [
                 [
-                    'type'    => 'TestCenter',
+                    'type'    => 'Button',
+                    'caption' => 'Clear Token',
+                    'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "ClearToken", "");',
                 ],
-            ]
+            ],
         ];
 
         $formActions[] = $this->GetInformationFormAction();
@@ -198,6 +192,9 @@ class PanasonicCloudIO extends IPSModule
     {
         $r = true;
         switch ($ident) {
+            case 'ClearToken':
+                $this->ClearToken();
+                break;
             case 'TestAccount':
                 $this->TestAccount();
                 break;
@@ -233,6 +230,14 @@ class PanasonicCloudIO extends IPSModule
         if ($r) {
             $this->SetValue($ident, $value);
         }
+    }
+
+    private function ClearToken()
+    {
+        $jtoken = json_decode($this->GetBuffer('AccessToken'), true);
+        $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
+        $this->SendDebug(__FUNCTION__, 'clear access_token=' . $access_token, 0);
+        $this->WriteAttributeString('AccessToken', '');
     }
 
     protected function SendData($data)
@@ -291,8 +296,8 @@ class PanasonicCloudIO extends IPSModule
         }
 
         $header_base = [
-            'Accept'            => 'application/json',
-            'Content-Type'      => 'application/json',
+            'Accept'            => 'application/json; charset=utf-8',
+            'Content-Type'      => 'application/json; charset=utf-8',
             'User-Agent'        => self::$user_agent,
             'X-APP-TYPE'        => self::$x_app_type,
             'X-APP-VERSION'     => self::$x_app_version,
@@ -311,7 +316,7 @@ class PanasonicCloudIO extends IPSModule
         $this->SendDebug(__FUNCTION__, 'http-' . $mode . ', url=' . $url, 0);
         $this->SendDebug(__FUNCTION__, '... header=' . print_r($header, true), 0);
         if ($postfields != '') {
-            $this->SendDebug(__FUNCTION__, '... postfields=' . print_r($postfields, true), 0);
+            $this->SendDebug(__FUNCTION__, '... postfields=' . json_encode($postfields), 0);
         }
 
         $time_start = microtime(true);

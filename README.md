@@ -132,6 +132,10 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.5 @ 15.07.2022 11:54
+  - Fix: Änderung der ComfortCloud-API nachgeführt
+  - Funktion "Token löschen" hinzugefügt
+
 - 1.4.2 @ 12.07.2022 17:48
   - Fix: Property "airflow_swing" (Luftstromrichtungswechsel) wurde nicht gesetzt
 
