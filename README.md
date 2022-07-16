@@ -104,8 +104,6 @@ Es werden folgende Variablenprofile angelegt:
 PanasonicCloud.Operate
 
 * Integer<br>
-PanasonicCloud.AirflowDirection_0,
-PanasonicCloud.AirflowDirection_1,
 PanasonicCloud.AirflowHorizontal,
 PanasonicCloud.AirflowVertical,
 PanasonicCloud.EcoMode,
