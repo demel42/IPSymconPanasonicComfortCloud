@@ -132,6 +132,9 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.6 @ 16.07.2022 10:06
+  - Fix: Ersatz von 'AirflowDirection' durch 'AirflowAutoMode'
+
 - 1.5 @ 15.07.2022 11:54
   - Fix: Änderung der ComfortCloud-API nachgeführt
   - Funktion "Token löschen" hinzugefügt

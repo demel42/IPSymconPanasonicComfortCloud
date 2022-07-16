@@ -3,6 +3,11 @@
 		"de": {
 			"Panasonic ComfortCloud Device": "Panasonic ComfortCloud Gerät",
 
+			"__function__": "CheckUpdate",
+			"Delete unused variable 'AirflowDirection'": "Unbenutzte Variable 'AirflowDirection' löschen",
+			"Delete unused variableprofile 'PanasonicCloud.AirflowDirection_0', 'PanasonicCloud.AirflowDirection_1'":
+				"Unbenutzte Variablenprofile 'PanasonicCloud.AirflowDirection_0', 'PanasonicCloud.AirflowDirection_1' löschen",
+
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",
 
@@ -26,7 +31,7 @@
 			"Actual temperature": "Temperatur",
 			"Outside temperature": "Außentemperatur",
 			"Fan speed": "Lüftergeschwindigkeit",
-			"Airflow direction": "Luftstrom-Ausichtung",
+			"Airflow automatic mode": "Luftstrom-Automatik-Modus",
 			"Vertical direction": "vertikale Ausrichtung",
 			"Horizontal direction": "horizontale Ausrichtung",
 			"nanoe X-function": "nanoe X-Funktion",

@@ -29,9 +29,13 @@
 			"High middle": "Hoch",
 			"High": "Maximal",
 
-			"__variableprofile__": "PanasonicCloud.AirflowDirection",
-			"Automatic": "Automatisch",
-			"Disabled": "Deaktiviert",
+			"__variableprofile__": "PanasonicCloud.AirflowAutoMode_0",
+			"On": "Ein",
+			"Off": "Aus",
+
+			"__variableprofile__": "PanasonicCloud.AirflowAutoMode_1",
+			"On": "Ein",
+			"Off": "Aus",
 			"Vertical": "Vertikal",
 			"Horizontal": "Horizontal",
 

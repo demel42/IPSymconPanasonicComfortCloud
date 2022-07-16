@@ -76,10 +76,10 @@ trait PanasonicCloudLocalLib
     public static $AIRFLOW_HORIZONTAL_RIGHT_MID = 3;
     public static $AIRFLOW_HORIZONTAL_LEFT_MID = 4;
 
-    public static $AIRFLOW_DIRECTION_AUTO = 0;
-    public static $AIRFLOW_DIRECTION_DISABLED = 1;
-    public static $AIRFLOW_DIRECTION_HORIZONTAL = 2;
-    public static $AIRFLOW_DIRECTION_VERTICAL = 3;
+    public static $AIRFLOW_AUTOMODE_ON = 0;
+    public static $AIRFLOW_AUTOMODE_OFF = 1;
+    public static $AIRFLOW_AUTOMODE_VERTICAL = 2;
+    public static $AIRFLOW_AUTOMODE_HORIZONTAL = 3;
 
     public static $NANOE_MODE_UNAVAIL = 0;
     public static $NANOE_MODE_OFF = 1;
@@ -144,19 +144,18 @@ trait PanasonicCloudLocalLib
         $this->CreateVarProfile('PanasonicCloud.AirflowHorizontal', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
-            ['Wert' => self::$AIRFLOW_DIRECTION_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
-            ['Wert' => self::$AIRFLOW_DIRECTION_DISABLED, 'Name' => $this->Translate('Disabled'), 'Farbe' => -1],
-            ['Wert' => self::$AIRFLOW_DIRECTION_VERTICAL, 'Name' => $this->Translate('Vertical'), 'Farbe' => -1],
+            ['Wert' => self::$AIRFLOW_AUTOMODE_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
+            ['Wert' => self::$AIRFLOW_AUTOMODE_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
         ];
-        $this->CreateVarProfile('PanasonicCloud.AirflowDirection_0', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.AirflowAutoMode_0', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
-            ['Wert' => self::$AIRFLOW_DIRECTION_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
-            ['Wert' => self::$AIRFLOW_DIRECTION_DISABLED, 'Name' => $this->Translate('Disabled'), 'Farbe' => -1],
-            ['Wert' => self::$AIRFLOW_DIRECTION_HORIZONTAL, 'Name' => $this->Translate('Horizontal'), 'Farbe' => -1],
-            ['Wert' => self::$AIRFLOW_DIRECTION_VERTICAL, 'Name' => $this->Translate('Vertical'), 'Farbe' => -1],
+            ['Wert' => self::$AIRFLOW_AUTOMODE_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
+            ['Wert' => self::$AIRFLOW_AUTOMODE_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self::$AIRFLOW_AUTOMODE_VERTICAL, 'Name' => $this->Translate('Vertical'), 'Farbe' => -1],
+            ['Wert' => self::$AIRFLOW_AUTOMODE_HORIZONTAL, 'Name' => $this->Translate('Horizontal'), 'Farbe' => -1],
         ];
-        $this->CreateVarProfile('PanasonicCloud.AirflowDirection_1', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.AirflowAutoMode_1', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
             ['Wert' => self:: $NANOE_MODE_UNAVAIL, 'Name' => $this->Translate('Unavail'), 'Farbe' => -1],
