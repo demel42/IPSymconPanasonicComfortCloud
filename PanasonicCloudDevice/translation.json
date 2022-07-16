@@ -7,6 +7,11 @@
 			"Delete unused variable 'AirflowDirection'": "Unbenutzte Variable 'AirflowDirection' löschen",
 			"Delete unused variableprofile 'PanasonicCloud.AirflowDirection_0', 'PanasonicCloud.AirflowDirection_1'":
 				"Unbenutzte Variablenprofile 'PanasonicCloud.AirflowDirection_0', 'PanasonicCloud.AirflowDirection_1' löschen",
+			"Delete unused variable 'AirflowAutoMode'": "Unbenutzte Variable 'AirflowAutoMode' löschen",
+			"Delete unused variableprofile 'PanasonicCloud.AirflowAutoMode_0', 'PanasonicCloud.AirflowAutoMode_1'":
+				"Unbenutzte Variablenprofile 'PanasonicCloud.AirflowAutoMode_0', 'PanasonicCloud.AirflowAutoMode_1' löschen",
+			"Adjust variableprofile 'PanasonicCloud.AirflowVertical', 'PanasonicCloud.AirflowHorizontal'":
+				"Variablenprofile 'PanasonicCloud.AirflowVertical', 'PanasonicCloud.AirflowHorizontal' anpassen",
 
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",

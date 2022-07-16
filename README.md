@@ -132,12 +132,15 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.6.1 @ 16.07.2022 15:13
+  - Neu: Variable 'AirflowDirection' existiert nicht mehr, Automatic-Modus wird über die Variablen 'AirflowVertical' und/oder 'AirflowHorizontal' eingestellt
+
 - 1.6 @ 16.07.2022 10:06
   - Fix: Ersatz der Variable 'AirflowDirection' durch 'AirflowAutoMode'
 
 - 1.5 @ 15.07.2022 11:54
   - Fix: Änderung der ComfortCloud-API nachgeführt
-  - Funktion "Token löschen" hinzugefügt
+  - Neu: Funktion "Token löschen" hinzugefügt
 
 - 1.4.2 @ 12.07.2022 17:48
   - Fix: Property "airflow_swing" (Luftstromrichtungswechsel) wurde nicht gesetzt

@@ -64,9 +64,17 @@ class PanasonicCloudDevice extends IPSModule
     {
         $r = [];
 
-        if ($this->version2num($oldInfo) < $this->version2num('1.6')) {
-            $r[] = $this->Translate('Delete unused variable \'AirflowDirection\'');
-            $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowDirection_0\', \'PanasonicCloud.AirflowDirection_1\'');
+        if ($oldInfo != []) {
+            if ($this->version2num($oldInfo) < $this->version2num('1.6')) {
+                $r[] = $this->Translate('Delete unused variable \'AirflowDirection\'');
+                $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowDirection_0\', \'PanasonicCloud.AirflowDirection_1\'');
+            }
+
+            if ($this->version2num($oldInfo) < $this->version2num('1.6.1')) {
+                $r[] = $this->Translate('Delete unused variable \'AirflowAutoMode\'');
+                $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowAutoMode_0\', \'PanasonicCloud.AirflowAutoMode_1\'');
+                $r[] = $this->Translate('Adjust variableprofile \'PanasonicCloud.AirflowVertical\', \'PanasonicCloud.AirflowHorizontal\'');
+            }
         }
 
         return $r;
@@ -82,6 +90,23 @@ class PanasonicCloudDevice extends IPSModule
             if (IPS_VariableProfileExists('PanasonicCloud.AirflowDirection_1')) {
                 IPS_DeleteVariableProfile('PanasonicCloud.AirflowDirection_1');
             }
+        }
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.6.1')) {
+            $this->UnregisterVariable('AirflowAutoMode');
+            if (IPS_VariableProfileExists('PanasonicCloud.AirflowAutoMode_0')) {
+                IPS_DeleteVariableProfile('PanasonicCloud.AirflowAutoMode_0');
+            }
+            if (IPS_VariableProfileExists('PanasonicCloud.AirflowAutoMode_1')) {
+                IPS_DeleteVariableProfile('PanasonicCloud.AirflowAutoMode_1');
+            }
+            if (IPS_VariableProfileExists('PanasonicCloud.AirflowVertical')) {
+                IPS_DeleteVariableProfile('PanasonicCloud.AirflowVertical');
+            }
+            if (IPS_VariableProfileExists('PanasonicCloud.AirflowHorizontal')) {
+                IPS_DeleteVariableProfile('PanasonicCloud.AirflowHorizontal');
+            }
+            $this->InstallVarProfiles(false);
         }
 
         return '';
@@ -119,34 +144,28 @@ class PanasonicCloudDevice extends IPSModule
         $this->MaintainVariable('OperationMode', $this->Translate('Operation mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.OperationMode', $vpos++, true);
 
         $this->MaintainVariable('EcoMode', $this->Translate('Eco mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.EcoMode', $vpos++, true);
-        $this->MaintainVariable('TargetTemperature', $this->Translate('Target temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
-        $this->MaintainVariable('ActualTemperature', $this->Translate('Actual temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
-        $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, '', $vpos++, true);
+        $this->MaintainVariable('TargetTemperature', $this->Translate('Target temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
+        $this->MaintainVariable('ActualTemperature', $this->Translate('Actual temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
+        $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
 
         $this->MaintainVariable('FanSpeed', $this->Translate('Fan speed'), VARIABLETYPE_INTEGER, 'PanasonicCloud.FanSpeed', $vpos++, true);
 
         $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
         switch ($airflow_swing) {
             case self::$AIRFLOW_SWING_UD:
-                $varprof = 'PanasonicCloud.AirflowAutoMode_0';
-                $with_swing = true;
                 $with_vertical = true;
                 $with_horizontal = false;
                 break;
             case self::$AIRFLOW_SWING_UD_LR:
-                $varprof = 'PanasonicCloud.AirflowAutoMode_1';
-                $with_swing = true;
                 $with_vertical = true;
                 $with_horizontal = true;
                 break;
             default:
-                $with_swing = false;
                 $with_vertical = true;
                 $with_horizontal = true;
                 break;
         }
 
-        $this->MaintainVariable('AirflowAutoMode', $this->Translate('Airflow automatic mode'), VARIABLETYPE_INTEGER, $varprof, $vpos++, $with_swing);
         $this->MaintainVariable('AirflowVertical', $this->Translate('Vertical direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowVertical', $vpos++, $with_vertical);
         $this->MaintainVariable('AirflowHorizontal', $this->Translate('Horizontal direction'), VARIABLETYPE_INTEGER, 'PanasonicCloud.AirflowHorizontal', $vpos++, $with_horizontal);
 
@@ -337,17 +356,14 @@ class PanasonicCloudDevice extends IPSModule
         $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
         switch ($airflow_swing) {
             case self::$AIRFLOW_SWING_UD:
-                $with_swing = true;
                 $with_vertical = true;
                 $with_horizontal = false;
                 break;
             case self::$AIRFLOW_SWING_UD_LR:
-                $with_swing = true;
                 $with_vertical = true;
                 $with_horizontal = true;
                 break;
             default:
-                $with_swing = false;
                 $with_vertical = true;
                 $with_horizontal = true;
                 break;
@@ -394,10 +410,9 @@ class PanasonicCloudDevice extends IPSModule
         }
 
         $fanAutoMode = (string) $this->GetArrayElem($jdata, 'parameters.fanAutoMode', '', $fnd);
-        if ($with_swing && $fnd) {
+        if ($fnd) {
             $used_fields[] = 'parameters.fanAutoMode';
-            $this->SendDebug(__FUNCTION__, '... AirflowAutoMode (fanAutoMode)=' . $fanAutoMode, 0);
-            $this->SaveValue('AirflowAutoMode', (int) $fanAutoMode, $is_changed);
+            $this->SendDebug(__FUNCTION__, '... fanAutoMode=' . $fanAutoMode, 0);
         }
 
         $fanSpeed = $this->GetArrayElem($jdata, 'parameters.fanSpeed', '', $fnd);
@@ -410,6 +425,9 @@ class PanasonicCloudDevice extends IPSModule
         $airSwingUD = $this->GetArrayElem($jdata, 'parameters.airSwingUD', '', $fnd);
         if ($with_vertical && $fnd) {
             $used_fields[] = 'parameters.airSwingUD';
+            if (in_array($fanAutoMode, [self::$AIRFLOW_AUTOMODE_ON, self::$AIRFLOW_AUTOMODE_VERTICAL])) {
+                $airSwingUD = self::$AIRFLOW_VERTICAL_AUTO;
+            }
             $this->SendDebug(__FUNCTION__, '... AirflowVertical (airSwingUD)=' . $airSwingUD, 0);
             $this->SaveValue('AirflowVertical', (int) $airSwingUD, $is_changed);
         }
@@ -417,6 +435,9 @@ class PanasonicCloudDevice extends IPSModule
         $airSwingLR = $this->GetArrayElem($jdata, 'parameters.airSwingLR', '', $fnd);
         if ($with_horizontal && $fnd) {
             $used_fields[] = 'parameters.airSwingLR';
+            if (in_array($fanAutoMode, [self::$AIRFLOW_AUTOMODE_ON, self::$AIRFLOW_AUTOMODE_HORIZONTAL])) {
+                $airSwingLR = self::$AIRFLOW_HORIZONTAL_AUTO;
+            }
             $this->SendDebug(__FUNCTION__, '... AirflowHorizontal (airSwingLR)=' . $airSwingLR, 0);
             $this->SaveValue('AirflowHorizontal', (int) $airSwingLR, $is_changed);
         }
@@ -533,9 +554,6 @@ class PanasonicCloudDevice extends IPSModule
             case 'TargetTemperature':
                 $r = $this->SetTargetTemperature((float) $value);
                 break;
-            case 'AirflowAutoMode':
-                $r = $this->SetAirflowAutoMode((int) $value);
-                break;
             case 'FanSpeed':
                 $r = $this->SetFanSpeed((int) $value);
                 break;
@@ -569,7 +587,6 @@ class PanasonicCloudDevice extends IPSModule
 
         $operate = $this->GetValue('Operate');
         $ecoMode = $this->GetValue('EcoMode');
-        $airflowAutoMode = $this->GetValue('AirflowAutoMode');
 
         $chg |= $this->AdjustAction('OperationMode', $operate);
 
@@ -581,33 +598,24 @@ class PanasonicCloudDevice extends IPSModule
         $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
         switch ($airflow_swing) {
             case self::$AIRFLOW_SWING_UD:
-                $with_swing = true;
                 $with_vertical = true;
                 $with_horizontal = false;
                 break;
             case self::$AIRFLOW_SWING_UD_LR:
-                $with_swing = true;
                 $with_vertical = true;
                 $with_horizontal = true;
                 break;
             default:
-                $with_swing = false;
                 $with_vertical = true;
                 $with_horizontal = true;
                 break;
         }
 
-        if ($with_swing) {
-            $chg |= $this->AdjustAction('AirflowAutoMode', $operate);
-        }
-
         if ($with_vertical) {
-            $b = $operate && in_array($airflowAutoMode, [self::$AIRFLOW_AUTOMODE_ON, self::$AIRFLOW_AUTOMODE_VERTICAL]) == false;
-            $chg |= $this->AdjustAction('AirflowVertical', $b);
+            $chg |= $this->AdjustAction('AirflowVertical', $operate);
         }
         if ($with_horizontal) {
-            $b = $operate && in_array($airflowAutoMode, [self::$AIRFLOW_AUTOMODE_ON, self::$AIRFLOW_AUTOMODE_HORIZONTAL]) == false;
-            $chg |= $this->AdjustAction('AirflowHorizontal', $b);
+            $chg |= $this->AdjustAction('AirflowHorizontal', $operate);
         }
 
         $chg |= $this->AdjustAction('TargetTemperature', $operate);
@@ -703,59 +711,6 @@ class PanasonicCloudDevice extends IPSModule
         return $this->ControlDevice(__FUNCTION__, $parameters);
     }
 
-    public function SetAirflowAutoMode(int $value)
-    {
-        if ($this->CheckAction(__FUNCTION__, true) == false) {
-            return false;
-        }
-
-        $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
-        switch ($airflow_swing) {
-            case self::$AIRFLOW_SWING_UD:
-                $with_swing = true;
-                $with_vertical = true;
-                $with_horizontal = false;
-                break;
-            case self::$AIRFLOW_SWING_UD_LR:
-                $with_swing = true;
-                $with_vertical = true;
-                $with_horizontal = true;
-                break;
-            default:
-                $with_swing = false;
-                $with_vertical = true;
-                $with_horizontal = true;
-                break;
-        }
-
-        switch ($value) {
-            case self::$AIRFLOW_AUTOMODE_ON:
-                $airSwingLR = self::$AIRFLOW_HORIZONTAL_MID;
-                $airSwingUD = self::$AIRFLOW_VERTICAL_MID;
-                break;
-            case self::$AIRFLOW_AUTOMODE_OFF:
-                $airSwingLR = $with_horizontal ? $this->GetValue('AirflowHorizontal') : self::$AIRFLOW_HORIZONTAL_MID;
-                $airSwingUD = $with_vertical ? $this->GetValue('AirflowVertical') : self::$AIRFLOW_VERTICAL_MID;
-                break;
-            case self::$AIRFLOW_AUTOMODE_HORIZONTAL:
-                $airSwingLR = $with_horizontal ? $this->GetValue('AirflowHorizontal') : self::$AIRFLOW_HORIZONTAL_MID;
-                $airSwingUD = self::$AIRFLOW_VERTICAL_MID;
-                break;
-            case self::$AIRFLOW_AUTOMODE_VERTICAL:
-                $airSwingLR = self::$AIRFLOW_HORIZONTAL_MID;
-                $airSwingUD = $with_vertical ? $this->GetValue('AirflowVertical') : self::$AIRFLOW_VERTICAL_MID;
-                break;
-        }
-
-        $parameters = [
-            'fanAutoMode' => $value,
-            'airSwingLR'  => $airSwingLR,
-            'airSwingUD'  => $airSwingUD,
-        ];
-
-        return $this->ControlDevice(__FUNCTION__, $parameters);
-    }
-
     public function SetFanSpeed(int $value)
     {
         if ($this->CheckAction(__FUNCTION__, true) == false) {
@@ -775,8 +730,33 @@ class PanasonicCloudDevice extends IPSModule
             return false;
         }
 
+        $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
+        switch ($airflow_swing) {
+            case self::$AIRFLOW_SWING_UD:
+                $with_vertical = true;
+                $with_horizontal = false;
+                break;
+            case self::$AIRFLOW_SWING_UD_LR:
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+            default:
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+        }
+
+        $autoLR = $with_horizontal ? $this->GetValue('AirflowHorizontal') == self::$AIRFLOW_HORIZONTAL_AUTO : false;
+        if ($value == self::$AIRFLOW_VERTICAL_AUTO) {
+            $value = self::$AIRFLOW_VERTICAL_MID;
+            $fanAutoMode = $autoLR ? self::$AIRFLOW_AUTOMODE_ON : self::$AIRFLOW_AUTOMODE_VERTICAL;
+        } else {
+            $fanAutoMode = $autoLR ? self::$AIRFLOW_AUTOMODE_HORIZONTAL : self::$AIRFLOW_AUTOMODE_OFF;
+        }
+
         $parameters = [
-            'airSwingUD' => $value,
+            'fanAutoMode' => $fanAutoMode,
+            'airSwingUD'  => $value,
         ];
 
         return $this->ControlDevice(__FUNCTION__, $parameters);
@@ -788,8 +768,33 @@ class PanasonicCloudDevice extends IPSModule
             return false;
         }
 
+        $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
+        switch ($airflow_swing) {
+            case self::$AIRFLOW_SWING_UD:
+                $with_vertical = true;
+                $with_horizontal = false;
+                break;
+            case self::$AIRFLOW_SWING_UD_LR:
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+            default:
+                $with_vertical = true;
+                $with_horizontal = true;
+                break;
+        }
+
+        $autoUD = $with_vertical ? $this->GetValue('AirflowVertical') == self::$AIRFLOW_VERTICAL_AUTO : false;
+        if ($value == self::$AIRFLOW_HORIZONTAL_AUTO) {
+            $value = self::$AIRFLOW_HORIZONTAL_MID;
+            $fanAutoMode = $autoUD ? self::$AIRFLOW_AUTOMODE_ON : self::$AIRFLOW_AUTOMODE_HORIZONTAL;
+        } else {
+            $fanAutoMode = $autoUD ? self::$AIRFLOW_AUTOMODE_VERTICAL : self::$AIRFLOW_AUTOMODE_OFF;
+        }
+
         $parameters = [
-            'airSwingLR' => $value,
+            'fanAutoMode' => $fanAutoMode,
+            'airSwingLR'  => $value,
         ];
 
         return $this->ControlDevice(__FUNCTION__, $parameters);

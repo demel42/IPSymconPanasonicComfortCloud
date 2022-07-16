@@ -29,17 +29,8 @@
 			"High middle": "Hoch",
 			"High": "Maximal",
 
-			"__variableprofile__": "PanasonicCloud.AirflowAutoMode_0",
-			"On": "Ein",
-			"Off": "Aus",
-
-			"__variableprofile__": "PanasonicCloud.AirflowAutoMode_1",
-			"On": "Ein",
-			"Off": "Aus",
-			"Vertical": "Vertikal",
-			"Horizontal": "Horizontal",
-
 			"__variableprofile__": "PanasonicCloud.AirSwingVertical",
+			"Automatic": "Automatisch",
 			"Up": "Oben",
 			"Down": "Unten",
 			"Middle": "Mitte",
@@ -47,6 +38,7 @@
 			"Down middle": "Halb unten",
 
 			"__variableprofile__": "PanasonicCloud.AirSwingHorizontal",
+			"Automatic": "Automatisch",
 			"Left": "Links",
 			"Right": "Rechts",
 			"Middle": "Mitte",
