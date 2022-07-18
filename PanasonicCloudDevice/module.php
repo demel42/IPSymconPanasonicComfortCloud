@@ -56,7 +56,7 @@ class PanasonicCloudDevice extends IPSModule
         parent::MessageSink($timeStamp, $senderID, $message, $data);
 
         if ($message == IPS_KERNELMESSAGE && $data[0] == KR_READY) {
-            $this->OverwriteUpdateInterval();
+            $this->SetUpdateInterval();
         }
     }
 
@@ -197,7 +197,7 @@ class PanasonicCloudDevice extends IPSModule
         $this->AdjustActions();
 
         if (IPS_GetKernelRunlevel() == KR_READY) {
-            $this->OverwriteUpdateInterval();
+            $this->SetUpdateInterval();
         }
     }
 

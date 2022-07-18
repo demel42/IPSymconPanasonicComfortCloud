@@ -130,6 +130,9 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.6.2 @ 18.07.2022 14:54
+  - Fix: bei IPS-Neustart wurde der Aktualisierungs-Timer nicht gesetzt
+
 - 1.6.1 @ 16.07.2022 15:13
   - Neu: Variable 'AirflowDirection' existiert nicht mehr, Automatic-Modus wird über die Variablen 'AirflowVertical' und/oder 'AirflowHorizontal' eingestellt
 
