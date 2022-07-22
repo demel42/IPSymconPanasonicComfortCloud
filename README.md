@@ -130,6 +130,9 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.6.3 @ 22.07.2022 09:06
+  - mehr Debug: LogMessages dazu, um zu ergründen, warum der Timer initial nicht gesetzt ist
+
 - 1.6.2 @ 18.07.2022 14:54
   - Fix: bei IPS-Neustart wurde der Aktualisierungs-Timer nicht gesetzt
 

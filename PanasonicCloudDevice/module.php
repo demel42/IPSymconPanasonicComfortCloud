@@ -55,6 +55,8 @@ class PanasonicCloudDevice extends IPSModule
     {
         parent::MessageSink($timeStamp, $senderID, $message, $data);
 
+        $this->LogMessage(__FUNCTION__ . ': message=' . $message . ', data=' . print_r($data, true), KL_NOTIFY);
+
         if ($message == IPS_KERNELMESSAGE && $data[0] == KR_READY) {
             $this->SetUpdateInterval();
         }
@@ -196,6 +198,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $this->AdjustActions();
 
+        $this->LogMessage(__FUNCTION__ . ': runlevel=' . IPS_GetKernelRunlevel(), KL_NOTIFY);
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->SetUpdateInterval();
         }
@@ -319,12 +322,16 @@ class PanasonicCloudDevice extends IPSModule
 
     private function SetUpdateInterval(int $sec = null)
     {
+        $this->LogMessage(__FUNCTION__ . ': sec=' . $sec, KL_NOTIFY);
         if (is_null($sec)) {
             $sec = $this->ReadAttributeString('external_update_interval');
+            $this->LogMessage(__FUNCTION__ . ': external_update_interval=' . $sec, KL_NOTIFY);
             if ($sec == '') {
                 $sec = $this->ReadPropertyInteger('update_interval');
+                $this->LogMessage(__FUNCTION__ . ': update_interval=' . $sec, KL_NOTIFY);
             }
         }
+        $this->LogMessage(__FUNCTION__ . ': msec=' . $sec * 1000, KL_NOTIFY);
         $this->MaintainTimer('UpdateStatus', $sec * 1000);
     }
 
