@@ -130,6 +130,10 @@ PanasonicCloud.Temperature,
 
 ## 7. Versions-Historie
 
+- 1.6.4 @ 25.07.2022 08:39
+  - Protokollierung der Timer-Aktivitäten (1.6.3) ist nicht mehr erforderlich, daher wieder entfernt
+  - Fix: Soll-Temperatur als float (1.4.1) war nur unvollständig umgesetzt
+
 - 1.6.3 @ 22.07.2022 09:06
   - mehr Debug: LogMessages dazu, um zu ergründen, warum der Timer initial nicht gesetzt ist
 
