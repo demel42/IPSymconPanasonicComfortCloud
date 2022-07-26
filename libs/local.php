@@ -89,6 +89,11 @@ trait PanasonicCloudLocalLib
     public static $NANOE_MODE_MODE_G = 3;
     public static $NANOE_MODE_ALL = 4;
 
+    public static $DATA_MODE_DAY = 0;
+    public static $DATA_MODE_WEEK = 1;
+    public static $DATA_MODE_MONTH = 2;
+    public static $DATA_MODE_YEAR = 4;
+
     private function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
@@ -161,6 +166,8 @@ trait PanasonicCloudLocalLib
             ['Wert' => -272, 'Name' => '%.0f °C', 'Farbe' => -1],
         ];
         $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, '', 0, 0, 0, 0, 'Temperature', $associations, $reInstall);
+
+        $this->CreateVarProfile('PanasonicCloud.Energy', VARIABLETYPE_FLOAT, ' kWh', 0, 0, 0, 1, '', '', $reInstall);
     }
 
     public static $DEVICE_TYPE_AIR_CONDITIONER = 3;

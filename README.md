@@ -112,7 +112,8 @@ PanasonicCloud.NanoeMode,
 PanasonicCloud.OperationMode
 
 * Float<br>
-PanasonicCloud.Temperature,
+PanasonicCloud.Energy,
+PanasonicCloud.Temperature
 
 ## 6. Anhang
 
@@ -129,6 +130,11 @@ PanasonicCloud.Temperature,
 ### Quellen
 
 ## 7. Versions-Historie
+
+- 1.7 @ 26.07.2022 10:46
+  - Neu: optionale Protokollierung des Energieverbrauchs
+  - Neu: Anzeige der letzten Synchronisation des Gerätes mit der Panasonic-Comfort-Cloud
+    Variable 'letzte Änderung' entfällt
 
 - 1.6.4 @ 25.07.2022 08:39
   - Protokollierung der Timer-Aktivitäten (1.6.3) ist nicht mehr erforderlich, daher wieder entfernt

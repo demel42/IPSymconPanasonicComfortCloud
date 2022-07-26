@@ -34,6 +34,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $this->RegisterPropertyInteger('airflow_swing', self::$AIRFLOW_SWING_UD);
         $this->RegisterPropertyBoolean('with_nanoe', false);
+        $this->RegisterPropertyBoolean('with_energy', false);
 
         $this->RegisterPropertyInteger('update_interval', 60);
 
@@ -64,17 +65,19 @@ class PanasonicCloudDevice extends IPSModule
     {
         $r = [];
 
-        if ($oldInfo != []) {
-            if ($this->version2num($oldInfo) < $this->version2num('1.6')) {
-                $r[] = $this->Translate('Delete unused variable \'AirflowDirection\'');
-                $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowDirection_0\', \'PanasonicCloud.AirflowDirection_1\'');
-            }
+        if ($this->version2num($oldInfo) < $this->version2num('1.6')) {
+            $r[] = $this->Translate('Delete unused variable \'AirflowDirection\'');
+            $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowDirection_0\', \'PanasonicCloud.AirflowDirection_1\'');
+        }
 
-            if ($this->version2num($oldInfo) < $this->version2num('1.6.1')) {
-                $r[] = $this->Translate('Delete unused variable \'AirflowAutoMode\'');
-                $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowAutoMode_0\', \'PanasonicCloud.AirflowAutoMode_1\'');
-                $r[] = $this->Translate('Adjust variableprofile \'PanasonicCloud.AirflowVertical\', \'PanasonicCloud.AirflowHorizontal\'');
-            }
+        if ($this->version2num($oldInfo) < $this->version2num('1.6.1')) {
+            $r[] = $this->Translate('Delete unused variable \'AirflowAutoMode\'');
+            $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowAutoMode_0\', \'PanasonicCloud.AirflowAutoMode_1\'');
+            $r[] = $this->Translate('Adjust variableprofile \'PanasonicCloud.AirflowVertical\', \'PanasonicCloud.AirflowHorizontal\'');
+        }
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.7.1')) {
+            $r[] = $this->Translate('Delete unused variable \'LastChange\'');
         }
 
         return $r;
@@ -107,6 +110,10 @@ class PanasonicCloudDevice extends IPSModule
                 IPS_DeleteVariableProfile('PanasonicCloud.AirflowHorizontal');
             }
             $this->InstallVarProfiles(false);
+        }
+
+        if ($this->version2num($oldInfo) < $this->version2num('1.7.1')) {
+            $this->UnregisterVariable('LastChange');
         }
 
         return '';
@@ -172,8 +179,16 @@ class PanasonicCloudDevice extends IPSModule
         $with_nanoe = $this->ReadPropertyBoolean('with_nanoe');
         $this->MaintainVariable('NanoeMode', $this->Translate('nanoe X-function'), VARIABLETYPE_INTEGER, 'PanasonicCloud.NanoeMode', $vpos++, $with_nanoe);
 
+        $vpos = 20;
+        $with_energy = $this->ReadPropertyBoolean('with_energy');
+        $this->MaintainVariable('DailyEnergyConsumption', $this->Translate('Daily energy consumption'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Energy', $vpos++, $with_energy);
+        if ($with_energy) {
+            $this->SetVariableLogging('DailyEnergyConsumption', 1 /* Zähler */);
+        }
+
+        $vpos = 90;
+        $this->MaintainVariable('LastSync', $this->Translate('Last synchronisation'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
         $this->MaintainVariable('LastUpdate', $this->Translate('Last update'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
-        $this->MaintainVariable('LastChange', $this->Translate('Last change'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
 
         $module_disable = $this->ReadPropertyBoolean('module_disable');
         if ($module_disable) {
@@ -259,6 +274,16 @@ class PanasonicCloudDevice extends IPSModule
             'type'     => 'CheckBox',
             'name'     => 'with_nanoe',
             'caption'  => 'has nanoe™ X technology',
+        ];
+
+        $formElements[] = [
+            'type'    => 'CheckBox',
+            'name'    => 'with_energy',
+            'caption' => 'save daily energy consumption'
+        ];
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => ' ... by activating this switch, additional variables are created and logged as counters',
         ];
 
         $formElements[] = [
@@ -473,10 +498,29 @@ class PanasonicCloudDevice extends IPSModule
             }
         }
 
-        $this->SetValue('LastUpdate', $now);
-        if ($is_changed) {
-            $this->SetValue('LastChange', floor(intval($jdata['timestamp']) / 1000));
+        $this->SetValue('LastSync', floor(intval($jdata['timestamp']) / 1000));
+
+        $with_energy = $this->ReadPropertyBoolean('with_energy');
+        if ($with_energy) {
+            $sdata = [
+                'DataID'    => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+                'Function'  => 'GetDeviceHistory',
+                'Guid'      => $guid,
+                'DataMode'  => self::$DATA_MODE_DAY,
+                'Timestamp' => time(),
+            ];
+            $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
+            $data = $this->SendDataToParent(json_encode($sdata));
+            $jdata = json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            $energyConsumption = $this->GetArrayElem($jdata, 'energyConsumption', 0, $fnd);
+            if ($fnd) {
+                $this->SendDebug(__FUNCTION__, '... energyConsumption=' . $energyConsumption, 0);
+                $this->SaveValue('DailyEnergyConsumption', (float) $energyConsumption, $is_changed);
+            }
         }
+
+        $this->SetValue('LastUpdate', $now);
 
         $optNames = [
             'autoMode',

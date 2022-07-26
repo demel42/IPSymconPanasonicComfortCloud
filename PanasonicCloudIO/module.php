@@ -19,7 +19,9 @@ class PanasonicCloudIO extends IPSModule
     private static $device_status_endpoint = '/deviceStatus/';
     private static $device_status_now_endpoint = '/deviceStatus/now/';
 
-    private static $device_control_endpoint = '/deviceStatus/control//';
+    private static $device_control_endpoint = '/deviceStatus/control/';
+
+    private static $device_history_endpoint = '/deviceHistoryData';
 
     private static $x_app_type = 1;
     private static $x_app_version = '1.15.1';
@@ -270,6 +272,9 @@ class PanasonicCloudIO extends IPSModule
                     break;
                 case 'ControlDevice':
                     $ret = $this->ControlDevice($jdata['Guid'], $jdata['Parameters']);
+                    break;
+                case 'GetDeviceHistory':
+                    $ret = $this->GetDeviceHistory($jdata['Guid'], (int) $jdata['DataMode'], (int) $jdata['Timestamp']);
                     break;
                 default:
                     $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
@@ -532,6 +537,34 @@ class PanasonicCloudIO extends IPSModule
 
         $header_add = [
             'X-User-Authorization' => $access_token,
+        ];
+
+        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add);
+        if ($jdata == false) {
+            return false;
+        }
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        return json_encode($jdata);
+    }
+
+    private function GetDeviceHistory(string $guid, int $dataMode, int $tstamp)
+    {
+        $access_token = $this->GetAccessToken();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $url = self::$device_history_endpoint;
+
+        $header_add = [
+            'X-User-Authorization' => $access_token,
+        ];
+
+        $postfields = [
+            'deviceGuid' => $guid,
+            'dataMode'   => $dataMode,
+            'date'       => date('Ymd', $tstamp),
+            'osTimezone' => date('P', $tstamp),
         ];
 
         $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add);

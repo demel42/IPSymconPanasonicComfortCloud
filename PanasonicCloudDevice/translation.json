@@ -12,6 +12,7 @@
 				"Unbenutzte Variablenprofile 'PanasonicCloud.AirflowAutoMode_0', 'PanasonicCloud.AirflowAutoMode_1' löschen",
 			"Adjust variableprofile 'PanasonicCloud.AirflowVertical', 'PanasonicCloud.AirflowHorizontal'":
 				"Variablenprofile 'PanasonicCloud.AirflowVertical', 'PanasonicCloud.AirflowHorizontal' anpassen",
+			"Delete unused variable 'LastChange'": "Unbenutzte Variable 'LastChange' löschen",
 
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",
@@ -25,23 +26,29 @@
 			"vertical and horizontal": "vertikal und horizontal",
 			"has nanoe™ X technology": "hat nanoe™ X-Technologie",
 
+			"save daily energy consumption": "Täglichen Energieverbrauch speichern",
+			" ... by activating this switch, additional variables are created and logged as counters":
+				" ... durch Aktivierung dieses Schalters werden zusätzliche Variablen erstellt und als Zähler geloggt",
+
 			"Update interval": "Aktualisierungsintervall",
 			"Seconds": "Sekunden",
 
 			"__variables__": "",
+			"Actual temperature": "Temperatur",
+			"Airflow automatic mode": "Luftstrom-Automatik-Modus",
+			"Daily energy consumption": "Täglicher Energieverbrauch",
+			"Eco mode": "Öko-Modus",
+			"Fan speed": "Lüftergeschwindigkeit",
+			"Horizontal direction": "horizontale Ausrichtung",
+			"Last change": "Letzte Änderung",
+			"Last synchronisation": "Letzte Synchronisierung",
+			"Last update": "Letzte Aktualisierung",
+			"nanoe X-function": "nanoe X-Funktion",
 			"Operate": "Betrieb",
 			"Operation mode": "Betriebsart",
-			"Eco mode": "Öko-Modus",
-			"Target temperature": "Soll-Temperatur",
-			"Actual temperature": "Temperatur",
 			"Outside temperature": "Außentemperatur",
-			"Fan speed": "Lüftergeschwindigkeit",
-			"Airflow automatic mode": "Luftstrom-Automatik-Modus",
+			"Target temperature": "Soll-Temperatur",
 			"Vertical direction": "vertikale Ausrichtung",
-			"Horizontal direction": "horizontale Ausrichtung",
-			"nanoe X-function": "nanoe X-Funktion",
-			"Last update": "Letzte Aktualisierung",
-			"Last change": "Letzte Änderung",
 
 			"__actions__": "",
 			"Update status": "Aktualisiere Status",
