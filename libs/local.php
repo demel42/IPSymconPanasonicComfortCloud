@@ -53,7 +53,7 @@ trait PanasonicCloudLocalLib
     public static $OPERATION_MODE_HEAT = 3;
     public static $OPERATION_MODE_FAN = 4;
 
-    public static $ECO_MODE_DISABLED = 0;
+    public static $ECO_MODE_AUTO = 0;
     public static $ECO_MODE_POWERFUL = 1;
     public static $ECO_MODE_QUIET = 2;
 
@@ -116,7 +116,7 @@ trait PanasonicCloudLocalLib
         $this->CreateVarProfile('PanasonicCloud.OperationMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
-            ['Wert' => self::$ECO_MODE_DISABLED, 'Name' => $this->Translate('Disabled'), 'Farbe' => -1],
+            ['Wert' => self::$ECO_MODE_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
             ['Wert' => self::$ECO_MODE_POWERFUL, 'Name' => $this->Translate('Powerful'), 'Farbe' => -1],
             ['Wert' => self::$ECO_MODE_QUIET, 'Name' => $this->Translate('Quiet'), 'Farbe' => -1],
         ];
@@ -161,11 +161,7 @@ trait PanasonicCloudLocalLib
         ];
         $this->CreateVarProfile('PanasonicCloud.NanoeMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
-        $associations = [
-            ['Wert' => -273.15, 'Name' => '-', 'Farbe' => -1],
-            ['Wert' => -272, 'Name' => '%.0f °C', 'Farbe' => -1],
-        ];
-        $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, '', 0, 0, 0, 0, 'Temperature', $associations, $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, '', 16, 30, 0.5, 1, 'Temperature', '', $reInstall);
 
         $this->CreateVarProfile('PanasonicCloud.Energy', VARIABLETYPE_FLOAT, ' kWh', 0, 0, 0, 1, '', '', $reInstall);
     }

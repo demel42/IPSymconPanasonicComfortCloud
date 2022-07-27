@@ -67,17 +67,18 @@ class PanasonicCloudDevice extends IPSModule
 
         if ($this->version2num($oldInfo) < $this->version2num('1.6')) {
             $r[] = $this->Translate('Delete unused variable \'AirflowDirection\'');
-            $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowDirection_0\', \'PanasonicCloud.AirflowDirection_1\'');
+            $r[] = $this->Translate('Delete unused variableprofiles \'PanasonicCloud.AirflowDirection_0\', \'PanasonicCloud.AirflowDirection_1\'');
         }
 
         if ($this->version2num($oldInfo) < $this->version2num('1.6.1')) {
             $r[] = $this->Translate('Delete unused variable \'AirflowAutoMode\'');
             $r[] = $this->Translate('Delete unused variableprofile \'PanasonicCloud.AirflowAutoMode_0\', \'PanasonicCloud.AirflowAutoMode_1\'');
-            $r[] = $this->Translate('Adjust variableprofile \'PanasonicCloud.AirflowVertical\', \'PanasonicCloud.AirflowHorizontal\'');
+            $r[] = $this->Translate('Adjust variableprofiles \'PanasonicCloud.AirflowVertical\', \'PanasonicCloud.AirflowHorizontal\'');
         }
 
         if ($this->version2num($oldInfo) < $this->version2num('1.7.1')) {
             $r[] = $this->Translate('Delete unused variable \'LastChange\'');
+            $r[] = $this->Translate('Adjust variableprofiles \'PanasonicCloud.Temperature\', \'PanasonicCloud.EcoMode\'');
         }
 
         return $r;
@@ -114,6 +115,13 @@ class PanasonicCloudDevice extends IPSModule
 
         if ($this->version2num($oldInfo) < $this->version2num('1.7.1')) {
             $this->UnregisterVariable('LastChange');
+            if (IPS_VariableProfileExists('PanasonicCloud.Temperature')) {
+                IPS_DeleteVariableProfile('PanasonicCloud.Temperature');
+            }
+            if (IPS_VariableProfileExists('PanasonicCloud.EcoMode')) {
+                IPS_DeleteVariableProfile('PanasonicCloud.EcoMode');
+            }
+            $this->InstallVarProfiles(false);
         }
 
         return '';
@@ -636,7 +644,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $chg |= $this->AdjustAction('EcoMode', $operate);
 
-        $b = $operate && $ecoMode == self::$ECO_MODE_DISABLED;
+        $b = $operate && $ecoMode == self::$ECO_MODE_AUTO;
         $chg |= $this->AdjustAction('FanSpeed', $b);
 
         $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
@@ -728,7 +736,7 @@ class PanasonicCloudDevice extends IPSModule
                 self::$ECO_MODE_POWERFUL => 'powerfulMode',
                 self::$ECO_MODE_QUIET    => 'quietMode',
             ];
-            if (isset($map[$value]) && $options[$map[$value]] != 1) {
+            if (isset($map[$value]) == false) {
                 $s = $this->CheckVarProfile4Value('PanasonicCloud.EcoMode', $value);
                 $this->SendDebug(__FUNCTION__, 'mode ' . $value . '(' . $s . ') is not allowed on this device/in this context', 0);
                 return false;
