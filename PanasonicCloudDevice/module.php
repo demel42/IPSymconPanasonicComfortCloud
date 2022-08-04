@@ -414,6 +414,33 @@ class PanasonicCloudDevice extends IPSModule
 
         $now = time();
 
+        $optNames = [
+            'autoMode',
+            'coolMode',
+            'dryMode',
+            'fanMode',
+            'heatMode',
+            'powerfulMode',
+            'quietMode',
+
+            'nanoe',
+
+            'airSwingLR',
+            'autoSwingUD',
+            'fanDirectionMode',
+            'fanSpeedMode',
+            'nanoeStandAlone',
+        ];
+        $options = [];
+        foreach ($optNames as $name) {
+            $options[$name] = isset($jdata[$name]) ? $jdata[$name] : '';
+        }
+        $s = json_encode($options);
+        $this->SendDebug(__FUNCTION__, 'options=' . print_r($options, true), 0);
+        if ($this->ReadAttributeString('device_options') != $s) {
+            $this->WriteAttributeString('device_options', $s);
+        }
+
         $is_changed = false;
         $fnd = false;
 
@@ -529,33 +556,6 @@ class PanasonicCloudDevice extends IPSModule
         }
 
         $this->SetValue('LastUpdate', $now);
-
-        $optNames = [
-            'autoMode',
-            'coolMode',
-            'dryMode',
-            'fanMode',
-            'heatMode',
-            'powerfulMode',
-            'quietMode',
-
-            'nanoe',
-
-            'airSwingLR',
-            'autoSwingUD',
-            'fanDirectionMode',
-            'fanSpeedMode',
-            'nanoeStandAlone',
-        ];
-        $options = [];
-        foreach ($optNames as $name) {
-            $options[$name] = isset($jdata[$name]) ? $jdata[$name] : '';
-        }
-        $s = json_encode($options);
-        $this->SendDebug(__FUNCTION__, 'options=' . print_r($options, true), 0);
-        if ($this->ReadAttributeString('device_options') != $s) {
-            $this->WriteAttributeString('device_options', $s);
-        }
 
         $this->AdjustActions();
 
@@ -736,7 +736,7 @@ class PanasonicCloudDevice extends IPSModule
                 self::$ECO_MODE_POWERFUL => 'powerfulMode',
                 self::$ECO_MODE_QUIET    => 'quietMode',
             ];
-            if (isset($map[$value]) == false) {
+            if (isset($map[$value]) && $options[$map[$value]] != 1) {
                 $s = $this->CheckVarProfile4Value('PanasonicCloud.EcoMode', $value);
                 $this->SendDebug(__FUNCTION__, 'mode ' . $value . '(' . $s . ') is not allowed on this device/in this context', 0);
                 return false;
@@ -859,8 +859,7 @@ class PanasonicCloudDevice extends IPSModule
         }
 
         $options = json_decode($this->ReadAttributeString('device_options'), true);
-        $with_nanoe = isset($options['nanoe']) ? $options['nanoe'] : true;
-        if ($with_nanoe == false) {
+        if (isset($map['nanoe']) && $options[$map['nanoe']] != 1) {
             $this->SendDebug(__FUNCTION__, 'nanoe X-technology is not avail on this device', 0);
             return false;
         }
