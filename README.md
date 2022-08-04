@@ -132,7 +132,8 @@ PanasonicCloud.Temperature
 ## 7. Versions-Historie
 
 - 1.7.2 @ 04.08.2022 10:44
-  - Fix: Variablenaktionen "OperateMode", "EcoMode" und "NanoeMode" korrigiert (Fehler aus 1.7)
+  - Fix: Variablenaktionen "OperateMode", "EcoMode" und "NanoeMode" korrigiert
+    Folgefehler aus Version 1.7 (Auswertung Energiedaten)
 
 - 1.7.1 @ 27.07.2022 09:57
   - Fix: Variablenprofil "PanasonicCloud.EcoMode" und "PanasonicCloud.Temperature" korrigiert
