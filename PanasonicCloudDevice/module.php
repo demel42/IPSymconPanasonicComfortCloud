@@ -533,7 +533,9 @@ class PanasonicCloudDevice extends IPSModule
             }
         }
 
-        $this->SetValue('LastSync', floor(intval($jdata['timestamp']) / 1000));
+        if (isset($jdata['timestamp'])) {
+            $this->SetValue('LastSync', floor(intval($jdata['timestamp']) / 1000));
+        }
 
         $with_energy = $this->ReadPropertyBoolean('with_energy');
         if ($with_energy) {

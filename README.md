@@ -131,6 +131,11 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.7.3 @ 15.08.2022 13:11
+  - Fix: Absicherung des Zugriffs auf ein Datenfeld
+  - update submodule CommonStubs
+    Fix: in den Konfiguratoren war es nicht möglich, eine Instanz direkt unter dem Wurzelverzeichnis "IP-Symcon" zu erzeugen
+
 - 1.7.2 @ 04.08.2022 10:44
   - Fix: Variablenaktionen "OperateMode", "EcoMode" und "NanoeMode" korrigiert
     Folgefehler aus Version 1.7 (Auswertung Energiedaten)
