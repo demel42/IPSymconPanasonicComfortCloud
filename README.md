@@ -35,8 +35,7 @@ Alternativ kann das Modul über [Module Control](https://www.symcon.de/service/d
 
 #### Panasonic Comfort Cloud I/O
 In IP-Symcon nun unterhalb von _I/O Instanzen_ die Funktion _Instanz hinzufügen_ auswählen und als Hersteller _Panasonic_ angeben.
-In der IO-Instanz muss nur der Hostname/die IP-Adresse des WebControl angegeben werden.
-Mittels _Zugriff prüfen_ kann getestet werden (Hinweis: dauert ein paar Sekunden)
+Benutzerkennung und Passwort der PanasonicCloud angeben.
 
 #### Panasonic Comfort Cloud Konfigurator
 In IP-Symcon nun unterhalb von _Konfigurator Instanzen_ die Funktion _Instanz hinzufügen_ auswählen und als Hersteller _Panasonic_ angeben.
@@ -130,6 +129,9 @@ PanasonicCloud.Temperature
 ### Quellen
 
 ## 7. Versions-Historie
+
+- 1.7.4 @ 19.08.2022 16:48
+  - Fehlerhafter Text im README korrigiert
 
 - 1.7.3 @ 15.08.2022 13:11
   - Fix: Absicherung des Zugriffs auf ein Datenfeld
