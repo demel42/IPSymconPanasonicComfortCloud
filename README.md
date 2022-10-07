@@ -130,6 +130,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.7.5 @ 07.10.2022 13:59
+  - update submodule CommonStubs
+    Fix: Update-Prüfung wieder funktionsfähig
+
 - 1.7.4 @ 19.08.2022 16:48
   - Fehlerhafter Text im README korrigiert
 
