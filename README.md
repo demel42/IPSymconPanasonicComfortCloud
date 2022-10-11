@@ -130,6 +130,11 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.8 @ 11.10.2022 08:15
+  - kleine Änderung in der Panasonic-Cloud-API
+  - update submodule CommonStubs
+    Fix: Fehler in SetVariableLogging()
+
 - 1.7.5 @ 07.10.2022 13:59
   - update submodule CommonStubs
     Fix: Update-Prüfung wieder funktionsfähig

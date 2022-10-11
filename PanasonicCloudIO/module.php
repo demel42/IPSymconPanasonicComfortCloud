@@ -24,7 +24,7 @@ class PanasonicCloudIO extends IPSModule
     private static $device_history_endpoint = '/deviceHistoryData';
 
     private static $x_app_type = 1;
-    private static $x_app_version = '1.15.1';
+    private static $x_app_version = '1.16.0';
     private static $user_agent = 'G-RAC';
 
     private static $login_interval = 10800000;
