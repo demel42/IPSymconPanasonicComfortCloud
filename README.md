@@ -131,7 +131,7 @@ PanasonicCloud.Temperature
 ## 7. Versions-Historie
 
 - 1.8 @ 11.10.2022 08:15
-  - kleine Änderung in der Panasonic-Cloud-API
+  - Änderung in der Panasonic-Cloud-API nachgezogen, Login war nicht mehr möglich
   - update submodule CommonStubs
     Fix: Fehler in SetVariableLogging()
 
