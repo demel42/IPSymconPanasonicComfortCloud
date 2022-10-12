@@ -130,6 +130,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.8.1 @ 12.10.2022 14:44
+  - Konfigurator betrachtet nun nur noch Geräte, die entweder noch nicht angelegt wurden oder mit dem gleichen I/O verbunden sind
+  - update submodule CommonStubs
+
 - 1.8 @ 11.10.2022 08:15
   - Änderung in der Panasonic-Cloud-API nachgezogen, Login war nicht mehr möglich
   - update submodule CommonStubs

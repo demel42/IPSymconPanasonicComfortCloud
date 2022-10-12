@@ -107,6 +107,11 @@ class PanasonicCloudConfig extends IPSModule
                                 break;
                             }
                         }
+
+                        if ($instanceID && IPS_GetInstance($instanceID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
+                            continue;
+                        }
+
                         $entry = [
                             'instanceID'      => $instanceID,
                             'name'            => $groupName . ' - ' . $deviceName,
@@ -140,6 +145,10 @@ class PanasonicCloudConfig extends IPSModule
                 }
             }
             if ($fnd) {
+                continue;
+            }
+
+            if (IPS_GetInstance($instID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
                 continue;
             }
 
