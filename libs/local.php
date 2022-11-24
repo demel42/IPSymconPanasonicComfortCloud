@@ -70,6 +70,7 @@ trait PanasonicCloudLocalLib
     public static $AIRFLOW_VERTICAL_MID = 2;
     public static $AIRFLOW_VERTICAL_UP_MID = 3;
     public static $AIRFLOW_VERTICAL_DOWN_MID = 4;
+    public static $AIRFLOW_VERTICAL_IN_MOTION = 5;
 
     public static $AIRFLOW_HORIZONTAL_AUTO = -1;
     public static $AIRFLOW_HORIZONTAL_RIGHT = 0;
@@ -139,6 +140,7 @@ trait PanasonicCloudLocalLib
             ['Wert' => self::$AIRFLOW_VERTICAL_MID, 'Name' => $this->Translate('Middle'), 'Farbe' => -1],
             ['Wert' => self::$AIRFLOW_VERTICAL_UP_MID, 'Name' => $this->Translate('Up middle'), 'Farbe' => -1],
             ['Wert' => self::$AIRFLOW_VERTICAL_DOWN_MID, 'Name' => $this->Translate('Down middle'), 'Farbe' => -1],
+            ['Wert' => self::$AIRFLOW_VERTICAL_IN_MOTION, 'Name' => $this->Translate('In motion'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('PanasonicCloud.AirflowVertical', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 

@@ -435,6 +435,11 @@ class PanasonicCloudDevice extends IPSModule
         foreach ($optNames as $name) {
             $options[$name] = isset($jdata[$name]) ? $jdata[$name] : '';
         }
+
+        if ($options['nanoeStandAlone'] == 1) {
+            $options['fanMode'] = 1;
+        }
+
         $s = json_encode($options);
         $this->SendDebug(__FUNCTION__, 'options=' . print_r($options, true), 0);
         if ($this->ReadAttributeString('device_options') != $s) {
@@ -723,6 +728,12 @@ class PanasonicCloudDevice extends IPSModule
             'operationMode' => $value,
         ];
 
+        if ($value == self::$OPERATION_MODE_FAN && $options['nanoeStandAlone'] == 1) {
+            $this->SendDebug(__FUNCTION__, 'add nanoeStandAlone mode', 0);
+
+            $parameters['nanoe'] = self::$NANOE_MODE_ON;
+        }
+
         return $this->ControlDevice(__FUNCTION__, $parameters);
     }
 
@@ -863,6 +874,12 @@ class PanasonicCloudDevice extends IPSModule
         $options = json_decode($this->ReadAttributeString('device_options'), true);
         if (isset($map['nanoe']) && $options[$map['nanoe']] != 1) {
             $this->SendDebug(__FUNCTION__, 'nanoe X-technology is not avail on this device', 0);
+            return false;
+        }
+
+        $mode = $this->GetValue('OperationMode');
+        if ($mode == self::$OPERATION_MODE_FAN && $value == self::$NANOE_MODE_OFF) {
+            $this->SendDebug(__FUNCTION__, 'fan mode requires active nanoe X', 0);
             return false;
         }
 
