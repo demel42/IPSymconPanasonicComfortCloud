@@ -26,6 +26,7 @@ class PanasonicCloudConfig extends IPSModule
         $this->RegisterPropertyInteger('ImportCategoryID', 0);
 
         $this->RegisterAttributeString('UpdateInfo', '');
+        $this->RegisterAttributeString('DataCache', '');
 
         $this->InstallVarProfiles(false);
 
@@ -54,6 +55,8 @@ class PanasonicCloudConfig extends IPSModule
             return;
         }
 
+        $this->SetupDataCache(24 * 60 * 60);
+
         $this->MaintainStatus(IS_ACTIVE);
     }
 
@@ -73,17 +76,26 @@ class PanasonicCloudConfig extends IPSModule
 
         $catID = $this->ReadPropertyInteger('ImportCategoryID');
 
-        // an PanasonicCloudIO
-        $sdata = [
-            'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
-            'Function' => 'GetGroups'
-        ];
-        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
-        $data = $this->SendDataToParent(json_encode($sdata));
-        $groups = $data != '' ? json_decode($data, true) : '';
-        $this->SendDebug(__FUNCTION__, 'groups=' . print_r($groups, true), 0);
+        $dataCache = $this->ReadDataCache();
+        if (isset($dataCache['data']['groups'])) {
+            $groups = $dataCache['data']['groups'];
+            $this->SendDebug(__FUNCTION__, 'groups (from cache)=' . print_r($groups, true), 0);
+        } else {
+            $sdata = [
+                'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}', // an PanasonicCloudIO
+                'CallerID' => $this->InstanceID,
+                'Function' => 'GetGroups'
+            ];
+            $data = $this->SendDataToParent(json_encode($sdata));
+            $groups = @json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'groups=' . print_r($groups, true), 0);
+            if (is_array($groups)) {
+                $dataCache['data']['groups'] = $groups;
+            }
+            $this->WriteDataCache($dataCache, time());
+        }
 
-        $guid = '{A972DA17-4989-9CAD-2680-0CB492645050}';
+        $guid = '{A972DA17-4989-9CAD-2680-0CB492645050}'; // PanasonicCloudDevice
         $instIDs = IPS_GetInstanceListByModuleID($guid);
 
         if (is_array($groups)) {
@@ -102,7 +114,7 @@ class PanasonicCloudConfig extends IPSModule
                         $instanceID = 0;
                         foreach ($instIDs as $instID) {
                             if (IPS_GetProperty($instID, 'guid') == $deviceGuid) {
-                                $this->SendDebug(__FUNCTION__, 'device found: ' . IPS_GetName($instID) . ' (' . $instID . ')', 0);
+                                $this->SendDebug(__FUNCTION__, 'instance found: ' . IPS_GetName($instID) . ' (' . $instID . ')', 0);
                                 $instanceID = $instID;
                                 break;
                             }
@@ -218,7 +230,8 @@ class PanasonicCloudConfig extends IPSModule
                     'width'   => '350px'
                 ],
             ],
-            'values' => $entries,
+            'values'            => $entries,
+            'discoveryInterval' => 60 * 60 * 24,
         ];
 
         return $formElements;
@@ -236,6 +249,8 @@ class PanasonicCloudConfig extends IPSModule
 
             return $formActions;
         }
+
+        $formActions[] = $this->GetRefreshDataCacheFormAction();
 
         $formActions[] = $this->GetInformationFormAction();
         $formActions[] = $this->GetReferencesFormAction();

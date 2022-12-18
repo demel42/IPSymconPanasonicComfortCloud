@@ -404,6 +404,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $sdata = [
             'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+            'CallerID' => $this->InstanceID,
             'Function' => 'GetDeviceStatusNow',
             'Guid'     => $guid,
         ];
@@ -546,6 +547,7 @@ class PanasonicCloudDevice extends IPSModule
         if ($with_energy) {
             $sdata = [
                 'DataID'    => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+                'CallerID'  => $this->InstanceID,
                 'Function'  => 'GetDeviceHistory',
                 'Guid'      => $guid,
                 'DataMode'  => self::$DATA_MODE_DAY,
@@ -907,6 +909,7 @@ class PanasonicCloudDevice extends IPSModule
 
         $sdata = [
             'DataID'     => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+            'CallerID'   => $this->InstanceID,
             'Function'   => 'ControlDevice',
             'Guid'       => $guid,
             'Parameters' => json_encode($parameters),
