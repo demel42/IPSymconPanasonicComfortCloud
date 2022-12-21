@@ -130,6 +130,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.10.1 @ 21.12.2022 09:38
+  - Verbesserung: Text zum Datencache verbessert und unter dem Konfigurator positioniert
+  - update submodule CommonStubs
+
 - 1.10 @ 29.11.2022 18:23
   - Neu: Führen einer Statistik der API-Calls im IO-Modul, Anzeige als Popup im Experten-Bereich
   - Neu: Verwendung der Option 'discoveryInterval' im Konfigurator (ab 6.3) zur Reduzierung der API-Calls: nur noch ein Discovery/Tag

@@ -205,10 +205,9 @@ class PanasonicCloudConfig extends IPSModule
             'name'     => 'devices',
             'caption'  => 'Devices',
             'rowCount' => count($entries),
-
-            'add'     => false,
-            'delete'  => false,
-            'columns' => [
+            'add'      => false,
+            'delete'   => false,
+            'columns'  => [
                 [
                     'caption' => 'Name',
                     'name'    => 'name',
@@ -233,6 +232,7 @@ class PanasonicCloudConfig extends IPSModule
             'values'            => $entries,
             'discoveryInterval' => 60 * 60 * 24,
         ];
+        $formElements[] = $this->GetRefreshDataCacheFormAction();
 
         return $formElements;
     }
@@ -249,8 +249,6 @@ class PanasonicCloudConfig extends IPSModule
 
             return $formActions;
         }
-
-        $formActions[] = $this->GetRefreshDataCacheFormAction();
 
         $formActions[] = $this->GetInformationFormAction();
         $formActions[] = $this->GetReferencesFormAction();
