@@ -130,6 +130,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.10.2 @ 11.01.2023 15:44
+  - Fix: Handling des Datencache abgesichert
+  - update submodule CommonStubs
+
 - 1.10.1 @ 21.12.2022 09:38
   - Verbesserung: Text zum Datencache verbessert und unter dem Konfigurator positioniert
   - update submodule CommonStubs
