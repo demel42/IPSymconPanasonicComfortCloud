@@ -24,7 +24,7 @@ class PanasonicCloudIO extends IPSModule
     private static $device_history_endpoint = '/deviceHistoryData';
 
     private static $x_app_type = 1;
-    private static $x_app_version = '1.16.0';
+    private static $x_app_version = '1.19.0';
     private static $user_agent = 'G-RAC';
 
     private static $login_interval = 10800000;
@@ -372,9 +372,11 @@ class PanasonicCloudIO extends IPSModule
             if ($httpcode == 401) {
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
+                $this->WriteAttributeString('AccessToken', '');
             } elseif ($httpcode == 403) {
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
+                $this->WriteAttributeString('AccessToken', '');
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
                 $statuscode = self::$IS_SERVERERROR;
                 $err = 'got http-code ' . $httpcode . ' (server error)';
@@ -479,10 +481,17 @@ class PanasonicCloudIO extends IPSModule
             return;
         }
 
+        $r = $this->GetGroups();
+        if ($r == false) {
+            $msg = $this->Translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
+            $this->PopupMessage($msg);
+            return;
+        }
+
         $msg = $this->Translate('valid account-data') . PHP_EOL;
         $msg .= PHP_EOL;
 
-        $groups = json_decode($this->GetGroups(), true);
+        $groups = json_decode($r, true);
         if (is_array($groups)) {
             foreach ($groups as $group) {
                 $this->SendDebug(__FUNCTION__, 'group=' . print_r($group, true), 0);

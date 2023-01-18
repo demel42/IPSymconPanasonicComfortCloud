@@ -130,6 +130,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.11 @ 18.01.2023 09:35
+  - Neu: Änderung in der Panasonic-Cloud-API nachgezogen, Login war nicht mehr möglich
+  - Fix: Absicherung von "Zugriff testen" gegen fehlgeschlagenen Abruf
+
 - 1.10.2 @ 11.01.2023 15:44
   - Fix: Handling des Datencache abgesichert
   - update submodule CommonStubs
