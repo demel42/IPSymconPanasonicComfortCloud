@@ -216,17 +216,17 @@ class PanasonicCloudConfig extends IPSModule
                 [
                     'caption' => 'Type',
                     'name'    => 'type',
-                    'width'   => '200px'
+                    'width'   => '150px'
                 ],
                 [
                     'caption' => 'Model',
                     'name'    => 'model',
-                    'width'   => '300px'
+                    'width'   => '150px'
                 ],
                 [
                     'caption' => 'Device-ID',
                     'name'    => 'guid',
-                    'width'   => '350px'
+                    'width'   => '250px'
                 ],
             ],
             'values'            => $entries,

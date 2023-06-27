@@ -130,6 +130,11 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.11.1 @ 27.06.2023 12:10
+  - Fix: Spaltenbreiten im Konfigurator optimiert
+  - update submodule CommonStubs
+    - Absicherung bei Zugriff auf Objekte und Inhalte
+
 - 1.11 @ 18.01.2023 09:35
   - Neu: Änderung in der Panasonic-Cloud-API nachgezogen, Login war nicht mehr möglich
   - Fix: Absicherung von "Zugriff testen" gegen fehlgeschlagenen Abruf
