@@ -134,6 +134,7 @@ PanasonicCloud.Temperature
   - Fix: Spaltenbreiten im Konfigurator optimiert
   - update submodule CommonStubs
     - Absicherung bei Zugriff auf Objekte und Inhalte
+	- Vorbereitung auf IPS 7 / php 8
 
 - 1.11 @ 18.01.2023 09:35
   - Neu: Änderung in der Panasonic-Cloud-API nachgezogen, Login war nicht mehr möglich
