@@ -130,11 +130,11 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
-- 1.11.1 @ 27.06.2023 12:10
+- 1.12 @ 29.06.2023 08:38
   - Fix: Spaltenbreiten im Konfigurator optimiert
   - update submodule CommonStubs
     - Absicherung bei Zugriff auf Objekte und Inhalte
-	- Vorbereitung auf IPS 7 / php 8
+	- Vorbereitung auf IPS 7 / PHP 8.2
 
 - 1.11 @ 18.01.2023 09:35
   - Neu: Änderung in der Panasonic-Cloud-API nachgezogen, Login war nicht mehr möglich
