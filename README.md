@@ -130,8 +130,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
-- 1.12 @ 29.06.2023 08:38
+- 1.12 @ 05.07.2023 11:56
   - Fix: Spaltenbreiten im Konfigurator optimiert
+  - Neu: Schalter, um die Meldung eines inaktiven Gateway zu steuern
   - update submodule CommonStubs
     - Absicherung bei Zugriff auf Objekte und Inhalte
 	- Vorbereitung auf IPS 7 / PHP 8.2
