@@ -130,6 +130,11 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.13 @ 15.09.2023 10:14
+  - Fix: Änderungen in der API der Panasonic COmfort Cloud nachgeführt
+  - Neu: Ermittlung von Speicherbedarf und Laufzeit (aktuell und für 31 Tage) und Anzeige im Panel "Information"
+  - update submodule CommonStubs
+
 - 1.12 @ 05.07.2023 11:56
   - Fix: Spaltenbreiten im Konfigurator optimiert
   - Neu: Schalter, um die Meldung eines inaktiven Gateway zu steuern

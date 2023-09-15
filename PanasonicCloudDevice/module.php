@@ -10,13 +10,16 @@ class PanasonicCloudDevice extends IPSModule
     use PanasonicCloud\StubsCommonLib;
     use PanasonicCloudLocalLib;
 
-    private $ModuleDir;
-
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
 
-        $this->ModuleDir = __DIR__;
+        $this->CommonContruct(__DIR__);
+    }
+
+    public function __destruct()
+    {
+        $this->CommonDestruct();
     }
 
     public static $AIRFLOW_SWING_UD = 0;
@@ -43,7 +46,8 @@ class PanasonicCloudDevice extends IPSModule
         $this->RegisterAttributeString('device_options', '');
         $this->RegisterAttributeString('external_update_interval', '');
 
-        $this->RegisterAttributeString('UpdateInfo', '');
+        $this->RegisterAttributeString('UpdateInfo', json_encode([]));
+        $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
         $this->InstallVarProfiles(false);
 

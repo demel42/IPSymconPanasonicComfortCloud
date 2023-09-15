@@ -12,7 +12,7 @@ class PanasonicCloudIO extends IPSModule
 
     private static $base_url = 'https://accsmart.panasonic.com';
 
-    private static $auth_endpoint = '/auth/login/';
+    private static $auth_endpoint = '/auth/login';
     private static $group_endpoint = '/device/group';
 
     // +guid
@@ -23,23 +23,29 @@ class PanasonicCloudIO extends IPSModule
 
     private static $device_history_endpoint = '/deviceHistoryData';
 
-    private static $x_app_type = 1;
+    private static $x_app_type = '1';
     private static $x_app_version = '1.19.0';
+    private static $x_app_name = 'Comfort Cloud';
+    private static $x_cfc_api_key = '0';
     private static $user_agent = 'G-RAC';
 
     private static $login_interval = 10800000;
 
     private static $semaphoreTM = 5 * 1000;
 
-    private $ModuleDir;
     private $SemaphoreID;
 
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
 
-        $this->ModuleDir = __DIR__;
+        $this->CommonContruct(__DIR__);
         $this->SemaphoreID = __CLASS__ . '_' . $InstanceID;
+    }
+
+    public function __destruct()
+    {
+        $this->CommonDestruct();
     }
 
     public function Create()
@@ -51,8 +57,9 @@ class PanasonicCloudIO extends IPSModule
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
 
-        $this->RegisterAttributeString('UpdateInfo', '');
+        $this->RegisterAttributeString('UpdateInfo', json_encode([]));
         $this->RegisterAttributeString('ApiCallStats', json_encode([]));
+        $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
         $this->RegisterAttributeString('AccessToken', '');
 
@@ -318,11 +325,14 @@ class PanasonicCloudIO extends IPSModule
         }
 
         $header_base = [
-            'Accept'            => 'application/json; charset=utf-8',
-            'Content-Type'      => 'application/json; charset=utf-8',
-            'User-Agent'        => self::$user_agent,
-            'X-APP-TYPE'        => self::$x_app_type,
-            'X-APP-VERSION'     => self::$x_app_version,
+            'Accept'          => 'application/json; charset=utf-8',
+            'Content-Type'    => 'application/json; charset=utf-8',
+            'User-Agent'      => self::$user_agent,
+            'X-APP-TYPE'      => self::$x_app_type,
+            'X-APP-VERSION'   => self::$x_app_version,
+            'X-APP-NAME'      => self::$x_app_name,
+            'X-APP-TIMESTAMP' => date('Y-m-d H:i:s', time()),
+            'X-CFC-API-KEY'   => self::$x_cfc_api_key,
         ];
         if ($header_add != '') {
             foreach ($header_add as $key => $val) {
@@ -352,7 +362,7 @@ class PanasonicCloudIO extends IPSModule
         }
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
         $cdata = curl_exec($ch);
         $cerrno = curl_errno($ch);
