@@ -130,9 +130,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
-- 1.13 @ 15.09.2023 10:14
-  - Fix: Änderungen in der API der Panasonic COmfort Cloud nachgeführt
+- 1.13 @ 15.10.2023 13:51
+  - Fix: Änderungen in der API der Panasonic Comfort Cloud nachgeführt
   - Neu: Ermittlung von Speicherbedarf und Laufzeit (aktuell und für 31 Tage) und Anzeige im Panel "Information"
+  - Fix: die Statistik der ApiCalls wird nicht mehr nach uri sondern nur noch host+cmd differenziert
   - update submodule CommonStubs
 
 - 1.12 @ 05.07.2023 11:56
