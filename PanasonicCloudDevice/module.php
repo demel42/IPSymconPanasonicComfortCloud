@@ -40,6 +40,7 @@ class PanasonicCloudDevice extends IPSModule
         $this->RegisterPropertyInteger('airflow_swing', self::$AIRFLOW_SWING_UD);
         $this->RegisterPropertyBoolean('with_nanoe', false);
         $this->RegisterPropertyBoolean('with_energy', false);
+        $this->RegisterPropertyBoolean('combine_fan_with_nanoe', false);
 
         $this->RegisterPropertyInteger('update_interval', 60);
 
@@ -261,10 +262,10 @@ class PanasonicCloudDevice extends IPSModule
                     'enabled' => false
                 ],
                 [
-                    'type'     => 'Select',
-                    'options'  => $this->DeviceTypeAsOptions(),
-                    'caption'  => 'Type',
-                    'enabled'  => false
+                    'type'    => 'Select',
+                    'options' => $this->DeviceTypeAsOptions(),
+                    'caption' => 'Type',
+                    'enabled' => false
                 ],
             ],
         ];
@@ -284,20 +285,37 @@ class PanasonicCloudDevice extends IPSModule
             'name'     => 'airflow_swing',
             'caption'  => 'Airflow direction swing',
         ];
+
         $formElements[] = [
-            'type'     => 'CheckBox',
-            'name'     => 'with_nanoe',
-            'caption'  => 'has nanoe™ X technology',
+            'type'    => 'RowLayout',
+            'items'   => [
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_nanoe',
+                    'caption' => 'has nanoe™ X technology',
+                ],
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'combine_fan_with_nanoe',
+                    'caption' => 'combine mode "fan" with nanoe',
+                ],
+            ],
         ];
 
         $formElements[] = [
-            'type'    => 'CheckBox',
-            'name'    => 'with_energy',
-            'caption' => 'save daily energy consumption'
-        ];
-        $formElements[] = [
-            'type'    => 'Label',
-            'caption' => ' ... by activating this switch, additional variables are created and logged as counters',
+            'type'    => 'RowLayout',
+            'items'   => [
+                [
+                    'type'    => 'CheckBox',
+                    'name'    => 'with_energy',
+                    'caption' => 'save daily energy consumption'
+                ],
+                [
+                    'type'    => 'Label',
+                    'caption' => ' ... by activating this switch, additional variables are created and logged as counters',
+                    'italic'  => true,
+                ],
+            ],
         ];
 
         $formElements[] = [
@@ -745,10 +763,13 @@ class PanasonicCloudDevice extends IPSModule
             'operationMode' => $value,
         ];
 
-        if ($value == self::$OPERATION_MODE_FAN && $options['nanoeStandAlone'] == 1) {
-            $this->SendDebug(__FUNCTION__, 'add nanoeStandAlone mode', 0);
+        $combine_fan_with_nanoe = $this->ReadPropertyBoolean('combine_fan_with_nanoe');
+        if ($combine_fan_with_nanoe) {
+            if ($value == self::$OPERATION_MODE_FAN && $options['nanoeStandAlone'] == 1) {
+                $this->SendDebug(__FUNCTION__, 'add nanoeStandAlone mode', 0);
 
-            $parameters['nanoe'] = self::$NANOE_MODE_ON;
+                $parameters['nanoe'] = self::$NANOE_MODE_ON;
+            }
         }
 
         return $this->ControlDevice(__FUNCTION__, $parameters);
@@ -894,10 +915,13 @@ class PanasonicCloudDevice extends IPSModule
             return false;
         }
 
-        $mode = $this->GetValue('OperationMode');
-        if ($mode == self::$OPERATION_MODE_FAN && $value == self::$NANOE_MODE_OFF) {
-            $this->SendDebug(__FUNCTION__, 'fan mode requires active nanoe X', 0);
-            return false;
+        $combine_fan_with_nanoe = $this->ReadPropertyBoolean('combine_fan_with_nanoe');
+        if ($combine_fan_with_nanoe) {
+            $mode = $this->GetValue('OperationMode');
+            if ($mode == self::$OPERATION_MODE_FAN && $value == self::$NANOE_MODE_OFF) {
+                $this->SendDebug(__FUNCTION__, 'fan mode requires active nanoe X', 0);
+                return false;
+            }
         }
 
         $parameters = [

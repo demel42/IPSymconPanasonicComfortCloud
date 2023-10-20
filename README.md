@@ -130,6 +130,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.14 @ 20.10.2023 09:42
+  - Neu: Schalter 'Kombiniere Modus "Lüften" mit nanoe' hinzugefügt, um das Verhalten getrennt steuern zu können
+
 - 1.13 @ 15.10.2023 13:51
   - Fix: Änderungen in der API der Panasonic Comfort Cloud nachgeführt
   - Neu: Ermittlung von Speicherbedarf und Laufzeit (aktuell und für 31 Tage) und Anzeige im Panel "Information"
