@@ -43,8 +43,11 @@ class PanasonicCloudDevice extends IPSModule
         $this->RegisterPropertyBoolean('combine_fan_with_nanoe', false);
 
         $this->RegisterPropertyInteger('update_interval', 60);
+        $this->RegisterPropertyInteger('short_action_refresh_delay', 3);
+        $this->RegisterPropertyInteger('long_action_refresh_delay', 4);
 
         $this->RegisterAttributeString('device_options', '');
+        $this->RegisterAttributeString('target_temperature', '');
         $this->RegisterAttributeString('external_update_interval', '');
 
         $this->RegisterAttributeString('UpdateInfo', json_encode([]));
@@ -319,11 +322,30 @@ class PanasonicCloudDevice extends IPSModule
         ];
 
         $formElements[] = [
-            'type'    => 'NumberSpinner',
-            'name'    => 'update_interval',
-            'suffix'  => 'Seconds',
-            'minimum' => 0,
-            'caption' => 'Update interval',
+            'type'    => 'RowLayout',
+            'items'   => [
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'update_interval',
+                    'suffix'  => 'Seconds',
+                    'minimum' => 0,
+                    'caption' => 'Update interval',
+                ],
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'short_action_refresh_delay',
+                    'suffix'  => 'Seconds',
+                    'minimum' => 0,
+                    'caption' => 'Update with short action after',
+                ],
+                [
+                    'type'    => 'NumberSpinner',
+                    'name'    => 'long_action_refresh_delay',
+                    'suffix'  => 'Seconds',
+                    'minimum' => 0,
+                    'caption' => 'Update with short long action',
+                ],
+            ],
         ];
 
         $formElements[] = [
@@ -474,11 +496,8 @@ class PanasonicCloudDevice extends IPSModule
             $options['fanMode'] = 1;
         }
 
-        $s = json_encode($options);
         $this->SendDebug(__FUNCTION__, 'options=' . print_r($options, true), 0);
-        if ($this->ReadAttributeString('device_options') != $s) {
-            $this->WriteAttributeString('device_options', $s);
-        }
+        $this->WriteAttributeString('device_options', json_encode($options));
 
         $is_changed = false;
         $fnd = false;
@@ -576,6 +595,20 @@ class PanasonicCloudDevice extends IPSModule
             $this->SetValue('LastSync', floor(intval($jdata['timestamp']) / 1000));
         }
 
+        $mode = $this->GetValue('OperationMode');
+        switch ($mode) {
+            case self::$OPERATION_MODE_AUTO:
+            case self::$OPERATION_MODE_DRY:
+            case self::$OPERATION_MODE_COOL:
+            case self::$OPERATION_MODE_HEAT:
+                $target_temperature = @json_decode((string) $this->ReadAttributeString('target_temperature'), true);
+                $target_temperature[$mode] = $this->GetValue('TargetTemperature');
+                $this->WriteAttributeString('target_temperature', json_encode($target_temperature));
+                break;
+            default:
+                break;
+        }
+
         $with_energy = $this->ReadPropertyBoolean('with_energy');
         if ($with_energy) {
             $sdata = [
@@ -634,10 +667,15 @@ class PanasonicCloudDevice extends IPSModule
 
         $this->SendDebug(__FUNCTION__, 'ident=' . $ident . ', value=' . $value, 0);
 
+        $short_delay = $this->ReadPropertyInteger('short_action_refresh_delay');
+        $long_delay = $this->ReadPropertyInteger('long_action_refresh_delay');
+        $delay = $short_delay;
+
         $r = false;
         switch ($ident) {
             case 'Operate':
                 $r = $this->SetOperate((bool) $value);
+                $delay = $long_delay;
                 break;
             case 'OperationMode':
                 $r = $this->SetOperateMode((int) $value);
@@ -666,7 +704,7 @@ class PanasonicCloudDevice extends IPSModule
         }
         if ($r) {
             $this->SetValue($ident, $value);
-            $this->MaintainTimer('UpdateStatus', 1000);
+            $this->MaintainTimer('UpdateStatus', $delay * 1000);
         }
     }
 
@@ -763,6 +801,13 @@ class PanasonicCloudDevice extends IPSModule
             'operationMode' => $value,
         ];
 
+        $target_temperature = @json_decode((string) $this->ReadAttributeString('target_temperature'), true);
+        if (isset($target_temperature[$value])) {
+            $temp = (float) $target_temperature[$value];
+            $this->SetValue('TargetTemperature', $temp);
+            $parameters['temperatureSet'] = $temp;
+        }
+
         $combine_fan_with_nanoe = $this->ReadPropertyBoolean('combine_fan_with_nanoe');
         if ($combine_fan_with_nanoe) {
             if ($value == self::$OPERATION_MODE_FAN && $options['nanoeStandAlone'] == 1) {
@@ -811,7 +856,25 @@ class PanasonicCloudDevice extends IPSModule
             'temperatureSet' => $value,
         ];
 
-        return $this->ControlDevice(__FUNCTION__, $parameters);
+        if ($this->ControlDevice(__FUNCTION__, $parameters) == false) {
+            return false;
+        }
+
+        $mode = $this->GetValue('OperationMode');
+        switch ($mode) {
+            case self::$OPERATION_MODE_AUTO:
+            case self::$OPERATION_MODE_DRY:
+            case self::$OPERATION_MODE_COOL:
+            case self::$OPERATION_MODE_HEAT:
+                $target_temperature = @json_decode((string) $this->ReadAttributeString('target_temperature'), true);
+                $target_temperature[$mode] = $value;
+                $this->WriteAttributeString('target_temperature', json_encode($target_temperature));
+                break;
+            default:
+                break;
+        }
+
+        return true;
     }
 
     public function SetFanSpeed(int $value)
@@ -935,7 +998,7 @@ class PanasonicCloudDevice extends IPSModule
     {
         if ($this->CheckStatus() == self::$STATUS_INVALID) {
             $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
-            return;
+            return false;
         }
 
         if ($this->HasActiveParent() == false) {
@@ -944,7 +1007,7 @@ class PanasonicCloudDevice extends IPSModule
             if ($log_no_parent) {
                 $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
             }
-            return;
+            return false;
         }
 
         $guid = $this->ReadPropertyString('guid');

@@ -15,6 +15,8 @@
 			"Delete unused variable 'LastChange'": "Unbenutzte Variable 'LastChange' löschen",
 			"Adjust variableprofiles 'PanasonicCloud.Temperature', 'PanasonicCloud.EcoMode'":
 				"Variablenprofile 'PanasonicCloud.Temperature', 'PanasonicCloud.EcoMode' anpassen",
+			"Variable 'TargetTemperature' will be replace by 'HeatTargetTemperature' and 'CoolTargetTemperature'; please check":
+				"Variable 'TargetTemperature' wird durch 'HeatTargetTemperature' und 'CoolTargetTemperature' ersetzt; bitte prüfen",
 
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",
@@ -35,6 +37,8 @@
 
 			"Update interval": "Aktualisierungsintervall",
 			"Seconds": "Sekunden",
+			"Update with short action after": "Aktualisierungs bei kurzer Aktion nach",
+			"Update with long action after": "Aktualisierung bei langer Aktion nach",
 
 			"Generate message when the gateway is inactive": "Meldung erzeugen wenn der Gateway inaktiv ist",
 

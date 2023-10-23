@@ -107,6 +107,7 @@ PanasonicCloud.AirflowHorizontal,
 PanasonicCloud.AirflowVertical,
 PanasonicCloud.EcoMode,
 PanasonicCloud.FanSpeed,
+PanasonicCloud.InsideCleaning,
 PanasonicCloud.NanoeMode,
 PanasonicCloud.OperationMode
 
@@ -130,8 +131,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
-- 1.14 @ 20.10.2023 09:42
+- 1.14 @ 23.10.2023 14:53
   - Neu: Schalter 'Kombiniere Modus "Lüften" mit nanoe' hinzugefügt, um das Verhalten getrennt steuern zu können
+  - Neu: Zieltemperatur für jede Betriebsart getrennt merken
+  - Fix: Wartezeit bis zum Refresh nach einer Aktion nun getrennt nach lang/kurz einstellbar
 
 - 1.13 @ 15.10.2023 13:51
   - Fix: Änderungen in der API der Panasonic Comfort Cloud nachgeführt

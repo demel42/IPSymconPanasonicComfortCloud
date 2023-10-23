@@ -95,6 +95,10 @@ trait PanasonicCloudLocalLib
     public static $DATA_MODE_MONTH = 2;
     public static $DATA_MODE_YEAR = 4;
 
+    public static $INSIDE_CLEANING_UNAVAIL = 0;
+    public static $INSIDE_CLEANING_OFF = 1;
+    public static $INSIDE_CLEANING_ON = 2;
+
     private function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
@@ -162,6 +166,13 @@ trait PanasonicCloudLocalLib
             ['Wert' => self:: $NANOE_MODE_ALL, 'Name' => $this->Translate('All'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('PanasonicCloud.NanoeMode', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self:: $INSIDE_CLEANING_UNAVAIL, 'Name' => $this->Translate('Unavail'), 'Farbe' => -1],
+            ['Wert' => self:: $INSIDE_CLEANING_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self:: $INSIDE_CLEANING_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.InsideCleaning', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, '', 16, 30, 0.5, 1, 'Temperature', '', $reInstall);
 
