@@ -131,6 +131,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.14.1 @ 03.11.2023 11:06
+  - update submodule CommonStubs
+
 - 1.14 @ 23.10.2023 14:53
   - Neu: Schalter 'Kombiniere Modus "Lüften" mit nanoe' hinzugefügt, um das Verhalten getrennt steuern zu können
   - Neu: Zieltemperatur für jede Betriebsart getrennt merken
