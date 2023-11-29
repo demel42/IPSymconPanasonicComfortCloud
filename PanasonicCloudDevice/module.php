@@ -343,7 +343,7 @@ class PanasonicCloudDevice extends IPSModule
                     'name'    => 'long_action_refresh_delay',
                     'suffix'  => 'Seconds',
                     'minimum' => 0,
-                    'caption' => 'Update with short long action',
+                    'caption' => 'Update with long action after',
                 ],
             ],
         ];
