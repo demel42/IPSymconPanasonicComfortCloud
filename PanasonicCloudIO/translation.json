@@ -16,11 +16,12 @@
 
 			"__actions__": "",
 			"Test access": "Zugriff testen",
-			"Invalid login-data at Panasonic Comfort Cloud": "Ungültige Anmeldedaten bei Panasonic Comfort Cloud",
+			"Clear token": "Token löschen",
 
 			"__function__": "TestAccess",
+			"Invalid login-data at Panasonic Comfort Cloud": "Ungültige Anmeldedaten zu Panasonic Comfort Cloud",
+			"Unable to get group list": "Gruppenliste kann nicht abgerufen werden",
 			"valid account-data": "gültige Zugangsdaten",
-			"Clear token": "Token löschen",
 
 			"__end__": ""
 		}

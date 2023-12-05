@@ -131,6 +131,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.15 @ 05.12.2023 15:32
+  - Fix: Wiederanlauf nach HTTP-Fehler verbessert
+  - Fix: missverständliche Ausgaben korrigiert
+
 - 1.14.1 @ 29.11.2023 18:25
   - Fix: Schreibfehler korrigiert
   - update submodule CommonStubs

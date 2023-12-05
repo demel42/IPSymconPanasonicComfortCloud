@@ -254,7 +254,7 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
 
-        $jtoken = json_decode($this->GetBuffer('AccessToken'), true);
+        $jtoken = json_decode($this->ReadAttributeString('AccessToken'), true);
         $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
         $this->SendDebug(__FUNCTION__, 'clear access_token=' . $access_token, 0);
         $this->WriteAttributeString('AccessToken', '');
@@ -420,7 +420,10 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
             $this->MaintainStatus($statuscode);
             return false;
-        }
+		}
+
+        $this->MaintainStatus(IS_ACTIVE);
+
         return $jdata;
     }
 
@@ -436,6 +439,10 @@ class PanasonicCloudIO extends IPSModule
             $jtoken = json_decode($data, true);
             $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
             $expireѕ = isset($jtoken['expireѕ']) ? $jtoken['expireѕ'] : 0;
+            if ($expireѕ < time()) {
+                $this->SendDebug(__FUNCTION__, 'access_token expired', 0);
+                $access_token = '';
+            }
             if ($access_token != '') {
                 $this->SendDebug(__FUNCTION__, 'access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expireѕ), 0);
                 IPS_SemaphoreLeave($this->SemaphoreID);
@@ -493,7 +500,7 @@ class PanasonicCloudIO extends IPSModule
 
         $r = $this->GetGroups();
         if ($r == false) {
-            $msg = $this->Translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
+            $msg = $this->Translate('Unable to get group list') . PHP_EOL;
             $this->PopupMessage($msg);
             return;
         }
