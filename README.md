@@ -68,27 +68,28 @@ alle Funktionen sind über _RequestAction_ der jew. Variablen ansteuerbar
 
 ### Panasonic Comfort Cloud Konfigurator
 
-| Eigenschaft               | Typ      | Standardwert | Beschreibung |
-| :------------------------ | :------  | :----------- | :----------- |
-| Kategorie                 | integer  | 0            | Kategorie zu Anlage von Instanzen |
+| Eigenschaft               | Typ     | Standardwert | Beschreibung |
+| :------------------------ | :------ | :----------- | :----------- |
+| Kategorie                 | integer | 0            | Kategorie zu Anlage von Instanzen _[1]_ |
 
+_[1]_: nur bis IPS-Version 7 vorhanden, danach ist eine Einstellmöglichkeit Bestandteil des Standard-Konfigurators
 
 ### Panasonic Comfort Cloud Gerät
 
 #### Properties
 
-| Eigenschaft               | Typ      | Standardwert | Beschreibung |
-| :------------------------ | :------  | :----------- | :----------- |
-| Instanz deaktivieren      | boolean  | false        | Instanz temporär deaktivieren |
-|                           |          |              | |
-| Geräte-ID                 | string   |              | |
-| Modell                    | string   |              | |
-| Typ                       | integer  | 3            | 3=Klimagerät |
-|                           |          |              | |
-| Luftstromrichtungswechsel | integer  | 0            | Richtung des Wechsels (0=nur vertikal, 1=vertikal und horizontal) |
-| hat nanoe X-Technologie   | boolean  |              | Gerät verfügt über die Technik zur Luftreinigung |
-|                           |          |              | |
-| Aktualisierungsintervall  | integer  | 60           | іn Sekunden |
+| Eigenschaft               | Typ     | Standardwert | Beschreibung |
+| :------------------------ | :------ | :----------- | :----------- |
+| Instanz deaktivieren      | boolean | false        | Instanz temporär deaktivieren |
+|                           |         |              | |
+| Geräte-ID                 | string  |              | |
+| Modell                    | string  |              | |
+| Typ                       | integer | 3            | 3=Klimagerät |
+|                           |         |              | |
+| Luftstromrichtungswechsel | integer | 0            | Richtung des Wechsels (0=nur vertikal, 1=vertikal und horizontal) |
+| hat nanoe X-Technologie   | boolean |              | Gerät verfügt über die Technik zur Luftreinigung |
+|                           |         |              | |
+| Aktualisierungsintervall  | integer | 60           | іn Sekunden |
 
 #### Aktionen
 
@@ -130,6 +131,9 @@ PanasonicCloud.Temperature
 ### Quellen
 
 ## 7. Versions-Historie
+
+- 1.16 @ 10.12.2023 11:20
+  - Neu: ab IPS-Version 7 ist im Konfigurator die Angabe einer Import-Kategorie integriert, daher entfällt die bisher vorhandene separate Einstellmöglichkeit
 
 - 1.15 @ 05.12.2023 15:32
   - Fix: Wiederanlauf nach HTTP-Fehler verbessert

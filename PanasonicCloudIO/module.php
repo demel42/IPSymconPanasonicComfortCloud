@@ -420,7 +420,7 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
             $this->MaintainStatus($statuscode);
             return false;
-		}
+        }
 
         $this->MaintainStatus(IS_ACTIVE);
 
