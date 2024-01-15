@@ -24,7 +24,7 @@ class PanasonicCloudIO extends IPSModule
     private static $device_history_endpoint = '/deviceHistoryData';
 
     private static $x_app_type = '1';
-    private static $x_app_version = '1.19.0';
+    private static $x_app_version = '1.20.0';
     private static $x_app_name = 'Comfort Cloud';
     private static $x_cfc_api_key = '0';
     private static $user_agent = 'G-RAC';
@@ -57,8 +57,9 @@ class PanasonicCloudIO extends IPSModule
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
 
+        $this->RegisterPropertyBoolean('collectApiCallStats', true);
+
         $this->RegisterAttributeString('UpdateInfo', json_encode([]));
-        $this->RegisterAttributeString('ApiCallStats', json_encode([]));
         $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
         $this->RegisterAttributeString('AccessToken', '');
@@ -160,6 +161,12 @@ class PanasonicCloudIO extends IPSModule
             ],
         ];
 
+        $formElements[] = [
+            'type'    => 'CheckBox',
+            'name'    => 'collectApiCallStats',
+            'caption' => 'Collect data of API calls'
+        ];
+
         return $formElements;
     }
 
@@ -182,19 +189,24 @@ class PanasonicCloudIO extends IPSModule
             'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "TestAccount", "");',
         ];
 
+        $items = [
+            $this->GetInstallVarProfilesFormItem(),
+            [
+                'type'    => 'Button',
+                'caption' => 'Clear token',
+                'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "ClearToken", "");',
+            ],
+        ];
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $items[] = $this->GetApiCallStatsFormItem();
+        }
+
         $formActions[] = [
             'type'      => 'ExpansionPanel',
             'caption'   => 'Expert area',
             'expanded'  => false,
-            'items'     => [
-                $this->GetInstallVarProfilesFormItem(),
-                [
-                    'type'    => 'Button',
-                    'caption' => 'Clear token',
-                    'onClick' => 'IPS_RequestAction(' . $this->InstanceID . ', "ClearToken", "");',
-                ],
-                $this->GetApiCallStatsFormItem(),
-            ],
+            'items'     => $items,
         ];
 
         $formActions[] = $this->GetInformationFormAction();
@@ -415,7 +427,12 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'malformed response';
             }
         }
-        $this->ApiCallsCollect($url, $err, $statuscode);
+
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+
         if ($statuscode) {
             $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
             $this->MaintainStatus($statuscode);

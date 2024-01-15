@@ -132,6 +132,12 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.17 @ 15.01.2024 17:15
+  - Fix: Änderungen in der API der Panasonic Comfort Cloud nachgeführt
+  - Neu: Schalter, um Daten zu API-Aufrufen zu sammeln
+    Die API-Aufruf-Daten stehen nun in einem Medienobjekt zur Verfügung
+  - submodule CommonStubs überarbeitet (Funktionsbereich "ApiCall*", nicht mehr in eine Attribute sondern in einem Medienobjekt)
+
 - 1.16 @ 10.12.2023 11:20
   - Neu: ab IPS-Version 7 ist im Konfigurator die Angabe einer Import-Kategorie integriert, daher entfällt die bisher vorhandene separate Einstellmöglichkeit
 
