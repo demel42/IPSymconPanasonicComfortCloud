@@ -132,6 +132,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.18 @ 29.01.2024 10:50
+  - Änderung: Medien-Objekte haben zur eindeutigen Identifizierung jetzt ebenfalls ein Ident
+  - update submodule CommonStubs
+
 - 1.17 @ 15.01.2024 17:15
   - Fix: Änderungen in der API der Panasonic Comfort Cloud nachgeführt
   - Neu: Schalter, um Daten zu API-Aufrufen zu sammeln
