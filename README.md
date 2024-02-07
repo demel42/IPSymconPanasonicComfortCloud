@@ -132,6 +132,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 1.19 @ 07.02.2024 17:52
+  - Fix: Absicherung von Zugriffen auf andere Instanzen in Konfiguratoren
+
 - 1.18 @ 29.01.2024 10:50
   - Änderung: Medien-Objekte haben zur eindeutigen Identifizierung jetzt ebenfalls ein Ident
   - update submodule CommonStubs

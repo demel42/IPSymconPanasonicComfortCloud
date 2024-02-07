@@ -115,10 +115,13 @@ class PanasonicCloudConfig extends IPSModule
         if (is_array($groups)) {
             foreach ($groups as $group) {
                 $this->SendDebug(__FUNCTION__, 'group=' . print_r($group, true), 0);
+
                 $groupName = $this->GetArrayElem($group, 'groupName', '');
                 $devices = $this->GetArrayElem($group, 'deviceList', '');
                 if ($devices != '') {
                     foreach ($devices as $device) {
+                        $this->SendDebug(__FUNCTION__, 'device=' . print_r($device, true), 0);
+
                         $deviceGuid = $this->GetArrayElem($device, 'deviceGuid', '');
                         $deviceName = $this->GetArrayElem($device, 'deviceName', '');
                         $deviceType = $this->GetArrayElem($device, 'deviceType', 0);
@@ -127,7 +130,7 @@ class PanasonicCloudConfig extends IPSModule
 
                         $instanceID = 0;
                         foreach ($instIDs as $instID) {
-                            if (IPS_GetProperty($instID, 'guid') == $deviceGuid) {
+                            if (@IPS_GetProperty($instID, 'guid') == $deviceGuid) {
                                 $this->SendDebug(__FUNCTION__, 'instance found: ' . IPS_GetName($instID) . ' (' . $instID . ')', 0);
                                 $instanceID = $instID;
                                 break;
@@ -155,9 +158,8 @@ class PanasonicCloudConfig extends IPSModule
                                 ],
                             ],
                         ];
-
                         $entries[] = $entry;
-                        $this->SendDebug(__FUNCTION__, 'entry=' . print_r($entry, true), 0);
+                        $this->SendDebug(__FUNCTION__, 'instanceID=' . $instanceID . ', entry=' . print_r($entry, true), 0);
                     }
                 }
             }
@@ -179,9 +181,9 @@ class PanasonicCloudConfig extends IPSModule
             }
 
             $name = IPS_GetName($instID);
-            $deviceType = IPS_GetProperty($instID, 'type');
-            $deviceModule = IPS_GetProperty($instID, 'model');
-            $deviceGuid = IPS_GetProperty($instID, 'guid');
+            @$deviceType = IPS_GetProperty($instID, 'type');
+            @$deviceModule = IPS_GetProperty($instID, 'model');
+            @$deviceGuid = IPS_GetProperty($instID, 'guid');
             $type = $this->DeviceType2String($deviceType);
 
             $entry = [
@@ -191,9 +193,8 @@ class PanasonicCloudConfig extends IPSModule
                 'model'           => $deviceModule,
                 'guid'            => $deviceGuid,
             ];
-
             $entries[] = $entry;
-            $this->SendDebug(__FUNCTION__, 'missing entry=' . print_r($entry, true), 0);
+            $this->SendDebug(__FUNCTION__, 'lost: instanceID=' . $instID . ', entry=' . print_r($entry, true), 0);
         }
 
         return $entries;
