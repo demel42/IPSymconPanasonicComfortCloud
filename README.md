@@ -17,12 +17,13 @@
 ## 1. Funktionsumfang
 
 Steuerung der Panasonic-Geräte die in der Panasonic Comfort Cloud angemeldet sind, unterstützt wird zur Zeit:<br>
-- Klimagerät
+- Klimageräte
+- Aquarea Wärmepumpen
 
 ## 2. Voraussetzungen
 
 - IP-Symcon ab Version 6.0
-- Account in der Panasonic Comfort Cloud zur Steuerung angemeldeter Klimageräte
+- Account in der Panasonic Comfort Cloud zur Steuerung angemeldeter Klimageräte bzw. zusätzlich in der Aquarea Smart Cloud für dort registrierte Wärmepumpen
 
 ## 3. Installation
 
@@ -42,6 +43,9 @@ In IP-Symcon nun unterhalb von _Konfigurator Instanzen_ die Funktion _Instanz hi
 In dem Konfigurator werden nun alle eingerichteten Gruppen mit den Geräten aufgelistet; eine Anlage der Geräte-Instanz kann entsprechend erfolgen
 
 #### Panasonic Comfort Cloud Gerät
+Die Geräte-Instanz wird über dem Konfigurator angelegt. In der _Basis-Konfiguration_ ist Geräte-ID, Modell sowie der Produkt-Typ eingetragen.
+
+#### Panasonic Comfort Cloud Aquarea Gerät
 Die Geräte-Instanz wird über dem Konfigurator angelegt. In der _Basis-Konfiguration_ ist Geräte-ID, Modell sowie der Produkt-Typ eingetragen.
 
 ## 4. Funktionsreferenz
