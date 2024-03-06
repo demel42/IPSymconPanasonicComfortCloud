@@ -99,6 +99,28 @@ trait PanasonicCloudLocalLib
     public static $INSIDE_CLEANING_OFF = 1;
     public static $INSIDE_CLEANING_ON = 2;
 
+    // Aquarea smart cloud
+
+    public static $OPERATION_MODE_ASC_AUTO = 0;
+    public static $OPERATION_MODE_ASC_COOL = 1;
+    public static $OPERATION_MODE_ASC_HEAT = 2;
+
+    public static $QUIET_MODE_ASC_OFF = 0;
+    public static $QUIET_MODE_ASC_LEVEL1 = 1;
+    public static $QUIET_MODE_ASC_LEVEL2 = 2;
+    public static $QUIET_MODE_ASC_LEVEL3 = 3;
+
+    public static $POWER_MODE_ASC_OFF = 0;
+    public static $POWER_MODE_ASC_30M = 1;
+    public static $POWER_MODE_ASC_60M = 2;
+    public static $POWER_MODE_ASC_90M = 3;
+
+    public static $DEFROST_MODE_ASC_OFF = 0;
+    public static $DEFROST_MODE_ASC_ON = 1;
+
+    public static $HOLIDAY_TIMER_ASC_OFF = 0;
+    public static $HOLIDAY_TIMER_ASC_ON = 1;
+
     private function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
@@ -174,16 +196,55 @@ trait PanasonicCloudLocalLib
         ];
         $this->CreateVarProfile('PanasonicCloud.InsideCleaning', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
-        $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, '', 16, 30, 0.5, 1, 'Temperature', '', $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, ' °C', 16, 30, 0.5, 1, 'Temperature', '', $reInstall);
 
         $this->CreateVarProfile('PanasonicCloud.Energy', VARIABLETYPE_FLOAT, ' kWh', 0, 0, 0, 1, '', '', $reInstall);
+
+        $associations = [
+            ['Wert' => self::$OPERATION_MODE_ASC_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_ASC_COOL, 'Name' => $this->Translate('Cool'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_ASC_HEAT, 'Name' => $this->Translate('Heat'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.OperationMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$QUIET_MODE_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self::$QUIET_MODE_ASC_LEVEL1, 'Name' => $this->Translate('Level 1'), 'Farbe' => -1],
+            ['Wert' => self::$QUIET_MODE_ASC_LEVEL2, 'Name' => $this->Translate('Level 2'), 'Farbe' => -1],
+            ['Wert' => self::$QUIET_MODE_ASC_LEVEL3, 'Name' => $this->Translate('Level 3'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.QuietMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$POWER_MODE_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self::$POWER_MODE_ASC_30M, 'Name' => $this->Translate('30m on'), 'Farbe' => -1],
+            ['Wert' => self::$POWER_MODE_ASC_60M, 'Name' => $this->Translate('60m on'), 'Farbe' => -1],
+            ['Wert' => self::$POWER_MODE_ASC_90M, 'Name' => $this->Translate('90m on'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.PowerMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$DEFROST_MODE_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self::$DEFROST_MODE_ASC_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.DefrostMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$HOLIDAY_TIMER_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self::$HOLIDAY_TIMER_ASC_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.HolidayTimer_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
     }
 
+    public static $DEVICE_TYPE_HEAT_PUMP = 2;
     public static $DEVICE_TYPE_AIR_CONDITIONER = 3;
 
     private function DeviceTypeMapping()
     {
         return [
+            self::$DEVICE_TYPE_HEAT_PUMP => [
+                'caption' => 'Heat pump',
+            ],
             self::$DEVICE_TYPE_AIR_CONDITIONER => [
                 'caption' => 'Air conditioner',
             ],

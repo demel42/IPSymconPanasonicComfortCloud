@@ -17,6 +17,7 @@
 				"Variablenprofile 'PanasonicCloud.Temperature', 'PanasonicCloud.EcoMode' anpassen",
 			"Variable 'TargetTemperature' will be replace by 'HeatTargetTemperature' and 'CoolTargetTemperature'; please check":
 				"Variable 'TargetTemperature' wird durch 'HeatTargetTemperature' und 'CoolTargetTemperature' ersetzt; bitte prüfen",
+			"Adjust variableprofile 'PanasonicCloud.Temperature'": "Variablenprofil 'PanasonicCloud.Temperature' anpassen",
 
 			"__elements__": "",
 			"Disable instance": "Instanz deaktivieren",

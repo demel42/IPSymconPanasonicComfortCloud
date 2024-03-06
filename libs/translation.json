@@ -2,6 +2,7 @@
 	"translations": {
 		"de": {
 			"__function__": "DeviceTypeMapping",
+			"Heat pump": "Wärmepumpe",
 			"Air conditioner": "Klimaanlage",
 			"Unknown type": "Unbekannter Typ",
 
@@ -52,6 +53,31 @@
 			"On": "Ein",
 			"Mode G": "Modus G",
 			"All": "Alle",
+
+			"__variableprofile__": "PanasonicCloud.OperationMode_ASC",
+			"Automatic": "Automatisch",
+			"Cool": "Kühlen",
+			"Heat": "Heizen",
+
+			"__variableprofile__": "PanasonicCloud.QuietMode_ASC",
+			"Off": "Aus",
+			"Level 1": "Stufe 1",
+			"Level 2": "Stufe 2",
+			"Level 3": "Stufe 3",
+
+			"__variableprofile__": "PanasonicCloud.PowerMode_ASC",
+			"Off": "Aus",
+			"30m on": "30m ein",
+			"60m on": "60m ein",
+			"90m on": "90m ein",
+
+			"__variableprofile__": "PanasonicCloud.DefrostMode_ASC",
+			"Off": "Aus",
+			"On": "Ein",
+
+			"__variableprofile__": "PanasonicCloud.HolidayTimer_ASC",
+			"Off": "Aus",
+			"On": "Ein",
 
 			"__status__": "",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",

@@ -91,6 +91,10 @@ class PanasonicCloudDevice extends IPSModule
             $r[] = $this->Translate('Adjust variableprofiles \'PanasonicCloud.Temperature\', \'PanasonicCloud.EcoMode\'');
         }
 
+        if ($this->version2num($oldInfo) < $this->version2num('1.20')) {
+            $r[] = $this->Translate('Adjust variableprofile \'PanasonicCloud.Temperature\'');
+        }
+
         return $r;
     }
 
@@ -134,6 +138,13 @@ class PanasonicCloudDevice extends IPSModule
             $this->InstallVarProfiles(false);
         }
 
+        if ($this->version2num($oldInfo) < $this->version2num('1.20')) {
+            if (IPS_VariableProfileExists('PanasonicCloud.Temperature')) {
+                IPS_DeleteVariableProfile('PanasonicCloud.Temperature');
+            }
+            $this->InstallVarProfiles(false);
+        }
+
         return '';
     }
 
@@ -161,7 +172,7 @@ class PanasonicCloudDevice extends IPSModule
             return;
         }
 
-        $vpos = 0;
+        $vpos = 1;
 
         $this->MaintainVariable('Operate', $this->Translate('Operate'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
         $this->MaintainAction('Operate', true);
@@ -267,6 +278,7 @@ class PanasonicCloudDevice extends IPSModule
                 [
                     'type'    => 'Select',
                     'options' => $this->DeviceTypeAsOptions(),
+                    'name'    => 'type',
                     'caption' => 'Type',
                     'enabled' => false
                 ],
@@ -439,7 +451,22 @@ class PanasonicCloudDevice extends IPSModule
             return;
         }
 
+        $now = time();
+
+        $type = $this->ReadPropertyInteger('type');
         $guid = $this->ReadPropertyString('guid');
+        $sdata = [
+            'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+            'CallerID' => $this->InstanceID,
+            'Function' => 'GetDeviceStatus',
+            'Type'     => $type,
+            'Guid'     => $guid,
+            'Now'      => true,
+        ];
+        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
+        $data = $this->SendDataToParent(json_encode($sdata));
+        $jdata = json_decode($data, true);
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
         $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
         switch ($airflow_swing) {
@@ -456,19 +483,6 @@ class PanasonicCloudDevice extends IPSModule
                 $with_horizontal = true;
                 break;
         }
-
-        $sdata = [
-            'DataID'   => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
-            'CallerID' => $this->InstanceID,
-            'Function' => 'GetDeviceStatusNow',
-            'Guid'     => $guid,
-        ];
-        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
-        $data = $this->SendDataToParent(json_encode($sdata));
-        $jdata = json_decode($data, true);
-        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
-
-        $now = time();
 
         $optNames = [
             'autoMode',
@@ -615,6 +629,7 @@ class PanasonicCloudDevice extends IPSModule
                 'DataID'    => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
                 'CallerID'  => $this->InstanceID,
                 'Function'  => 'GetDeviceHistory',
+                'Type'      => $type,
                 'Guid'      => $guid,
                 'DataMode'  => self::$DATA_MODE_DAY,
                 'Timestamp' => time(),
@@ -1010,12 +1025,14 @@ class PanasonicCloudDevice extends IPSModule
             return false;
         }
 
+        $type = $this->ReadPropertyInteger('type');
         $guid = $this->ReadPropertyString('guid');
 
         $sdata = [
             'DataID'     => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
             'CallerID'   => $this->InstanceID,
             'Function'   => 'ControlDevice',
+            'Type'       => $type,
             'Guid'       => $guid,
             'Parameters' => json_encode($parameters),
         ];

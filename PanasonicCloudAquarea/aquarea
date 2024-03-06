@@ -1,0 +1,215 @@
+04.03.2024, 15:21:51 |         UpdateStatus | jdata=Array
+        (
+            [0] => Array
+                (
+                    [deiceStatus] => 0
+                    [operationStatus] => 1
+                    [modelSeriesSelection] => 2
+                    [multiOdConnection] => 0
+                    [specialStatus] => Array
+                        (
+                            [0] => Array
+                                (
+                                    [specialMode] => 1
+                                    [operationStatus] => 0
+                                )
+
+                            [1] => Array
+                                (
+                                    [specialMode] => 2
+                                    [operationStatus] => 0
+                                )
+
+                        )
+
+                    [cnCntErrorStatus] => 
+                    [zoneStatus] => Array
+                        (
+                            [0] => Array
+                                (
+                                    [operationStatus] => 0
+                                    [ecoHeat] => -5
+                                    [coolMin] => -5
+                                    [heatMin] => 20
+                                    [comfortCool] => -5
+                                    [temparatureNow] => 31
+                                    [coolSet] => 0
+                                    [zoneId] => 1
+                                    [comfortHeat] => 5
+                                    [heatMax] => 60
+                                    [coolMax] => 5
+                                    [ecoCool] => 5
+                                    [heatSet] => 36
+                                )
+
+                            [1] => Array
+                                (
+                                    [operationStatus] => 0
+                                    [ecoHeat] => 0
+                                    [coolMin] => 
+                                    [heatMin] => 
+                                    [comfortCool] => 0
+                                    [temparatureNow] => 
+                                    [coolSet] => 0
+                                    [zoneId] => 2
+                                    [comfortHeat] => 0
+                                    [heatMax] => 
+                                    [coolMax] => 
+                                    [ecoCool] => 0
+                                    [heatSet] => 35
+                                )
+
+                        )
+
+                    [outdoorNow] => 8
+                    [operationMode] => 0
+                    [holidayTimer] => 0
+                    [powerful] => 0
+                    [deviceGuid] => 008007B855316866001434545313831373030634345373130434345373138313931304300000000
+                    [bivalent] => 0
+                    [tankStatus] => Array
+                        (
+                            [0] => Array
+                                (
+                                    [operationStatus] => 1
+                                    [temparatureNow] => 60
+                                    [heatMax] => 65
+                                    [heatMin] => 40
+                                    [heatSet] => 55
+                                )
+
+                        )
+
+                    [informationMessage] => 1
+                    [pumpDuty] => 0
+                    [quietMode] => 0
+                    [forceHeater] => 0
+                    [tank] => 1
+                    [forceDHW] => 0
+                    [pendingUser] => 0
+                    [direction] => 0
+                )
+
+        )
+
+
+class ZoneSensor(StrEnum):
+    """Zone sensor types"""
+
+    EXTERNAL = "External"
+    INTERNAL = "Internal"
+    WATER_TEMPERATURE = "Water temperature"
+    THERMISTOR = "Thermistor"
+
+
+class SensorMode(StrEnum):
+    """Sensor mode"""
+
+    DIRECT = "Direct"
+    COMPENSATION_CURVE = "Compensation curve"
+
+
+class OperationMode(StrEnum):
+    COOL = "Cool"
+    HEAT = "Heat"
+    AUTO = "Auto"
+
+
+class OperationStatus(IntEnum):
+    """Operation status"""
+
+    ON = 1
+    OFF = 0
+
+
+class ZoneType(StrEnum):
+    ROOM = "Room"
+
+
+class ExtendedOperationMode(IntEnum):
+    OFF = 0
+    HEAT = 1
+    COOL = 2
+    AUTO_HEAT = 3
+    AUTO_COOL = 4
+
+
+class UpdateOperationMode(IntEnum):
+    """Values used to change the operation mode of the device"""
+
+    OFF = 0
+    HEAT = 2
+    COOL = 3
+    AUTO = 8
+
+
+class DeviceAction(IntEnum):
+    """Device action"""
+
+    OFF = 0
+    IDLE = 1
+    HEATING = 2
+    COOLING = 3
+    HEATING_WATER = 4
+
+
+class DeviceDirection(IntEnum):
+    """Device direction"""
+
+    IDLE = 0
+    PUMP = 1
+    WATER = 2
+
+
+class QuietMode(IntEnum):
+    """Quiet mode level"""
+
+    OFF = 0
+    LEVEL1 = 1
+    LEVEL2 = 2
+    LEVEL3 = 3
+
+
+class ForceDHW(IntEnum):
+    """Force DHW"""
+
+    OFF = 0
+    ON = 1
+
+
+class ForceHeater(IntEnum):
+    """Force Heater"""
+
+    OFF = 0
+    ON = 1
+
+
+class HolidayTimer(IntEnum):
+    """Holiday Timer"""
+
+    OFF = 0
+    ON = 1
+
+
+class DeviceModeStatus(IntEnum):
+    """Device mode status"""
+
+    NORMAL = 0
+    DEFROST = 1
+
+
+class PowerfulTime(IntEnum):
+    """Powerful time"""
+
+    OFF = 0
+    ON_30MIN = 1
+    ON_60MIN = 2
+    ON_90MIN = 3
+
+
+class SpecialStatus(IntEnum):
+    """Special status"""
+
+    ECO = 1
+    COMFORT = 2
+

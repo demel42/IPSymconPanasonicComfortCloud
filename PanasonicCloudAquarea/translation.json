@@ -1,0 +1,49 @@
+{
+	"translations": {
+		"de": {
+			"Panasonic ComfortCloud Aquarea Device": "Panasonic ComfortCloud Aquarea-Gerät",
+
+			"__function__": "CheckUpdate",
+
+			"__elements__": "",
+			"Disable instance": "Instanz deaktivieren",
+
+			"Basic configuration": "Basis-Konfiguration",
+			"Model": "Modell",
+			"Type": "Typ",
+			"Device-ID": "Geräte-ID",
+
+			"save daily energy consumption": "Täglichen Energieverbrauch speichern",
+			" ... by activating this switch, additional variables are created and logged as counters":
+				" ... durch Aktivierung dieses Schalters werden zusätzliche Variablen erstellt und als Zähler geloggt",
+
+			"Update interval": "Aktualisierungsintervall",
+			"Seconds": "Sekunden",
+			"Update with short action after": "Aktualisierungs bei kurzer Aktion nach",
+			"Update with long action after": "Aktualisierung bei langer Aktion nach",
+
+			"Generate message when the gateway is inactive": "Meldung erzeugen wenn der Gateway inaktiv ist",
+
+			"__messages__": "",
+			"Instance has no active gateway": "Instanz hat keinen aktiven Gateway",
+
+			"__variables__": "",
+			"Operate": "Betrieb",
+			"Operation mode": "Betriebsart",
+			"Last update": "Letzte Aktualisierung",
+			"Whisper mode": "Flüsterbetrieb",
+			"Power operation": "Leistungsbetrieb",
+			"Manual defrosting": "manuelle Abtauung",
+			"Outside temperature": "Außentemperatur",
+			"Holiday timer": "Urlaubstimer",
+
+			"Daily energy consumption": "Täglicher Energieverbrauch",
+			"Last change": "Letzte Änderung",
+
+			"__actions__": "",
+			"Update status": "Aktualisiere Status",
+
+			"__end__": ""
+		}
+	}
+}

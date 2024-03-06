@@ -109,7 +109,6 @@ class PanasonicCloudConfig extends IPSModule
             $this->WriteDataCache($dataCache, time());
         }
 
-        $guid = '{A972DA17-4989-9CAD-2680-0CB492645050}'; // PanasonicCloudDevice
         $instIDs = IPS_GetInstanceListByModuleID($guid);
 
         if (is_array($groups)) {
@@ -128,6 +127,23 @@ class PanasonicCloudConfig extends IPSModule
                         $deviceModule = $this->GetArrayElem($device, 'deviceModuleNumber', '');
                         $type = $this->DeviceType2String($deviceType);
 
+                        switch ($deviceType) {
+                            case self::$DEVICE_TYPE_AIR_CONDITIONER:
+                                $guid = '{A972DA17-4989-9CAD-2680-0CB492645050}'; // PanasonicCloudDevice
+                                break;
+                            case self::$DEVICE_TYPE_HEAT_PUMP:
+                                $guid = '{7A09A576-A675-F915-B1EC-1135E6700210}'; // PanasonicCloudAquarea
+                                break;
+                            default:
+                                $guid = '';
+                                break;
+                        }
+
+                        if ($guid == '') {
+                            $this->SendDebug(__FUNCTION__, 'ignore module ' . $module['id'] . ': unsupported type ' . $module['type'], 0);
+                            continue;
+                        }
+
                         $instanceID = 0;
                         foreach ($instIDs as $instID) {
                             if (@IPS_GetProperty($instID, 'guid') == $deviceGuid) {
@@ -142,19 +158,19 @@ class PanasonicCloudConfig extends IPSModule
                         }
 
                         $entry = [
-                            'instanceID'      => $instanceID,
-                            'name'            => $groupName . ' - ' . $deviceName,
-                            'type'            => $type,
-                            'model'           => $deviceModule,
-                            'guid'            => $deviceGuid,
-                            'create'          => [
+                            'instanceID' => $instanceID,
+                            'name'       => $groupName . ' - ' . $deviceName,
+                            'type'       => $type,
+                            'model'      => $deviceModule,
+                            'guid'       => $deviceGuid,
+                            'create'     => [
                                 'moduleID'      => $guid,
                                 'location'      => $location,
                                 'info'          => $type . ' ' . $deviceModule,
                                 'configuration' => [
-                                    'guid'          => (string) $deviceGuid,
-                                    'type'          => (int) $deviceType,
-                                    'model'         => (string) $deviceModule,
+                                    'guid' => (string) $deviceGuid,
+                                    'type' => (int) $deviceType,
+                                    'model'=> (string) $deviceModule,
                                 ],
                             ],
                         ];
@@ -164,37 +180,48 @@ class PanasonicCloudConfig extends IPSModule
                 }
             }
         }
-        foreach ($instIDs as $instID) {
-            $fnd = false;
-            foreach ($entries as $entry) {
-                if ($entry['instanceID'] == $instID) {
-                    $fnd = true;
-                    break;
+        $modules = [
+            [
+                'guid' => '{A972DA17-4989-9CAD-2680-0CB492645050}',
+            ],
+            [
+                'guid' => '{7A09A576-A675-F915-B1EC-1135E6700210}',
+            ],
+        ];
+        foreach ($modules as $module) {
+            $instIDs = IPS_GetInstanceListByModuleID($module['guid']);
+            foreach ($instIDs as $instID) {
+                $fnd = false;
+                foreach ($entries as $entry) {
+                    if ($entry['instanceID'] == $instID) {
+                        $fnd = true;
+                        break;
+                    }
                 }
-            }
-            if ($fnd) {
-                continue;
-            }
+                if ($fnd) {
+                    continue;
+                }
 
-            if (IPS_GetInstance($instID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
-                continue;
+                if (IPS_GetInstance($instID)['ConnectionID'] != IPS_GetInstance($this->InstanceID)['ConnectionID']) {
+                    continue;
+                }
+
+                $name = IPS_GetName($instID);
+                @$deviceType = IPS_GetProperty($instID, 'type');
+                @$deviceModule = IPS_GetProperty($instID, 'model');
+                @$deviceGuid = IPS_GetProperty($instID, 'guid');
+                $type = $this->DeviceType2String($deviceType);
+
+                $entry = [
+                    'instanceID' => $instID,
+                    'name'       => $name,
+                    'type'       => $type,
+                    'model'      => $deviceModule,
+                    'guid'       => $deviceGuid,
+                ];
+                $entries[] = $entry;
+                $this->SendDebug(__FUNCTION__, 'lost: instanceID=' . $instID . ', entry=' . print_r($entry, true), 0);
             }
-
-            $name = IPS_GetName($instID);
-            @$deviceType = IPS_GetProperty($instID, 'type');
-            @$deviceModule = IPS_GetProperty($instID, 'model');
-            @$deviceGuid = IPS_GetProperty($instID, 'guid');
-            $type = $this->DeviceType2String($deviceType);
-
-            $entry = [
-                'instanceID'      => $instID,
-                'name'            => $name,
-                'type'            => $type,
-                'model'           => $deviceModule,
-                'guid'            => $deviceGuid,
-            ];
-            $entries[] = $entry;
-            $this->SendDebug(__FUNCTION__, 'lost: instanceID=' . $instID . ', entry=' . print_r($entry, true), 0);
         }
 
         return $entries;

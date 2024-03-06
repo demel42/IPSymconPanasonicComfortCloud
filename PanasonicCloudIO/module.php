@@ -10,6 +10,9 @@ class PanasonicCloudIO extends IPSModule
     use PanasonicCloud\StubsCommonLib;
     use PanasonicCloudLocalLib;
 
+    // Panasonic Comfort-Cloud
+    private static $API_CC = 1;
+
     private static $base_url = 'https://accsmart.panasonic.com';
 
     private static $auth_endpoint = '/auth/login';
@@ -31,6 +34,22 @@ class PanasonicCloudIO extends IPSModule
 
     private static $login_interval = 10800000;
 
+    // Panasonic Aquarea-Smart-Cloud
+    private static $API_ASC = 2;
+
+    private static $base_url_asc = 'https://aquarea-smart.panasonic.com';
+
+    private static $auth_endpoint_asc = '/remote/v1/api/auth/login';
+
+    private static $devices_endpoint_asc = '/remote/v1/api/devices';
+    private static $device_status_endpoint_asc = '/remote/v1/api/devices/'; // + device_id
+
+    // device_id ermitteln
+    private static $contract_endpoint_asc = '/remote/contract';
+
+    private static $user_agent_asc = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0';
+
+    // Modul
     private static $semaphoreTM = 5 * 1000;
 
     private $SemaphoreID;
@@ -63,6 +82,7 @@ class PanasonicCloudIO extends IPSModule
         $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
         $this->RegisterAttributeString('AccessToken', '');
+        $this->RegisterAttributeString('AccessToken_ASC', '');
 
         $this->InstallVarProfiles(false);
 
@@ -304,17 +324,35 @@ class PanasonicCloudIO extends IPSModule
                 case 'GetGroups':
                     $ret = $this->GetGroups();
                     break;
-                case 'GetDeviceStatus':
-                    $ret = $this->GetDeviceStatus($jdata['Guid'], false);
+                case 'GetDevices':
+                    if ($jdata['Type'] == self::$DEVICE_TYPE_HEAT_PUMP) {
+                        $ret = $this->GetDevices_ASC();
+                    }
                     break;
-                case 'GetDeviceStatusNow':
-                    $ret = $this->GetDeviceStatus($jdata['Guid'], true);
+                case 'GetDeviceStatus':
+                    if ($jdata['Type'] == self::$DEVICE_TYPE_HEAT_PUMP) {
+                        $ret = $this->GetDeviceStatus_ASC($jdata['DeviceID']);
+                    } else {
+                        $now = isset($jdata['Now']) ? (bool) $jdata['Now'] : false;
+                        $ret = $this->GetDeviceStatus($jdata['Guid'], $now);
+                    }
+                    break;
+                case 'MapGuidToId':
+                    if ($jdata['Type'] == self::$DEVICE_TYPE_HEAT_PUMP) {
+                        $ret = $this->MapGuidToId_ASC($jdata['Guid']);
+                    }
                     break;
                 case 'ControlDevice':
-                    $ret = $this->ControlDevice($jdata['Guid'], $jdata['Parameters']);
+                    if ($jdata['Type'] == self::$DEVICE_TYPE_HEAT_PUMP) {
+                    } else {
+                        $ret = $this->ControlDevice($jdata['Guid'], $jdata['Parameters']);
+                    }
                     break;
                 case 'GetDeviceHistory':
-                    $ret = $this->GetDeviceHistory($jdata['Guid'], (int) $jdata['DataMode'], (int) $jdata['Timestamp']);
+                    if ($jdata['Type'] == self::$DEVICE_TYPE_HEAT_PUMP) {
+                    } else {
+                        $ret = $this->GetDeviceHistory($jdata['Guid'], (int) $jdata['DataMode'], (int) $jdata['Timestamp']);
+                    }
                     break;
                 default:
                     $this->SendDebug(__FUNCTION__, 'unknown function "' . $jdata['Function'] . '"', 0);
@@ -328,9 +366,13 @@ class PanasonicCloudIO extends IPSModule
         return $ret;
     }
 
-    private function do_HttpRequest($endpoint, $postfields, $params, $header_add)
+    private function do_HttpRequest($endpoint, $postfields, $params, $header_add, $api)
     {
-        $url = self::$base_url . $endpoint;
+        if ($api == self::$API_CC) {
+            $url = self::$base_url . $endpoint;
+        } else {
+            $url = self::$base_url_asc . $endpoint;
+        }
 
         if ($params != '') {
             $this->SendDebug(__FUNCTION__, 'params=' . print_r($params, true), 0);
@@ -340,16 +382,23 @@ class PanasonicCloudIO extends IPSModule
             }
         }
 
-        $header_base = [
-            'Accept'          => 'application/json; charset=utf-8',
-            'Content-Type'    => 'application/json; charset=utf-8',
-            'User-Agent'      => self::$user_agent,
-            'X-APP-TYPE'      => self::$x_app_type,
-            'X-APP-VERSION'   => self::$x_app_version,
-            'X-APP-NAME'      => self::$x_app_name,
-            'X-APP-TIMESTAMP' => date('Y-m-d H:i:s', time()),
-            'X-CFC-API-KEY'   => self::$x_cfc_api_key,
-        ];
+        if ($api == self::$API_CC) {
+            $header_base = [
+                'Accept'          => 'application/json; charset=utf-8',
+                'Content-Type'    => 'application/json; charset=utf-8',
+                'User-Agent'      => self::$user_agent,
+                'X-APP-TYPE'      => self::$x_app_type,
+                'X-APP-VERSION'   => self::$x_app_version,
+                'X-APP-NAME'      => self::$x_app_name,
+                'X-APP-TIMESTAMP' => date('Y-m-d H:i:s', time()),
+                'X-CFC-API-KEY'   => self::$x_cfc_api_key,
+            ];
+        } else {
+            $header_base = [
+                'Content-Type' => 'application/x-www-form-urlencoded',
+                'User-Agent'   => self::$user_agent_asc,
+            ];
+        }
         if ($header_add != '') {
             foreach ($header_add as $key => $val) {
                 $header_base[$key] = $val;
@@ -359,31 +408,51 @@ class PanasonicCloudIO extends IPSModule
         foreach ($header_base as $key => $val) {
             $header[] = $key . ': ' . $val;
         }
-
-        $mode = $postfields != '' ? 'post' : 'get';
-        $this->SendDebug(__FUNCTION__, 'http-' . $mode . ', url=' . $url, 0);
+        $mode = $postfields != '' ? 'POST' : 'GET';
+        $this->SendDebug(__FUNCTION__, 'url=' . $url . ', mode=' . $mode, 0);
         $this->SendDebug(__FUNCTION__, '... header=' . print_r($header, true), 0);
         if ($postfields != '') {
-            $this->SendDebug(__FUNCTION__, '... postfields=' . json_encode($postfields), 0);
+            if (isset($header_base['Content-Type']) && preg_match('#application/json#', $header_base['Content-Type'])) {
+                $postdata = json_encode($postfields);
+            } else {
+                $postdata = http_build_query($postfields);
+            }
+            $this->SendDebug(__FUNCTION__, '... postdata=' . $postdata, 0);
         }
 
         $time_start = microtime(true);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        if ($postfields != '') {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postfields));
+        switch ($mode) {
+            case 'GET':
+                break;
+            case 'POST':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+                break;
+            case 'PUT':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+                break;
+            case 'DELETE':
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $mode);
+                break;
         }
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 
-        $cdata = curl_exec($ch);
+        $response = curl_exec($ch);
+
         $cerrno = curl_errno($ch);
         $cerror = $cerrno ? curl_error($ch) : '';
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_info = curl_getinfo($ch);
+        $httpcode = $curl_info['http_code'];
 
         $duration = round(microtime(true) - $time_start, 2);
         $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
@@ -395,14 +464,34 @@ class PanasonicCloudIO extends IPSModule
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
         }
         if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, ' => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, ' => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, ' => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        if ($statuscode == 0) {
             if ($httpcode == 401) {
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
-                $this->WriteAttributeString('AccessToken', '');
+                if ($api == self::$API_CC) {
+                    $this->WriteAttributeString('AccessToken', '');
+                } else {
+                    $this->WriteAttributeString('AccessToken_ASC', '');
+                }
             } elseif ($httpcode == 403) {
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
-                $this->WriteAttributeString('AccessToken', '');
+                if ($api == self::$API_CC) {
+                    $this->WriteAttributeString('AccessToken', '');
+                } else {
+                    $this->WriteAttributeString('AccessToken_ASC', '');
+                }
             } elseif ($httpcode >= 500 && $httpcode <= 599) {
                 $statuscode = self::$IS_SERVERERROR;
                 $err = 'got http-code ' . $httpcode . ' (server error)';
@@ -411,24 +500,70 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
-        if ($statuscode == 0) {
-            if ($cdata == '' || ctype_print($cdata)) {
-                $this->SendDebug(__FUNCTION__, ' => body=' . $cdata, 0);
+        if ($api == self::$API_CC) {
+            if ($statuscode == 0) {
+                if ($body == 'Token expires') {
+                    $this->WriteAttributeString('AccessToken', '');
+                    $statuscode = self::$IS_UNAUTHORIZED;
+                }
+            }
+            if ($statuscode == 0) {
+                $jbody = json_decode($body, true);
+                if ($jbody == '') {
+                    $statuscode = self::$IS_INVALIDDATA;
+                    $err = 'malformed response';
+                }
+            }
+        } else {
+            $jbody = [];
+
+            if ($endpoint == self::$contract_endpoint_asc) {
+                if (preg_match_all('|Set-Cookie: selectedDeviceId=(.*);|Ui', $head, $matches) == false) {
+                    $statuscode = self::$IS_INVALIDDATA;
+                    $err = 'no "selectedDeviceId" in header';
+                } else {
+                    $jbody = [
+                        'DeviceId' => $matches[1][0],
+                    ];
+                }
             } else {
-                $this->SendDebug(__FUNCTION__, ' => body potentially contains binary data, size=' . strlen($cdata), 0);
+                if ($statuscode == 0) {
+                    $jbody = @json_decode($body, true);
+                    if ($jbody == false) {
+                        $statuscode = self::$IS_INVALIDDATA;
+                        $err = 'malformed response';
+                    }
+                }
+                $this->SendDebug(__FUNCTION__, 'jbody=' . print_r($jbody, true), 0);
+                if ($statuscode == 0) {
+                    if (isset($jbody['errorCode']) && $jbody['errorCode'] > 0) {
+                        $statuscode = self::$IS_INVALIDDATA;
+                        $err = 'errorCode=' . $jbody['errorCode'];
+                        $this->WriteAttributeString('AccessToken_ASC', '');
+                    }
+                }
+                if ($statuscode == 0) {
+                    if (isset($jbody['message'][0]['errorMessage'])) {
+                        $statuscode = self::$IS_INVALIDDATA;
+                        $err = 'errorMessage=' . $jbody['message'][0]['errorMessage'];
+                        $this->WriteAttributeString('AccessToken_ASC', '');
+                    }
+                }
             }
-        }
-        if ($statuscode == 0) {
-            if ($cdata == 'Token expires') {
-                $this->WriteAttributeString('AccessToken', '');
-                $statuscode = self::$IS_UNAUTHORIZED;
-            }
-        }
-        if ($statuscode == 0) {
-            $jdata = json_decode($cdata, true);
-            if ($jdata == '') {
-                $statuscode = self::$IS_INVALIDDATA;
-                $err = 'malformed response';
+            if ($endpoint == self::$auth_endpoint_asc) {
+                if ($statuscode == 0) {
+                    if (preg_match_all('|Set-Cookie: accessToken=(.*);|Ui', $head, $matches) == false) {
+                        $statuscode = self::$IS_INVALIDDATA;
+                        $err = 'no "accessToken" in header';
+                    } else {
+                        $jbody['accessToken']['token'] = $matches[1][0];
+                    }
+                }
+                if ($statuscode == 0) {
+                    if (isset($jbody['accessToken']['expires'])) {
+                        $jbody['accessToken']['expires'] = @strtotime($jbody['accessToken']['expires']);
+                    }
+                }
             }
         }
 
@@ -445,7 +580,7 @@ class PanasonicCloudIO extends IPSModule
 
         $this->MaintainStatus(IS_ACTIVE);
 
-        return $jdata;
+        return $jbody;
     }
 
     private function GetAccessToken()
@@ -459,13 +594,13 @@ class PanasonicCloudIO extends IPSModule
         if ($data != '') {
             $jtoken = json_decode($data, true);
             $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
-            $expireѕ = isset($jtoken['expireѕ']) ? $jtoken['expireѕ'] : 0;
-            if ($expireѕ < time()) {
+            $expires = isset($jtoken['expires']) ? $jtoken['expires'] : 0;
+            if ($expires < time()) {
                 $this->SendDebug(__FUNCTION__, 'access_token expired', 0);
                 $access_token = '';
             }
             if ($access_token != '') {
-                $this->SendDebug(__FUNCTION__, 'access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expireѕ), 0);
+                $this->SendDebug(__FUNCTION__, 'access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expires), 0);
                 IPS_SemaphoreLeave($this->SemaphoreID);
                 return $access_token;
             }
@@ -480,7 +615,7 @@ class PanasonicCloudIO extends IPSModule
             'loginId'  => $username,
             'password' => $password,
         ];
-        $jdata = $this->do_HttpRequest(self::$auth_endpoint, $postfields, '', '');
+        $jdata = $this->do_HttpRequest(self::$auth_endpoint, $postfields, '', '', self::$API_CC);
         if ($jdata == false) {
             $this->WriteAttributeString('AccessToken', '');
             IPS_SemaphoreLeave($this->SemaphoreID);
@@ -490,14 +625,71 @@ class PanasonicCloudIO extends IPSModule
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         $access_token = $this->GetArrayElem($jdata, 'uToken', '');
         $client_id = $this->GetArrayElem($jdata, 'clientId', '');
-        $expireѕ = time() + self::$login_interval;
-        $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expireѕ), 0);
+        $expires = time() + self::$login_interval;
+        $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expires), 0);
         $jtoken = [
             'access_token' => $access_token,
             'client_id'    => $client_id,
-            'expireѕ'      => $expireѕ,
+            'expires'      => $expires,
         ];
         $this->WriteAttributeString('AccessToken', json_encode($jtoken));
+        IPS_SemaphoreLeave($this->SemaphoreID);
+        return $access_token;
+    }
+
+    private function GetAccessToken_ASC()
+    {
+        if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
+            $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
+            return false;
+        }
+
+        $data = $this->ReadAttributeString('AccessToken_ASC');
+        if ($data != '') {
+            $jtoken = json_decode($data, true);
+            $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
+            $expires = isset($jtoken['expires']) ? $jtoken['expires'] : 0;
+            if ($expires < time()) {
+                $this->SendDebug(__FUNCTION__, 'access_token expires', 0);
+                $access_token = '';
+            }
+            if ($access_token != '') {
+                $this->SendDebug(__FUNCTION__, 'access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expires), 0);
+                IPS_SemaphoreLeave($this->SemaphoreID);
+                return $access_token;
+            }
+        } else {
+            $this->SendDebug(__FUNCTION__, 'no saved access_token', 0);
+        }
+
+        $header_add = [
+            'Accept'       => 'application/json; charset=UTF-8',
+            'Referer'      => self::$base_url_asc,
+        ];
+
+        $username = $this->ReadPropertyString('username');
+        $password = $this->ReadPropertyString('password');
+        $postfields = [
+            'var.loginId'   => $username,
+            'var.password'  => $password,
+            'var.inputOmit' => 'false',
+        ];
+        $jdata = $this->do_HttpRequest(self::$auth_endpoint_asc, $postfields, '', $header_add, self::$API_ASC);
+        if ($jdata == false) {
+            $this->WriteAttributeString('AccessToken_ASC', '');
+            IPS_SemaphoreLeave($this->SemaphoreID);
+            return false;
+        }
+
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        $access_token = $this->GetArrayElem($jdata, 'accessToken.token', '');
+        $expires = $this->GetArrayElem($jdata, 'accessToken.expires', 0);
+        $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expires), 0);
+        $jtoken = [
+            'access_token' => $access_token,
+            'expires'      => $expires,
+        ];
+        $this->WriteAttributeString('AccessToken_ASC', json_encode($jtoken));
         IPS_SemaphoreLeave($this->SemaphoreID);
         return $access_token;
     }
@@ -568,7 +760,7 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
             return;
         }
-        $jdata = $this->do_HttpRequest($url, '', '', $header_add);
+        $jdata = $this->do_HttpRequest($url, '', '', $header_add, self::$API_CC);
         IPS_SemaphoreLeave($this->SemaphoreID);
         if ($jdata == false) {
             return false;
@@ -578,6 +770,43 @@ class PanasonicCloudIO extends IPSModule
         return json_encode($groups);
     }
 
+    private function MapGuidToId_ASC(string $guid)
+    {
+        $access_token = $this->GetAccessToken_ASC();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $url = self::$contract_endpoint_asc;
+
+        $cookies = [
+            'accessToken=' . $access_token,
+            'selectedGwid=' . $guid,
+        ];
+
+        $header_add = [
+            'Accept'        => 'application/json; charset=UTF-8',
+            'Referer'       => self::$base_url_asc,
+            'Cache-Control' => 'max-age=0',
+            'Cookie'        => implode('; ', $cookies),
+        ];
+
+        $postfields = [
+        ];
+
+        if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
+            $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
+            return;
+        }
+        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add, self::$API_ASC);
+        IPS_SemaphoreLeave($this->SemaphoreID);
+        if ($jdata == false) {
+            return false;
+        }
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        return json_encode($jdata);
+    }
+
     private function GetDeviceStatus(string $guid, bool $now)
     {
         $access_token = $this->GetAccessToken();
@@ -585,8 +814,7 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
 
-        $url = $now ? self::$device_status_now_endpoint : self::$device_status_endpoint;
-        $url .= $guid;
+        $url = ($now ? self::$device_status_now_endpoint : self::$device_status_endpoint) . $guid;
 
         $header_add = [
             'X-User-Authorization' => $access_token,
@@ -596,13 +824,89 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
             return;
         }
-        $jdata = $this->do_HttpRequest($url, '', '', $header_add);
+        $jdata = $this->do_HttpRequest($url, '', '', $header_add, self::$API_CC);
         IPS_SemaphoreLeave($this->SemaphoreID);
         if ($jdata == false) {
             return false;
         }
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         return json_encode($jdata);
+    }
+
+    private function GetDeviceStatus_ASC(string $device_id)
+    {
+        $access_token = $this->GetAccessToken_ASC();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $url = self::$device_status_endpoint_asc . $device_id;
+
+        $params = [
+            'var.deviceDirect' => true,
+        ];
+
+        $cookies = [
+            'accessToken=' . $access_token,
+        ];
+
+        $header_add = [
+            'Accept'       => 'application/json; charset=UTF-8',
+            'Referer'      => self::$base_url_asc,
+            'Cookie'       => implode('; ', $cookies),
+        ];
+
+        $postfields = '';
+
+        if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
+            $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
+            return;
+        }
+
+        $jdata = $this->do_HttpRequest($url, $postfields, $params, $header_add, self::$API_ASC);
+        IPS_SemaphoreLeave($this->SemaphoreID);
+        if ($jdata == false) {
+            return false;
+        }
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        $ret = isset($jdata['status']) ? json_encode($jdata['status']) : '';
+        return $ret;
+    }
+
+    private function GetDevices_ASC()
+    {
+        $access_token = $this->GetAccessToken_ASC();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $url = self::$devices_endpoint_asc;
+
+        $cookies = [
+            'accessToken=' . $access_token,
+        ];
+
+        $header_add = [
+            'Accept'       => 'application/json; charset=UTF-8',
+            'Referer'      => self::$base_url_asc,
+            'Cookie'       => implode('; ', $cookies),
+        ];
+
+        $postfields = '';
+
+        if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
+            $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
+            return;
+        }
+
+        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add, self::$API_ASC);
+        IPS_SemaphoreLeave($this->SemaphoreID);
+        if ($jdata == false) {
+            return false;
+        }
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        $ret = isset($jdata['device']) ? json_encode($jdata['device']) : '';
+        return $ret;
     }
 
     private function ControlDevice(string $guid, string $parameters)
@@ -627,7 +931,7 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
             return;
         }
-        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add);
+        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add, self::$API_CC);
         IPS_SemaphoreLeave($this->SemaphoreID);
         if ($jdata == false) {
             return false;
@@ -660,7 +964,7 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
             return;
         }
-        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add);
+        $jdata = $this->do_HttpRequest($url, $postfields, '', $header_add, self::$API_CC);
         IPS_SemaphoreLeave($this->SemaphoreID);
         if ($jdata == false) {
             return false;

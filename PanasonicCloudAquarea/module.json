@@ -1,10 +1,10 @@
 {
-	"id": "{A972DA17-4989-9CAD-2680-0CB492645050}",
-	"name": "PanasonicCloudDevice",
+	"id": "{7A09A576-A675-F915-B1EC-1135E6700210}",
+	"name": "PanasonicCloudAquarea",
 	"type": 3,
 	"vendor": "Panasonic",
 	"aliases": [
-		"Panasonic Comfort Cloud Device"
+		"Panasonic Comfort Cloud Aquarea Device"
 	],
 	"parentRequirements": [
 		"{34871A78-6B14-6BD4-3BE2-192BCB0B150D}"

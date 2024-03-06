@@ -124,13 +124,19 @@ PanasonicCloud.Temperature
   - PanasonicCloudIO: `{FA9B3ACC-2056-06B5-4DA6-0C7D375A89FB}`
   - PanasonicCloudConfig: `{85693205-4AF7-C720-B108-05AD5815060D}`
   - PanasonicCloudDevice: `{A972DA17-4989-9CAD-2680-0CB492645050}`
+  - PanasonicCloudAquarea: `{7A09A576-A675-F915-B1EC-1135E6700210}`
 - Nachrichten:
   - {34871A78-6B14-6BD4-3BE2-192BCB0B150D}: an PanasonicCloudIO
-  - {FE8D32D1-6A63-D55B-FC77-8C34A637A5E0}: an PanasonicCloudConfig, PanasonicCloudDevice
+  - {FE8D32D1-6A63-D55B-FC77-8C34A637A5E0}: an PanasonicCloudConfig, PanasonicCloudDevice, PanasonicCloudAquarea
 
 ### Quellen
 
 ## 7. Versions-Historie
+
+- 1.20 @ 06.03.2024 17:18
+  - Neu: Aquarea-Wärmepunpen werden nun unterstützt
+  - Fix: Variablenprofil "PanasonicCloud.Temperature" hatte keine Einheit
+  - update submodule CommonStubs
 
 - 1.19 @ 07.02.2024 17:52
   - Fix: Absicherung von Zugriffen auf andere Instanzen in Konfiguratoren
