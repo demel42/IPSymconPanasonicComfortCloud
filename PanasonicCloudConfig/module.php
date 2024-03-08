@@ -109,8 +109,6 @@ class PanasonicCloudConfig extends IPSModule
             $this->WriteDataCache($dataCache, time());
         }
 
-        $instIDs = IPS_GetInstanceListByModuleID($guid);
-
         if (is_array($groups)) {
             foreach ($groups as $group) {
                 $this->SendDebug(__FUNCTION__, 'group=' . print_r($group, true), 0);
@@ -138,11 +136,11 @@ class PanasonicCloudConfig extends IPSModule
                                 $guid = '';
                                 break;
                         }
-
                         if ($guid == '') {
                             $this->SendDebug(__FUNCTION__, 'ignore module ' . $module['id'] . ': unsupported type ' . $module['type'], 0);
                             continue;
                         }
+                        $instIDs = IPS_GetInstanceListByModuleID($guid);
 
                         $instanceID = 0;
                         foreach ($instIDs as $instID) {
