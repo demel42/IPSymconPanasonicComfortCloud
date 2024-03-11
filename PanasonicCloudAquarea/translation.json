@@ -33,7 +33,7 @@
 			"__variables__": "",
 			"Operate": "Betrieb",
 			"Operation mode": "Betriebsart",
-			"Last update": "Letzte Aktualisierung",
+			"Working mode": "Arbeitsmodus",
 			"Whisper mode": "Flüsterbetrieb",
 			"Power operation": "Leistungsbetrieb",
 			"Manual defrosting": "manuelle Abtauung",
@@ -54,7 +54,7 @@
 			"Tank {$tank}: target temperature": "Speicher {$tank}: Soll-Temperatur",
 
 			"Daily energy consumption": "Täglicher Energieverbrauch",
-			"Last change": "Letzte Änderung",
+			"Last update": "Letzte Aktualisierung",
 
 			"__actions__": "",
 			"Update status": "Aktualisiere Status",

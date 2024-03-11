@@ -112,6 +112,7 @@ class PanasonicCloudAquarea extends IPSModule
         // $this->MaintainAction('Operate', true);
 
         $this->MaintainVariable('OperationMode', $this->Translate('Operation mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.OperationMode_ASC', $vpos++, true);
+        $this->MaintainVariable('WorkingMode', $this->Translate('Working mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.WorkingMode_ASC', $vpos++, true);
 
         $this->MaintainVariable('QuietMode', $this->Translate('Whisper mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.QuietMode_ASC', $vpos++, true);
         $this->MaintainVariable('PowerMode', $this->Translate('Power operation'), VARIABLETYPE_INTEGER, 'PanasonicCloud.PowerMode_ASC', $vpos++, true);
@@ -131,10 +132,6 @@ class PanasonicCloudAquarea extends IPSModule
             $ident = 'Zone' . $i . '_Operate';
             $name = $this->TranslateFormat('Zone {$zone}: operate', ['{$zone}' => ($i + 1)]);
             $this->MaintainVariable($ident, $name, VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, $use);
-
-            $ident = 'Zone' . $i . '_SpecialMode';
-            $name = $this->TranslateFormat('Zone {$zone}: mode', ['{$zone}' => ($i + 1)]);
-            $this->MaintainVariable($ident, $name, VARIABLETYPE_INTEGER, 'PanasonicCloud.SpecialMode_ASC', $vpos++, $use);
 
             $ident = 'Zone' . $i . '_TemperatureNow';
             $name = $this->TranslateFormat('Zone {$zone}: current temperature', ['{$zone}' => ($i + 1)]);
@@ -493,6 +490,8 @@ class PanasonicCloudAquarea extends IPSModule
             'status'        => $status,
         ];
 
+        $device_config = @json_decode($this->ReadAttributeString('device_config'), true);
+
         $is_changed = false;
         $fnd = false;
 
@@ -506,7 +505,6 @@ class PanasonicCloudAquarea extends IPSModule
 
         $zone_count = $this->ReadPropertyInteger('zone_count');
         for ($i = $zone_count; $i < self::$ZONE_MAX; $i++) {
-            $ignored_fields[] = 'specialStatus.' . $i . '.*';
             $ignored_fields[] = 'zoneStatus.' . $i . '.*';
         }
         $tank_count = $this->ReadPropertyInteger('tank_count');
@@ -544,7 +542,7 @@ class PanasonicCloudAquarea extends IPSModule
         $quietMode = $this->GetArrayElem($jdata, 'status.quietMode', '', $fnd);
         if ($fnd) {
             $used_fields[] = 'status.quietMode';
-            $this->SendDebug(__FUNCTION__, '... QuietMode (powerful)=' . $quietMode, 0);
+            $this->SendDebug(__FUNCTION__, '... QuietMode (quietMode)=' . $quietMode, 0);
             $this->SaveValue('QuietMode', (int) $quietMode, $is_changed);
         } else {
             $missing_fields[] = 'status.quietMode';
@@ -630,12 +628,34 @@ class PanasonicCloudAquarea extends IPSModule
             $missing_fields[] = 'status.operationStatus';
         }
 
+        $workingMode = 0 /* NORMAL */;
+        for ($i = 0; $i < 2; $i++) {
+            $operationStatus = $this->GetArrayElem($jdata, 'status.specialStatus.' . $i . '.operationStatus', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.specialStatus.' . $i . '.operationStatus';
+                $specialMode = $this->GetArrayElem($jdata, 'status.specialStatus.' . $i . '.specialMode', '', $fnd);
+                if ($fnd) {
+                    $used_fields[] = 'status.specialStatus.' . $i . '.specialMode';
+                    if ($operationStatus == 1 /* ON */) {
+                        $workingMode = $specialMode;
+                    }
+                } else {
+                    $missing_fields[] = 'status.specialStatus.' . $i . '.specialMode';
+                }
+            } else {
+                $missing_fields[] = 'status.specialStatus.' . $i . '.operationStatus';
+            }
+        }
+        $this->SendDebug(__FUNCTION__, '... WorkingMode=' . $workingMode, 0);
+        $this->SaveValue('WorkingMode', $workingMode, $is_changed);
+
+        $zonestatus = [];
         for ($i = 0; $i < self::$ZONE_MAX; $i++) {
             if ($i >= $zone_count) {
                 continue;
             }
 
-            $ignored_fields[] = 'status.zonestatus.' . $i . '.zoneId';
+            $ignored_fields[] = 'status.zoneStatus.' . $i . '.zoneId';
 
             $ident = 'Zone' . $i . '_Operate';
             $operate = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.operationStatus', '', $fnd);
@@ -645,25 +665,6 @@ class PanasonicCloudAquarea extends IPSModule
                 $this->SaveValue($ident, (bool) $operate, $is_changed);
             } else {
                 $missing_fields[] = 'status.zoneStatus.' . $i . '.operationStatus';
-            }
-
-            $ident = 'Zone' . $i . '_SpecialMode';
-            $operationStatus = $this->GetArrayElem($jdata, 'status.specialStatus.' . $i . '.operationStatus', '', $fnd);
-            if ($fnd) {
-                $used_fields[] = 'status.specialStatus.' . $i . '.operationStatus';
-                $specialMode = $this->GetArrayElem($jdata, 'status.specialStatus.' . $i . '.specialMode', '', $fnd);
-                if ($fnd) {
-                    $used_fields[] = 'status.specialStatus.' . $i . '.specialMode';
-                    if ($operationStatus == 0 /* OFF */) {
-                        $specialMode = 0 /* NORMAL */;
-                    }
-                    $this->SendDebug(__FUNCTION__, '... ' . $ident . '=' . $specialMode, 0);
-                    $this->SaveValue($ident, $specialMode, $is_changed);
-                } else {
-                    $missing_fields[] = 'status.specialStatus.' . $i . '.specialMode';
-                }
-            } else {
-                $missing_fields[] = 'status.specialStatus.' . $i . '.operationStatus';
             }
 
             $ident = 'Zone' . $i . '_TemperatureNow';
@@ -736,16 +737,21 @@ class PanasonicCloudAquarea extends IPSModule
                 $missing_fields[] = 'status.zoneStatus.' . $i . '.comfortCool';
             }
 
-            /*
-                device_config
-                    status.zonestatus.0.heatMin
-                    status.zonestatus.0.heatMax
-
-                    status.zonestatus.0.coolMin
-                    status.zonestatus.0.coolMax
-             */
+            $elem = [];
+            foreach (['heatMin', 'heatMax', 'coolMin', 'coolMax'] as $f) {
+                $v = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.' . $f, '', $fnd);
+                if ($fnd) {
+                    $used_fields[] = 'status.zoneStatus.' . $i . '.' . $f;
+                    $elem[$f] = $v;
+                } else {
+                    $missing_fields[] = 'status.zoneStatus.' . $i . '.' . $f;
+                }
+            }
+            $zonestatus[] = $elem;
         }
+        $device_config['zonestatus'] = $zonestatus;
 
+        $tankstatus = [];
         for ($i = 0; $i < self::$TANK_MAX; $i++) {
             if ($i >= $tank_count) {
                 continue;
@@ -781,12 +787,22 @@ class PanasonicCloudAquarea extends IPSModule
                 $missing_fields[] = 'status.tankStatus.' . $i . '.heatSet';
             }
 
-            /*
-                    device_config
-                        status.tankstatus.0.heatMin
-                        status.tankstatus.0.heatMax
-             */
+            $elem = [];
+            foreach (['heatMin', 'heatMax'] as $f) {
+                $v = $this->GetArrayElem($jdata, 'status.tankStatus.' . $i . '.' . $f, '', $fnd);
+                if ($fnd) {
+                    $used_fields[] = 'status.tankStatus.' . $i . '.' . $f;
+                    $elem[$f] = $v;
+                } else {
+                    $missing_fields[] = 'status.tankStatus.' . $i . '.' . $f;
+                }
+            }
+            $tankstatus[] = $elem;
         }
+        $device_config['tankstatus'] = $tankstatus;
+
+        $this->SendDebug(__FUNCTION__, 'device_config=' . print_r($device_config, true), 0);
+        $this->WriteAttributeString('device_config', json_encode($device_config));
 
         for ($i = 0; $i < 2; $i++) {
             $b = false;

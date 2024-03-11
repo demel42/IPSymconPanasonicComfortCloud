@@ -107,9 +107,9 @@ trait PanasonicCloudLocalLib
     public static $OPERATION_MODE_ASC_AUTO_HEAT = 3;
     public static $OPERATION_MODE_ASC_AUTO_COOL = 4;
 
-    public static $SPECIAL_MODE_ASC_NORMAL = 0;
-    public static $SPECIAL_MODE_ASC_ECO = 1;
-    public static $SPECIAL_MODE_ASC_COMFORT = 2;
+    public static $WORKING_MODE_ASC_NORMAL = 0;
+    public static $WORKING_MODE_ASC_ECO = 1;
+    public static $WORKING_MODE_ASC_COMFORT = 2;
 
     public static $DEVICE_ACTIVITY_ASC_OFF = 0;
     public static $DEVICE_ACTIVITY_ASC_IDLE = 1;
@@ -222,11 +222,11 @@ trait PanasonicCloudLocalLib
         $this->CreateVarProfile('PanasonicCloud.OperationMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
-            ['Wert' => self::$SPECIAL_MODE_ASC_NORMAL, 'Name' => $this->Translate('Normal'), 'Farbe' => -1],
-            ['Wert' => self::$SPECIAL_MODE_ASC_ECO, 'Name' => $this->Translate('Eco'), 'Farbe' => -1],
-            ['Wert' => self::$SPECIAL_MODE_ASC_COMFORT, 'Name' => $this->Translate('Comfort'), 'Farbe' => -1],
+            ['Wert' => self::$WORKING_MODE_ASC_NORMAL, 'Name' => $this->Translate('Normal'), 'Farbe' => -1],
+            ['Wert' => self::$WORKING_MODE_ASC_ECO, 'Name' => $this->Translate('Eco'), 'Farbe' => -1],
+            ['Wert' => self::$WORKING_MODE_ASC_COMFORT, 'Name' => $this->Translate('Comfort'), 'Farbe' => -1],
         ];
-        $this->CreateVarProfile('PanasonicCloud.SpecialMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.WorkingMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
             ['Wert' => self::$DEVICE_ACTIVITY_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
