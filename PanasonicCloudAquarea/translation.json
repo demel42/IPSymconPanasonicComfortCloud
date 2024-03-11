@@ -13,6 +13,9 @@
 			"Type": "Typ",
 			"Device-ID": "Geräte-ID",
 
+			"Zone count": "Anzahl Kreisläufe",
+			"Tank count": "Anzahl Speicher",
+
 			"save daily energy consumption": "Täglichen Energieverbrauch speichern",
 			" ... by activating this switch, additional variables are created and logged as counters":
 				" ... durch Aktivierung dieses Schalters werden zusätzliche Variablen erstellt und als Zähler geloggt",
@@ -36,6 +39,19 @@
 			"Manual defrosting": "manuelle Abtauung",
 			"Outside temperature": "Außentemperatur",
 			"Holiday timer": "Urlaubstimer",
+			"Activity": "Aktivität",
+			"Zone {$zone}: operate": "HK{$zone}: Betrieb",
+			"Zone {$zone}: mode": "HK{$zone}: Modus",
+			"Zone {$zone}: current temperature": "HK{$zone}: aktuelle Temperatur",
+			"Zone {$zone}: target heating temperature": "HK{$zone}: Soll-Heiztemperatur",
+			"Zone {$zone}: eco heating temperature adjustment": "HK{$zone}: Öko-Heiztemperatur-Anpassung",
+			"Zone {$zone}: comfort heating temperature adjustment": "HK{$zone}: Komfort-Heiztemperatur-Anpassung",
+			"Zone {$zone}: target cooling temperature": "HK{$zone}: Soll-Kühltemperatur",
+			"Zone {$zone}: eco cooling temperature adjustment": "HK{$zone}: Öko-Kühltemperatur-Anpassung",
+			"Zone {$zone}: comfort cooling temperature adjustment": "HK{$zone}: Komfort-Kühltemperatur-Anpassung",
+			"Tank {$tank}: operate": "Speicher {$tank}: Betrieb",
+			"Tank {$tank}: current temperature": "Speicher {$tank}: aktuelle Temperatur",
+			"Tank {$tank}: target temperature": "Speicher {$tank}: Soll-Temperatur",
 
 			"Daily energy consumption": "Täglicher Energieverbrauch",
 			"Last change": "Letzte Änderung",

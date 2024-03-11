@@ -14,6 +14,10 @@
 			"User-ID (email)": "Benutzerkennung (Mail-Adresse)",
 			"Password": "Passwort",
 
+			"Inactivity logout from Aquera Smart Cloud after":
+				"Inaktivitätsabmeldung von Aquera-Smart-Cloud nach",
+			"Seconds": "Sekunden",
+
 			"Collect data of API calls": "Daten von API-Aufrufen sammeln",
 
 			"__media__": "",

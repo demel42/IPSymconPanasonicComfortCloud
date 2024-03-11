@@ -55,9 +55,23 @@
 			"All": "Alle",
 
 			"__variableprofile__": "PanasonicCloud.OperationMode_ASC",
-			"Automatic": "Automatisch",
-			"Cool": "Kühlen",
+			"Off": "Aus",
 			"Heat": "Heizen",
+			"Cool": "Kühlen",
+			"Automatic heating": "Heizautomatik",
+			"Automatic cooling": "Kühlautomatik",
+
+			"__variableprofile__": "PanasonicCloud.SpecialMode_ASC",
+			"Normal": "Normal",
+			"Eco": "Öko",
+			"Comfort": "Komfort",
+
+			"__variableprofile__": "PanasonicCloud.DeviceActivity_ASC",
+			"Off": "Aus",
+			"Idle": "Leerlauf",
+			"Heating": "Aufheizen",
+			"Cooling": "Abkühlen",
+			"Heating water": "Wasser aufheizen",
 
 			"__variableprofile__": "PanasonicCloud.QuietMode_ASC",
 			"Off": "Aus",

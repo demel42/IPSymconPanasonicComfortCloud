@@ -10,6 +10,9 @@ class PanasonicCloudAquarea extends IPSModule
     use PanasonicCloud\StubsCommonLib;
     use PanasonicCloudLocalLib;
 
+    public static $ZONE_MAX = 2;
+    public static $TANK_MAX = 2;
+
     public function __construct(string $InstanceID)
     {
         parent::__construct($InstanceID);
@@ -33,6 +36,9 @@ class PanasonicCloudAquarea extends IPSModule
         $this->RegisterPropertyString('guid', '');
         $this->RegisterPropertyInteger('type', 0);
         $this->RegisterPropertyString('model', '');
+
+        $this->RegisterPropertyInteger('zone_count', 1);
+        $this->RegisterPropertyInteger('tank_count', 1);
 
         $this->RegisterPropertyBoolean('with_energy', false);
         $this->RegisterPropertyInteger('update_interval', 60);
@@ -113,11 +119,70 @@ class PanasonicCloudAquarea extends IPSModule
         $this->MaintainVariable('HolidayTimer', $this->Translate('Holiday timer'), VARIABLETYPE_INTEGER, 'PanasonicCloud.HolidayTimer_ASC', $vpos++, true);
 
         $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
-        /*
-        $this->MaintainVariable('EcoMode', $this->Translate('Eco mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.EcoMode', $vpos++, true);
-        $this->MaintainVariable('TargetTemperature', $this->Translate('Target temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
-        $this->MaintainVariable('ActualTemperature', $this->Translate('Actual temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
-         */
+
+        $this->MaintainVariable('DeviceActivity', $this->Translate('Activity'), VARIABLETYPE_INTEGER, 'PanasonicCloud.DeviceActivity_ASC', $vpos++, true);
+
+        $vpos = 100;
+        $zone_count = $this->ReadPropertyInteger('zone_count');
+        for ($i = 0; $i < self::$ZONE_MAX; $i++) {
+            $use = $i < $zone_count;
+            $vpos = 100 + ($i * 20);
+
+            $ident = 'Zone' . $i . '_Operate';
+            $name = $this->TranslateFormat('Zone {$zone}: operate', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_SpecialMode';
+            $name = $this->TranslateFormat('Zone {$zone}: mode', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_INTEGER, 'PanasonicCloud.SpecialMode_ASC', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_TemperatureNow';
+            $name = $this->TranslateFormat('Zone {$zone}: current temperature', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_TargetHeatTemperature';
+            $name = $this->TranslateFormat('Zone {$zone}: target heating temperature', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_EcoHeatAdjust';
+            $name = $this->TranslateFormat('Zone {$zone}: eco heating temperature adjustment', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_ComfortHeatAdjust';
+            $name = $this->TranslateFormat('Zone {$zone}: comfort heating temperature adjustment', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_TargetCoolTemperature';
+            $name = $this->TranslateFormat('Zone {$zone}: target cooling temperature', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_EcoCoolAdjust';
+            $name = $this->TranslateFormat('Zone {$zone}: eco cooling temperature adjustment', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+
+            $ident = 'Zone' . $i . '_ComfortCoolAdjust';
+            $name = $this->TranslateFormat('Zone {$zone}: comfort cooling temperature adjustment', ['{$zone}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+        }
+
+        $vpos = 200;
+        $tank_count = $this->ReadPropertyInteger('tank_count');
+        for ($i = 0; $i < self::$TANK_MAX; $i++) {
+            $use = $i < $tank_count;
+            $vpos = 200 + ($i * 20);
+
+            $ident = 'Tank' . $i . '_Operate';
+            $name = $this->TranslateFormat('Tank {$tank}: operate', ['{$tank}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, $use);
+
+            $ident = 'Tank' . $i . '_TemperatureNow';
+            $name = $this->TranslateFormat('Tank {$tank}: current temperature', ['{$tank}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+
+            $ident = 'Tank' . $i . '_TargetTemperature';
+            $name = $this->TranslateFormat('Tank {$tank}: target temperature', ['{$tank}' => ($i + 1)]);
+            $this->MaintainVariable($ident, $name, VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, $use);
+        }
 
         $this->MaintainVariable('LastUpdate', $this->Translate('Last update'), VARIABLETYPE_INTEGER, '~UnixTimestamp', $vpos++, true);
 
@@ -185,6 +250,21 @@ class PanasonicCloudAquarea extends IPSModule
                     'enabled' => false
                 ],
             ],
+        ];
+
+        $formElements[] = [
+            'type'    => 'NumberSpinner',
+            'name'    => 'zone_count',
+            'minimum' => 0,
+            'maximum' => self::$ZONE_MAX,
+            'caption' => 'Zone count',
+        ];
+        $formElements[] = [
+            'type'    => 'NumberSpinner',
+            'name'    => 'tank_count',
+            'minimum' => 0,
+            'maximum' => self::$TANK_MAX,
+            'caption' => 'Tank count',
         ];
 
         /*
@@ -421,7 +501,18 @@ class PanasonicCloudAquarea extends IPSModule
         $ignored_fields = [
             'configuration.deviceGuid',
             'status.deviceGuid',
+            'status.bivalent',
         ];
+
+        $zone_count = $this->ReadPropertyInteger('zone_count');
+        for ($i = $zone_count; $i < self::$ZONE_MAX; $i++) {
+            $ignored_fields[] = 'specialStatus.' . $i . '.*';
+            $ignored_fields[] = 'zoneStatus.' . $i . '.*';
+        }
+        $tank_count = $this->ReadPropertyInteger('tank_count');
+        for ($i = $tank_count; $i < self::$TANK_MAX; $i++) {
+            $ignored_fields[] = 'tankStatus.' . $i . '.*';
+        }
 
         $operate = $this->GetArrayElem($jdata, 'status.operationStatus', '', $fnd);
         if ($fnd) {
@@ -493,15 +584,226 @@ class PanasonicCloudAquarea extends IPSModule
             }
         }
 
+        $operationStatus = $this->GetArrayElem($jdata, 'status.operationStatus', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'status.operationStatus';
+            $operationMode = $this->GetArrayElem($jdata, 'status.operationMode', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.operationMode';
+                $direction = $this->GetArrayElem($jdata, 'status.direction', '', $fnd);
+                if ($fnd) {
+                    $used_fields[] = 'status.direction';
+                    $tank = $this->GetArrayElem($jdata, 'status.tank', '', $fnd);
+                    if ($fnd) {
+                        $used_fields[] = 'status.tank';
+                        $tank_operationStatus = $this->GetArrayElem($jdata, 'status.tankStatus.0.operationStatus', '', $fnd);
+                        if ($fnd) {
+                            $used_fields[] = 'status.tankStatus.0.operationStatus';
+                            if ($operationStatus === 0 /* OFF */) {
+                                $deviceActivity = self::$DEVICE_ACTIVITY_ASC_OFF;
+                            } elseif ($direction == 0 /* IDLE */) {
+                                $deviceActivity = self::$DEVICE_ACTIVITY_ASC_IDLE;
+                            } elseif ($direction == 1 /* PUMP */ && in_array($operationMode, [1 /* HEAT */, 3 /* AUTO_HEAT */])) {
+                                $deviceActivity = self::$DEVICE_ACTIVITY_ASC_HEATING;
+                            } elseif ($direction == 1 /* PUMP */ && in_array($operationMode, [2 /* COOL */, 4 /* AUTO_COOL */])) {
+                                $deviceActivity = self::$DEVICE_ACTIVITY_ASC_COOLING;
+                            } elseif ($direction == 2 /* WATER */ && $tank == 1 && $tank_operationStatus == 1 /* ON */) {
+                                $deviceActivity = self::$DEVICE_ACTIVITY_ASC_HEATING_WATER;
+                            } else {
+                                $deviceActivity = self::$DEVICE_ACTIVITY_ASC_IDLE;
+                            }
+                            $this->SendDebug(__FUNCTION__, '... DeviceActivity=' . $deviceActivity, 0);
+                            $this->SaveValue('DeviceActivity', $deviceActivity, $is_changed);
+                        } else {
+                            $missing_fields[] = 'status.tankStatus.0.operationStatus';
+                        }
+                    } else {
+                        $missing_fields[] = 'status.tank';
+                    }
+                } else {
+                    $missing_fields[] = 'status.direction';
+                }
+            } else {
+                $missing_fields[] = 'status.operationMode';
+            }
+        } else {
+            $missing_fields[] = 'status.operationStatus';
+        }
+
+        for ($i = 0; $i < self::$ZONE_MAX; $i++) {
+            if ($i >= $zone_count) {
+                continue;
+            }
+
+            $ignored_fields[] = 'status.zonestatus.' . $i . '.zoneId';
+
+            $ident = 'Zone' . $i . '_Operate';
+            $operate = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.operationStatus', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.operationStatus';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(zoneStatus.' . $i . '.operationStatus)=' . $operate, 0);
+                $this->SaveValue($ident, (bool) $operate, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.operationStatus';
+            }
+
+            $ident = 'Zone' . $i . '_SpecialMode';
+            $operationStatus = $this->GetArrayElem($jdata, 'status.specialStatus.' . $i . '.operationStatus', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.specialStatus.' . $i . '.operationStatus';
+                $specialMode = $this->GetArrayElem($jdata, 'status.specialStatus.' . $i . '.specialMode', '', $fnd);
+                if ($fnd) {
+                    $used_fields[] = 'status.specialStatus.' . $i . '.specialMode';
+                    if ($operationStatus == 0 /* OFF */) {
+                        $specialMode = 0 /* NORMAL */;
+                    }
+                    $this->SendDebug(__FUNCTION__, '... ' . $ident . '=' . $specialMode, 0);
+                    $this->SaveValue($ident, $specialMode, $is_changed);
+                } else {
+                    $missing_fields[] = 'status.specialStatus.' . $i . '.specialMode';
+                }
+            } else {
+                $missing_fields[] = 'status.specialStatus.' . $i . '.operationStatus';
+            }
+
+            $ident = 'Zone' . $i . '_TemperatureNow';
+            $temparatureNow = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.temparatureNow', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.temparatureNow';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.zoneStatus.' . $i . '.temparatureNow)=' . $temparatureNow, 0);
+                $this->SaveValue($ident, (float) $temparatureNow, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.temparatureNow';
+            }
+
+            $ident = 'Zone' . $i . '_TargetHeatTemperature';
+            $heatSet = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.heatSet', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.heatSet';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.zoneStatus.' . $i . '.heatSet)=' . $heatSet, 0);
+                $this->SaveValue($ident, (float) $heatSet, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.heatSet';
+            }
+
+            $ident = 'Zone' . $i . '_EcoHeatAdjust';
+            $ecoHeat = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.ecoHeat', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.ecoHeat';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.zoneStatus.' . $i . '.ecoHeat)=' . $ecoHeat, 0);
+                $this->SaveValue($ident, (float) $ecoHeat, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.ecoHeat';
+            }
+
+            $ident = 'Zone' . $i . '_ComfortHeatAdjust';
+            $comfortHeat = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.comfortHeat', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.comfortHeat';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.zoneStatus.' . $i . '.comfortHeat)=' . $comfortHeat, 0);
+                $this->SaveValue($ident, (float) $comfortHeat, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.comfortHeat';
+            }
+
+            $ident = 'Zone' . $i . '_TargetCoolTemperature';
+            $coolSet = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.coolSet', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.coolSet';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.zoneStatus.' . $i . '.coolSet)=' . $coolSet, 0);
+                $this->SaveValue($ident, (float) $coolSet, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.coolSet';
+            }
+
+            $ident = 'Zone' . $i . '_EcoCoolAdjust';
+            $ecoCool = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.ecoCool', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.ecoCool';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.zoneStatus.' . $i . '.ecoCool)=' . $ecoCool, 0);
+                $this->SaveValue($ident, (float) $ecoCool, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.ecoCool';
+            }
+
+            $ident = 'Zone' . $i . '_ComfortCoolAdjust';
+            $comfortCool = $this->GetArrayElem($jdata, 'status.zoneStatus.' . $i . '.comfortCool', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.zoneStatus.' . $i . '.comfortCool';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.zoneStatus.' . $i . '.comfortCool)=' . $comfortCool, 0);
+                $this->SaveValue($ident, (float) $comfortCool, $is_changed);
+            } else {
+                $missing_fields[] = 'status.zoneStatus.' . $i . '.comfortCool';
+            }
+
+            /*
+                device_config
+                    status.zonestatus.0.heatMin
+                    status.zonestatus.0.heatMax
+
+                    status.zonestatus.0.coolMin
+                    status.zonestatus.0.coolMax
+             */
+        }
+
+        for ($i = 0; $i < self::$TANK_MAX; $i++) {
+            if ($i >= $tank_count) {
+                continue;
+            }
+
+            $ident = 'Tank' . $i . '_Operate';
+            $operate = $this->GetArrayElem($jdata, 'status.tankStatus.' . $i . '.operationStatus', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.tankStatus.' . $i . '.operationStatus';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(tankStatus.' . $i . '.operationStatus)=' . $operate, 0);
+                $this->SaveValue($ident, (bool) $operate, $is_changed);
+            } else {
+                $missing_fields[] = 'status.tankStatus.' . $i . '.operationStatus';
+            }
+
+            $ident = 'Tank' . $i . '_TemperatureNow';
+            $temparatureNow = $this->GetArrayElem($jdata, 'status.tankStatus.' . $i . '.temparatureNow', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.tankStatus.' . $i . '.temparatureNow';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.tankStatus.' . $i . '.temparatureNow)=' . $temparatureNow, 0);
+                $this->SaveValue($ident, (float) $temparatureNow, $is_changed);
+            } else {
+                $missing_fields[] = 'status.tankStatus.' . $i . '.temparatureNow';
+            }
+
+            $ident = 'Tank' . $i . '_TargetTemperature';
+            $heatSet = $this->GetArrayElem($jdata, 'status.tankStatus.' . $i . '.heatSet', '', $fnd);
+            if ($fnd) {
+                $used_fields[] = 'status.tankStatus.' . $i . '.heatSet';
+                $this->SendDebug(__FUNCTION__, '... ' . $ident . '(status.tankStatus.' . $i . '.heatSet)=' . $heatSet, 0);
+                $this->SaveValue($ident, (float) $heatSet, $is_changed);
+            } else {
+                $missing_fields[] = 'status.tankStatus.' . $i . '.heatSet';
+            }
+
+            /*
+                    device_config
+                        status.tankstatus.0.heatMin
+                        status.tankstatus.0.heatMax
+             */
+        }
+
         for ($i = 0; $i < 2; $i++) {
             $b = false;
             $s = ($i == 0 ? 'ignored' : 'unused') . ' variables';
             $vars = $this->GetArrayElemList($jdata);
             foreach ($vars as $var) {
+                $ign = false;
+                foreach ($ignored_fields as $ignored_field) {
+                    if (preg_match('/' . $ignored_field . '/', $var)) {
+                        $ign = true;
+                        break;
+                    }
+                }
                 if ($i == 0) {
-                    $skip = in_array($var, $ignored_fields) == false;
+                    $skip = $ign == false;
                 } else {
-                    $skip = in_array($var, $used_fields) || in_array($var, $ignored_fields);
+                    $skip = in_array($var, $used_fields) || $ign;
                 }
                 if ($skip) {
                     continue;

@@ -101,9 +101,21 @@ trait PanasonicCloudLocalLib
 
     // Aquarea smart cloud
 
-    public static $OPERATION_MODE_ASC_AUTO = 0;
-    public static $OPERATION_MODE_ASC_COOL = 1;
-    public static $OPERATION_MODE_ASC_HEAT = 2;
+    public static $OPERATION_MODE_ASC_OFF = 0;
+    public static $OPERATION_MODE_ASC_HEAT = 1;
+    public static $OPERATION_MODE_ASC_COOL = 2;
+    public static $OPERATION_MODE_ASC_AUTO_HEAT = 3;
+    public static $OPERATION_MODE_ASC_AUTO_COOL = 4;
+
+    public static $SPECIAL_MODE_ASC_NORMAL = 0;
+    public static $SPECIAL_MODE_ASC_ECO = 1;
+    public static $SPECIAL_MODE_ASC_COMFORT = 2;
+
+    public static $DEVICE_ACTIVITY_ASC_OFF = 0;
+    public static $DEVICE_ACTIVITY_ASC_IDLE = 1;
+    public static $DEVICE_ACTIVITY_ASC_HEATING = 2;
+    public static $DEVICE_ACTIVITY_ASC_COOLING = 3;
+    public static $DEVICE_ACTIVITY_ASC_HEATING_WATER = 4;
 
     public static $QUIET_MODE_ASC_OFF = 0;
     public static $QUIET_MODE_ASC_LEVEL1 = 1;
@@ -201,11 +213,29 @@ trait PanasonicCloudLocalLib
         $this->CreateVarProfile('PanasonicCloud.Energy', VARIABLETYPE_FLOAT, ' kWh', 0, 0, 0, 1, '', '', $reInstall);
 
         $associations = [
-            ['Wert' => self::$OPERATION_MODE_ASC_AUTO, 'Name' => $this->Translate('Automatic'), 'Farbe' => -1],
-            ['Wert' => self::$OPERATION_MODE_ASC_COOL, 'Name' => $this->Translate('Cool'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
             ['Wert' => self::$OPERATION_MODE_ASC_HEAT, 'Name' => $this->Translate('Heat'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_ASC_COOL, 'Name' => $this->Translate('Cool'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_ASC_AUTO_HEAT, 'Name' => $this->Translate('Automatic heating'), 'Farbe' => -1],
+            ['Wert' => self::$OPERATION_MODE_ASC_AUTO_COOL, 'Name' => $this->Translate('Automatic cooling'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('PanasonicCloud.OperationMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$SPECIAL_MODE_ASC_NORMAL, 'Name' => $this->Translate('Normal'), 'Farbe' => -1],
+            ['Wert' => self::$SPECIAL_MODE_ASC_ECO, 'Name' => $this->Translate('Eco'), 'Farbe' => -1],
+            ['Wert' => self::$SPECIAL_MODE_ASC_COMFORT, 'Name' => $this->Translate('Comfort'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.SpecialMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
+
+        $associations = [
+            ['Wert' => self::$DEVICE_ACTIVITY_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
+            ['Wert' => self::$DEVICE_ACTIVITY_ASC_IDLE, 'Name' => $this->Translate('Idle'), 'Farbe' => -1],
+            ['Wert' => self::$DEVICE_ACTIVITY_ASC_HEATING, 'Name' => $this->Translate('Heating'), 'Farbe' => -1],
+            ['Wert' => self::$DEVICE_ACTIVITY_ASC_COOLING, 'Name' => $this->Translate('Cooling'), 'Farbe' => -1],
+            ['Wert' => self::$DEVICE_ACTIVITY_ASC_HEATING_WATER, 'Name' => $this->Translate('Heating water'), 'Farbe' => -1],
+        ];
+        $this->CreateVarProfile('PanasonicCloud.DeviceActivity_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
         $associations = [
             ['Wert' => self::$QUIET_MODE_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],

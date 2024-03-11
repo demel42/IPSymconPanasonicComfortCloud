@@ -76,6 +76,8 @@ class PanasonicCloudIO extends IPSModule
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
 
+        $this->RegisterPropertyInteger('inactivity_logout_ASC', 30);
+
         $this->RegisterPropertyBoolean('collectApiCallStats', true);
 
         $this->RegisterAttributeString('UpdateInfo', json_encode([]));
@@ -83,6 +85,8 @@ class PanasonicCloudIO extends IPSModule
 
         $this->RegisterAttributeString('AccessToken', '');
         $this->RegisterAttributeString('AccessToken_ASC', '');
+
+        $this->SetBuffer('LastApiCall_ASC', 0);
 
         $this->InstallVarProfiles(false);
 
@@ -183,6 +187,14 @@ class PanasonicCloudIO extends IPSModule
                     'caption' => 'Password'
                 ],
             ],
+        ];
+
+        $formElements[] = [
+            'type'    => 'NumberSpinner',
+            'name'    => 'inactivity_logout_ASC',
+            'suffix'  => 'Seconds',
+            'minimum' => 0,
+            'caption' => 'Inactivity logout from Aquera Smart Cloud after',
         ];
 
         $formElements[] = [
@@ -565,6 +577,7 @@ class PanasonicCloudIO extends IPSModule
                     }
                 }
             }
+            $this->SetBuffer('LastApiCall_ASC', time());
         }
 
         $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
@@ -644,6 +657,17 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
 
+        $relogin = false;
+        $inactivity_logout = $this->ReadPropertyInteger('inactivity_logout_ASC');
+        if ($inactivity_logout > 0) {
+            $ts = intval($this->GetBuffer('LastApiCall_ASC'));
+            $this->SendDebug(__FUNCTION__, 'last api call=' . date('d.m.Y H:i:s', $ts), 0);
+            $ts += $inactivity_logout;
+            if ($ts < time()) {
+                $relogin = true;
+            }
+        }
+
         $data = $this->ReadAttributeString('AccessToken_ASC');
         if ($data != '') {
             $jtoken = json_decode($data, true);
@@ -651,6 +675,10 @@ class PanasonicCloudIO extends IPSModule
             $expires = isset($jtoken['expires']) ? $jtoken['expires'] : 0;
             if ($expires < time()) {
                 $this->SendDebug(__FUNCTION__, 'access_token expires', 0);
+                $access_token = '';
+            }
+            if ($access_token != '' && $relogin == true) {
+                $this->SendDebug(__FUNCTION__, 'ignore access_token, re-login cause inactivity-logout', 0);
                 $access_token = '';
             }
             if ($access_token != '') {
