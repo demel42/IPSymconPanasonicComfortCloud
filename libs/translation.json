@@ -85,14 +85,6 @@
 			"60m on": "60m ein",
 			"90m on": "90m ein",
 
-			"__variableprofile__": "PanasonicCloud.DefrostMode_ASC",
-			"Off": "Aus",
-			"On": "Ein",
-
-			"__variableprofile__": "PanasonicCloud.HolidayTimer_ASC",
-			"Off": "Aus",
-			"On": "Ein",
-
 			"__status__": "",
 			"Instance is inactive (unauthorized)": "Instanz ist inaktiv (Authorisierung fehlerhaft)",
 			"Instance is inactive (server error)": "Instanz ist inaktiv (Serverfehler)",

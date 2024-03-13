@@ -127,12 +127,6 @@ trait PanasonicCloudLocalLib
     public static $POWER_MODE_ASC_60M = 2;
     public static $POWER_MODE_ASC_90M = 3;
 
-    public static $DEFROST_MODE_ASC_OFF = 0;
-    public static $DEFROST_MODE_ASC_ON = 1;
-
-    public static $HOLIDAY_TIMER_ASC_OFF = 0;
-    public static $HOLIDAY_TIMER_ASC_ON = 1;
-
     private function InstallVarProfiles(bool $reInstall = false)
     {
         if ($reInstall) {
@@ -252,18 +246,6 @@ trait PanasonicCloudLocalLib
             ['Wert' => self::$POWER_MODE_ASC_90M, 'Name' => $this->Translate('90m on'), 'Farbe' => -1],
         ];
         $this->CreateVarProfile('PanasonicCloud.PowerMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
-
-        $associations = [
-            ['Wert' => self::$DEFROST_MODE_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
-            ['Wert' => self::$DEFROST_MODE_ASC_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
-        ];
-        $this->CreateVarProfile('PanasonicCloud.DefrostMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
-
-        $associations = [
-            ['Wert' => self::$HOLIDAY_TIMER_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],
-            ['Wert' => self::$HOLIDAY_TIMER_ASC_ON, 'Name' => $this->Translate('On'), 'Farbe' => -1],
-        ];
-        $this->CreateVarProfile('PanasonicCloud.HolidayTimer_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
     }
 
     public static $DEVICE_TYPE_HEAT_PUMP = 2;

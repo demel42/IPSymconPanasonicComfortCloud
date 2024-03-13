@@ -39,6 +39,8 @@
 			"Manual defrosting": "manuelle Abtauung",
 			"Outside temperature": "Außentemperatur",
 			"Holiday timer": "Urlaubstimer",
+			"Electric immersion heater heating": "E-Heizstab Heizung",
+			"Electric immersion heater hot water": "E-Heizstab Warmwasser",
 			"Activity": "Aktivität",
 			"Zone {$zone}: operate": "HK{$zone}: Betrieb",
 			"Zone {$zone}: mode": "HK{$zone}: Modus",

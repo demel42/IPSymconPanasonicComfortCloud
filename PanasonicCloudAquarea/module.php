@@ -116,12 +116,14 @@ class PanasonicCloudAquarea extends IPSModule
 
         $this->MaintainVariable('QuietMode', $this->Translate('Whisper mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.QuietMode_ASC', $vpos++, true);
         $this->MaintainVariable('PowerMode', $this->Translate('Power operation'), VARIABLETYPE_INTEGER, 'PanasonicCloud.PowerMode_ASC', $vpos++, true);
-        $this->MaintainVariable('DefrostMode', $this->Translate('Manual defrosting'), VARIABLETYPE_INTEGER, 'PanasonicCloud.DefrostMode_ASC', $vpos++, true);
-        $this->MaintainVariable('HolidayTimer', $this->Translate('Holiday timer'), VARIABLETYPE_INTEGER, 'PanasonicCloud.HolidayTimer_ASC', $vpos++, true);
-
-        $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
+        $this->MaintainVariable('ForceHeater', $this->Translate('Electric immersion heater heating'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainVariable('ForceDHW', $this->Translate('Electric immersion heater hot water'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainVariable('DefrostMode', $this->Translate('Manual defrosting'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainVariable('HolidayTimer', $this->Translate('Holiday timer'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
 
         $this->MaintainVariable('DeviceActivity', $this->Translate('Activity'), VARIABLETYPE_INTEGER, 'PanasonicCloud.DeviceActivity_ASC', $vpos++, true);
+
+        $this->MaintainVariable('OutsideTemperature', $this->Translate('Outside temperature'), VARIABLETYPE_FLOAT, 'PanasonicCloud.Temperature', $vpos++, true);
 
         $vpos = 100;
         $zone_count = $this->ReadPropertyInteger('zone_count');
@@ -552,7 +554,7 @@ class PanasonicCloudAquarea extends IPSModule
         if ($fnd) {
             $used_fields[] = 'status.deiceStatus';
             $this->SendDebug(__FUNCTION__, '... DefrostMode (deiceStatus)=' . $deiceStatus, 0);
-            $this->SaveValue('DefrostMode', (int) $deiceStatus, $is_changed);
+            $this->SaveValue('DefrostMode', (bool) $deiceStatus, $is_changed);
         } else {
             $missing_fields[] = 'status.deiceStatus';
         }
@@ -561,9 +563,27 @@ class PanasonicCloudAquarea extends IPSModule
         if ($fnd) {
             $used_fields[] = 'status.holidayTimer';
             $this->SendDebug(__FUNCTION__, '... HolidayTimer (holidayTimer)=' . $holidayTimer, 0);
-            $this->SaveValue('HolidayTimer', (int) $holidayTimer, $is_changed);
+            $this->SaveValue('HolidayTimer', (bool) $holidayTimer, $is_changed);
         } else {
             $missing_fields[] = 'status.holidayTimer';
+        }
+
+        $forceHeater = $this->GetArrayElem($jdata, 'status.forceHeater', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'status.forceHeater';
+            $this->SendDebug(__FUNCTION__, '... ForceHeater (forceHeater)=' . $forceHeater, 0);
+            $this->SaveValue('ForceHeater', (bool) $forceHeater, $is_changed);
+        } else {
+            $missing_fields[] = 'status.forceHeater';
+        }
+
+        $forceDHW = $this->GetArrayElem($jdata, 'status.forceDHW', '', $fnd);
+        if ($fnd) {
+            $used_fields[] = 'status.forceDHW';
+            $this->SendDebug(__FUNCTION__, '... ForceDHW (forceDHW)=' . $forceDHW, 0);
+            $this->SaveValue('ForceDHW', (bool) $forceDHW, $is_changed);
+        } else {
+            $missing_fields[] = 'status.forceDHW';
         }
 
         $outdoorNow = $this->GetArrayElem($jdata, 'status.outdoorNow', '', $fnd);
