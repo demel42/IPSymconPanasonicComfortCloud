@@ -266,7 +266,6 @@ class PanasonicCloudAquarea extends IPSModule
             'caption' => 'Tank count',
         ];
 
-        /*
         $formElements[] = [
             'type'    => 'RowLayout',
             'items'   => [
@@ -282,7 +281,6 @@ class PanasonicCloudAquarea extends IPSModule
                 ],
             ],
         ];
-         */
 
         $formElements[] = [
             'type'    => 'RowLayout',
@@ -463,7 +461,10 @@ class PanasonicCloudAquarea extends IPSModule
         ];
         $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
         $data = $this->SendDataToParent(json_encode($sdata));
-        $devices = json_decode($data, true);
+        $devices = @json_decode($data, true);
+        if ($devices == false) {
+            $devices = [];
+        }
         $this->SendDebug(__FUNCTION__, 'devices=' . print_r($devices, true), 0);
         foreach ($devices as $device) {
             $this->SendDebug(__FUNCTION__, 'device=' . print_r($device, true), 0);
@@ -483,7 +484,7 @@ class PanasonicCloudAquarea extends IPSModule
         $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
         $data = $this->SendDataToParent(json_encode($sdata));
         $this->SendDebug(__FUNCTION__, ' => ' . $data, 0);
-        $jdata = json_decode($data, true);
+        $jdata = @json_decode($data, true);
         $status = isset($jdata[0]) ? $jdata[0] : [];
         $this->SendDebug(__FUNCTION__, 'status=' . print_r($status, true), 0);
 
@@ -853,6 +854,23 @@ class PanasonicCloudAquarea extends IPSModule
                     $this->SendDebug(__FUNCTION__, '... ' . $var . '="' . $val . '"', 0);
                 }
             }
+        }
+
+        $with_energy = $this->ReadPropertyBoolean('with_energy');
+        if ($with_energy) {
+            $sdata = [
+                'DataID'    => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+                'CallerID'  => $this->InstanceID,
+                'Function'  => 'GetDeviceHistory',
+                'Type'      => $type,
+                'DeviceID'  => $device_id,
+                'DataMode'  => self::$DATA_MODE_DAY,
+                'Timestamp' => time(),
+            ];
+            $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
+            $data = $this->SendDataToParent(json_encode($sdata));
+            $jdata = json_decode($data, true);
+            $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         }
 
         $this->SetValue('LastUpdate', $now);
