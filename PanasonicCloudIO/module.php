@@ -44,7 +44,7 @@ class PanasonicCloudIO extends IPSModule
     private static $auth_endpoint_asc = '/remote/v1/api/auth/login';
 
     private static $devices_endpoint_asc = '/remote/v1/api/devices';
-    private static $device_status_endpoint_asc = '/remote/v1/api/devices/'; // + device_id
+    private static $device_endpoint_asc = '/remote/v1/api/devices/'; // + device_id
 
     // device_id ermitteln
     private static $contract_endpoint_asc = '/remote/contract';
@@ -363,6 +363,7 @@ class PanasonicCloudIO extends IPSModule
                     break;
                 case 'ControlDevice':
                     if ($jdata['Type'] == self::$DEVICE_TYPE_HEAT_PUMP) {
+                        $ret = $this->ControlDevice_ASC($jdata['DeviceID'], $jdata['Parameters']);
                     } else {
                         $ret = $this->ControlDevice($jdata['Guid'], $jdata['Parameters']);
                     }
@@ -1048,11 +1049,18 @@ class PanasonicCloudIO extends IPSModule
             'scope'         => $scope,
         ];
         $referer = 'https://authglb.digital.panasonic.com/login' . '?' . http_build_query($params);
+        $cookies = [
+            '_csrf=' . $csrf,
+            'auth0=' . $auth0,
+            'auth0_compat=' . $auth0_compat,
+            'did=' . $did,
+            'did_compat=' . $did_compat,
+        ];
         $header_add = [
             'Content-Type' => 'application/json; charset=UTF-8',
             'Auth0-Client' => self::$auth0_client_asc,
             'Referer'      => $referer,
-            'Cookie'       => "_csrf=$csrf; auth0=$auth0; auth0_compat=$auth0_compat; did=$did; did_compat=did_compat;"
+            'Cookie'       => implode('; ', $cookies),
         ];
         $header_base = array_merge($header_dflt, $header_add);
         $header = [];
@@ -1195,10 +1203,17 @@ class PanasonicCloudIO extends IPSModule
             'scope'         => $scope,
         ];
         $referer = 'https://authglb.digital.panasonic.com/login' . '?' . http_build_query($params);
+        $cookies = [
+            '_csrf=' . $csrf,
+            'auth0=' . $auth0,
+            'auth0_compat=' . $auth0_compat,
+            'did=' . $did,
+            'did_compat=' . $did_compat,
+        ];
         $header_add = [
             'Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8',
             'Referer'      => $referer,
-            'Cookie'       => "_csrf=$csrf; auth0=$auth0; auth0_compat=$auth0_compat; did=$did; did_compat=did_compat;"
+            'Cookie'       => implode('; ', $cookies),
         ];
         $header_base = array_merge($header_dflt, $header_add);
         $header = [];
@@ -1338,7 +1353,7 @@ class PanasonicCloudIO extends IPSModule
             $this->WriteAttributeString('AccessToken_ASC', json_encode($jtoken));
         } else {
             $access_token = '';
-		}
+        }
         IPS_SemaphoreLeave($this->SemaphoreID);
         return $access_token;
     }
@@ -1489,7 +1504,7 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
 
-        $url = self::$device_status_endpoint_asc . $device_id;
+        $url = self::$device_endpoint_asc . $device_id;
 
         $params = [
             'var.deviceDirect' => true,
@@ -1587,6 +1602,46 @@ class PanasonicCloudIO extends IPSModule
         }
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         return json_encode($jdata);
+    }
+
+    private function ControlDevice_ASC(string $device_id, string $parameters)
+    {
+        $access_token = $this->GetAccessToken_ASC();
+        if ($access_token == false) {
+            return false;
+        }
+
+        $url = self::$device_endpoint_asc . $device_id;
+
+        $status['deviceGuid'] = $device_id;
+        $postfields = [
+            'status' => $parameters,
+        ];
+
+        $cookies = [
+            'accessToken=' . $access_token,
+            'selectedGwid=' . substr($device_id, 6, 10),
+        ];
+
+        $header_add = [
+            'Accept'        => 'application/json; charset=UTF-8',
+            'Cache-Control' => 'max-age=0',
+            'Referer'       => self::$base_url_asc . self::$status_referer_asc,
+            'Cookie'        => implode('; ', $cookies),
+        ];
+
+        if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
+            $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
+            return;
+        }
+        $jdata = $this->do_HttpRequest($url, $postfields, $params, $header_add, self::$API_ASC);
+        IPS_SemaphoreLeave($this->SemaphoreID);
+        if ($jdata == false) {
+            return false;
+        }
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        $ret = $jdata;
+        return $ret;
     }
 
     private function GetDeviceHistory(string $guid, int $dataMode, int $tstamp)

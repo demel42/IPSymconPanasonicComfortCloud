@@ -880,12 +880,50 @@ class PanasonicCloudAquarea extends IPSModule
         $this->SetUpdateInterval();
     }
 
+    private function ControlDevice($func, array $parameters)
+    {
+        if ($this->CheckStatus() == self::$STATUS_INVALID) {
+            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
+            return false;
+        }
+
+        if ($this->HasActiveParent() == false) {
+            $this->SendDebug(__FUNCTION__, 'has no active parent/gateway', 0);
+            $log_no_parent = $this->ReadPropertyBoolean('log_no_parent');
+            if ($log_no_parent) {
+                $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
+            }
+            return false;
+        }
+
+        $type = $this->ReadPropertyInteger('type');
+        $device_id = $this->GetDeviceId();
+
+        $sdata = [
+            'DataID'     => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
+            'CallerID'   => $this->InstanceID,
+            'Function'   => 'ControlDevice',
+            'Type'       => $type,
+            'DeviceID'   => $device_id,
+            'Parameters' => json_encode($parameters),
+        ];
+        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
+        $data = $this->SendDataToParent(json_encode($sdata));
+        $jdata = @json_decode($data, true);
+        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+
+        return isset($jdata['result']) && $jdata['result'] == 0;
+    }
+
     private function LocalRequestAction($ident, $value)
     {
         $r = true;
         switch ($ident) {
             case 'UpdateStatus':
                 $this->UpdateStatus();
+                break;
+            case 'ControlDevice':
+                $this->ControlDevice(__FUNCTION__, json_decode($value, true));
                 break;
             default:
                 $r = false;
@@ -977,40 +1015,5 @@ class PanasonicCloudAquarea extends IPSModule
         if ($chg) {
             $this->ReloadForm();
         }
-    }
-
-    private function ControlDevice($func, array $parameters)
-    {
-        if ($this->CheckStatus() == self::$STATUS_INVALID) {
-            $this->SendDebug(__FUNCTION__, $this->GetStatusText() . ' => skip', 0);
-            return false;
-        }
-
-        if ($this->HasActiveParent() == false) {
-            $this->SendDebug(__FUNCTION__, 'has no active parent/gateway', 0);
-            $log_no_parent = $this->ReadPropertyBoolean('log_no_parent');
-            if ($log_no_parent) {
-                $this->LogMessage($this->Translate('Instance has no active gateway'), KL_WARNING);
-            }
-            return false;
-        }
-
-        $type = $this->ReadPropertyInteger('type');
-        $device_id = $this->GetDeviceId();
-
-        $sdata = [
-            'DataID'     => '{34871A78-6B14-6BD4-3BE2-192BCB0B150D}',
-            'CallerID'   => $this->InstanceID,
-            'Function'   => 'ControlDevice',
-            'Type'       => $type,
-            'DeviceID'   => $device_id,
-            'Parameters' => json_encode($parameters),
-        ];
-        $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
-        $data = $this->SendDataToParent(json_encode($sdata));
-        $jdata = json_decode($data, true);
-        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
-
-        return isset($jdata['result']) && $jdata['result'] == 0;
     }
 }
