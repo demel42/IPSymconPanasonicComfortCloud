@@ -1614,7 +1614,7 @@ class PanasonicCloudIO extends IPSModule
         $url = self::$device_endpoint_asc . $device_id;
         $params = '';
 
-		$status = json_decode($parameters, true);
+        $status = json_decode($parameters, true);
         $status['deviceGuid'] = $device_id;
         $postfields = [
             'status' => $status,
@@ -1626,10 +1626,11 @@ class PanasonicCloudIO extends IPSModule
         ];
 
         $header_add = [
-            'Accept'        => 'application/json; charset=UTF-8',
-            'Cache-Control' => 'max-age=0',
-            'Referer'       => self::$base_url_asc . self::$status_referer_asc,
-            'Cookie'        => implode('; ', $cookies),
+            'Accept'          => 'application/json; charset=UTF-8',
+            'Content-Type'    => 'application/json; charset=utf-8',
+            'Cache-Control'   => 'max-age=0',
+            'Referer'         => self::$base_url_asc . self::$status_referer_asc,
+            'Cookie'          => implode('; ', $cookies),
         ];
 
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
