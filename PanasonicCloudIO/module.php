@@ -1612,6 +1612,7 @@ class PanasonicCloudIO extends IPSModule
         }
 
         $url = self::$device_endpoint_asc . $device_id;
+        $params = '';
 
         $status['deviceGuid'] = $device_id;
         $postfields = [
