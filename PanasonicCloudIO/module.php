@@ -1622,7 +1622,7 @@ class PanasonicCloudIO extends IPSModule
 
         $cookies = [
             'accessToken=' . $access_token,
-            'selectedGwid=' . substr($device_id, 6, 10),
+            'selectedDeviceId=' . $device_id,
         ];
 
         $header_add = [
