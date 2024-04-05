@@ -137,7 +137,7 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
-- 1.20 @ 04.04.2024 20:33
+- 1.20 @ 05.04.2024 11:36
   - Neu: Aquarea-Wärmepunpen werden nun unterstützt
   - Fix: Variablenprofil "PanasonicCloud.Temperature" hatte keine Einheit
   - update submodule CommonStubs

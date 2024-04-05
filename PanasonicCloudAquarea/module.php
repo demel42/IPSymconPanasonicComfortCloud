@@ -912,7 +912,7 @@ class PanasonicCloudAquarea extends IPSModule
         $jdata = @json_decode($data, true);
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
-        return isset($jdata['result']) && $jdata['result'] == 0;
+        return isset($jdata['errorCode']) && $jdata['errorCode'] == 0;
     }
 
     private function LocalRequestAction($ident, $value)
@@ -923,7 +923,11 @@ class PanasonicCloudAquarea extends IPSModule
                 $this->UpdateStatus();
                 break;
             case 'ControlDevice':
-                $this->ControlDevice(__FUNCTION__, json_decode($value, true));
+                $r = $this->ControlDevice(__FUNCTION__, json_decode($value, true));
+                if ($r) {
+                    $short_delay = $this->ReadPropertyInteger('short_action_refresh_delay');
+                    $this->MaintainTimer('UpdateStatus', $short_delay * 1000);
+                }
                 break;
             default:
                 $r = false;
@@ -957,27 +961,6 @@ class PanasonicCloudAquarea extends IPSModule
             case 'Operate':
                 $r = $this->SetOperate((bool) $value);
                 $delay = $long_delay;
-                break;
-            case 'OperationMode':
-                $r = $this->SetOperateMode((int) $value);
-                break;
-            case 'EcoMode':
-                $r = $this->SetEcoMode((int) $value);
-                break;
-            case 'TargetTemperature':
-                $r = $this->SetTargetTemperature((float) $value);
-                break;
-            case 'FanSpeed':
-                $r = $this->SetFanSpeed((int) $value);
-                break;
-            case 'AirflowVertical':
-                $r = $this->SetAirflowVertical((int) $value);
-                break;
-            case 'AirflowHorizontal':
-                $r = $this->SetAirflowHorizontal((int) $value);
-                break;
-            case 'NanoeMode':
-                $r = $this->SetNanoeMode((int) $value);
                 break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);

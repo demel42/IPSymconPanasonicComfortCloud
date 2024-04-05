@@ -394,13 +394,8 @@ class PanasonicCloudIO extends IPSModule
         } else {
             $url = self::$base_url_asc . $endpoint;
         }
-
         if ($params != '') {
-            $this->SendDebug(__FUNCTION__, 'params=' . print_r($params, true), 0);
-            $n = 0;
-            foreach ($params as $param => $value) {
-                $url .= ($n++ ? '&' : '?') . $param . '=' . rawurlencode(strval($value));
-            }
+            $url .= '?' . http_build_query($params);
         }
 
         if ($api == self::$API_CC) {
@@ -583,6 +578,32 @@ class PanasonicCloudIO extends IPSModule
                 if ($statuscode == 0) {
                     if (isset($jbody['accessToken']['expires'])) {
                         $jbody['accessToken']['expires'] = @strtotime($jbody['accessToken']['expires']);
+                    }
+                }
+            } else {
+                if ($statuscode == 0) {
+                    if (isset($jbody['accessToken'])) {
+                        $old_jtoken = json_decode($this->ReadAttributeString('AccessToken_ASC'), true);
+                        $old_access_token = isset($old_jtoken['access_token']) ? $old_jtoken['access_token'] : '';
+                        $old_expires = isset($old_jtoken['expires']) ? $old_jtoken['expires'] : 0;
+
+                        $new_access_token = '';
+                        $new_expires = 0;
+                        if (isset($jbody['accessToken']['token'])) {
+                            $new_access_token = $jbody['accessToken']['token'];
+                            if (isset($jbody['accessToken']['expires'])) {
+                                $new_expires = @strtotime($jbody['accessToken']['expires']);
+                            }
+                        }
+
+                        if ($new_access_token != $old_access_token || $new_expires != $old_expires) {
+                            $new_jtoken = [
+                                'access_token' => $new_access_token,
+                                'expires'      => $new_expires,
+                            ];
+                            $this->SendDebug(__FUNCTION__, 'renew access_token=' . $new_access_token . ', valid until ' . date('d.m.y H:i:s', $new_expires), 0);
+                            $this->WriteAttributeString('AccessToken_ASC', json_encode($new_jtoken));
+                        }
                     }
                 }
             }
@@ -1526,7 +1547,6 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
             return;
         }
-
         $jdata = $this->do_HttpRequest($url, $postfields, $params, $header_add, self::$API_ASC);
         IPS_SemaphoreLeave($this->SemaphoreID);
         if ($jdata == false) {
@@ -1614,10 +1634,13 @@ class PanasonicCloudIO extends IPSModule
         $url = self::$device_endpoint_asc . $device_id;
         $params = '';
 
-        $status = json_decode($parameters, true);
-        $status['deviceGuid'] = $device_id;
+        $status = [
+            'deviceGuid'=> $device_id,
+        ];
         $postfields = [
-            'status' => $status,
+            'status' => [
+                array_merge($status, json_decode($parameters, true)),
+            ],
         ];
 
         $cookies = [
@@ -1643,8 +1666,7 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
-        $ret = $jdata;
-        return $ret;
+        return json_encode($jdata);
     }
 
     private function GetDeviceHistory(string $guid, int $dataMode, int $tstamp)
