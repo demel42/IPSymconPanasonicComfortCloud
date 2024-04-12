@@ -567,7 +567,7 @@ class PanasonicCloudIO extends IPSModule
                             $err = 'errorCode=' . $errorCode;
                         }
                         $this->WriteAttributeString('AccessToken_ASC', '');
-                        if (in_array(['1001-0001'], $errorCode)) {
+                        if (in_array($errorCode, ['1001-0001'])) {
                             $this->SendDebug(__FUNCTION__, $err, 0);
                             return $jbody;
                         }
