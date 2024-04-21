@@ -461,6 +461,8 @@ class PanasonicCloudIO extends IPSModule
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $response = curl_exec($ch);
 
@@ -717,6 +719,8 @@ class PanasonicCloudIO extends IPSModule
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $response = curl_exec($ch);
         $cerrno = curl_errno($ch);
@@ -861,6 +865,8 @@ class PanasonicCloudIO extends IPSModule
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $response = curl_exec($ch);
         $cerrno = curl_errno($ch);
@@ -987,6 +993,8 @@ class PanasonicCloudIO extends IPSModule
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $response = curl_exec($ch);
         $cerrno = curl_errno($ch);
@@ -1113,6 +1121,8 @@ class PanasonicCloudIO extends IPSModule
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $response = curl_exec($ch);
         $cerrno = curl_errno($ch);
@@ -1251,6 +1261,8 @@ class PanasonicCloudIO extends IPSModule
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLINFO_HEADER_OUT, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         $response = curl_exec($ch);
         $cerrno = curl_errno($ch);
@@ -1482,7 +1494,12 @@ class PanasonicCloudIO extends IPSModule
             if ($jdata == false) {
                 return false;
             }
-            if (isset($jbody['message'][0]['errorCode']) == false) {
+            if (isset($jdata['message'][0]['errorCode'])) {
+                if ($retry) {
+                    return false;
+                }
+                $this->SendDebug(__FUNCTION__, 'retry request', 0);
+            } else {
                 break;
             }
         }
@@ -1551,7 +1568,12 @@ class PanasonicCloudIO extends IPSModule
             if ($jdata == false) {
                 return false;
             }
-            if (isset($jbody['message'][0]['errorCode']) == false) {
+            if (isset($jdata['message'][0]['errorCode'])) {
+                if ($retry) {
+                    return false;
+                }
+                $this->SendDebug(__FUNCTION__, 'retry request', 0);
+            } else {
                 break;
             }
         }
@@ -1591,7 +1613,12 @@ class PanasonicCloudIO extends IPSModule
             if ($jdata == false) {
                 return false;
             }
-            if (isset($jbody['message'][0]['errorCode']) == false) {
+            if (isset($jdata['message'][0]['errorCode'])) {
+                if ($retry) {
+                    return false;
+                }
+                $this->SendDebug(__FUNCTION__, 'retry request', 0);
+            } else {
                 break;
             }
         }
@@ -1673,7 +1700,12 @@ class PanasonicCloudIO extends IPSModule
             if ($jdata == false) {
                 return false;
             }
-            if (isset($jbody['message'][0]['errorCode']) == false) {
+            if (isset($jdata['message'][0]['errorCode'])) {
+                if ($retry) {
+                    return false;
+                }
+                $this->SendDebug(__FUNCTION__, 'retry request', 0);
+            } else {
                 break;
             }
         }
@@ -1758,7 +1790,12 @@ class PanasonicCloudIO extends IPSModule
             if ($jdata == false) {
                 return false;
             }
-            if (isset($jbody['message'][0]['errorCode']) == false) {
+            if (isset($jdata['message'][0]['errorCode'])) {
+                if ($retry) {
+                    return false;
+                }
+                $this->SendDebug(__FUNCTION__, 'retry request', 0);
+            } else {
                 break;
             }
         }
