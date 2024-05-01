@@ -109,7 +109,7 @@ class PanasonicCloudAquarea extends IPSModule
         $vpos = 1;
 
         $this->MaintainVariable('Operate', $this->Translate('Operate'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
-        // $this->MaintainAction('Operate', true);
+        $this->MaintainAction('Operate', true);
 
         $this->MaintainVariable('OperationMode', $this->Translate('Operation mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.OperationMode_ASC', $vpos++, true);
         $this->MaintainVariable('WorkingMode', $this->Translate('Working mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.WorkingMode_ASC', $vpos++, true);
@@ -956,11 +956,31 @@ class PanasonicCloudAquarea extends IPSModule
         $long_delay = $this->ReadPropertyInteger('long_action_refresh_delay');
         $delay = $short_delay;
 
+        // case 'OperationMode':
+        // case 'WorkingMode':
         $r = false;
         switch ($ident) {
             case 'Operate':
                 $r = $this->SetOperate((bool) $value);
                 $delay = $long_delay;
+                break;
+            case 'QuietMode':
+                $r = $this->SetQuietMode((int) $value);
+                break;
+            case 'PowerMode':
+                $r = $this->SetPowerMode((int) $value);
+                break;
+            case 'ForceHeater':
+                $r = $this->SetForceHeater((bool) $value);
+                break;
+            case 'ForceDHW':
+                $r = $this->SetForceDHW((bool) $value);
+                break;
+            case 'DefrostMode':
+                $r = $this->SetDefrostMode((bool) $value);
+                break;
+            case 'HolidayTimer':
+                $r = $this->SetHolidayTimer((bool) $value);
                 break;
             default:
                 $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
@@ -981,22 +1001,108 @@ class PanasonicCloudAquarea extends IPSModule
     {
         $chg = false;
 
-        /*
-            $operate = $this->GetValue('Operate');
-            $ecoMode = $this->GetValue('EcoMode');
+        $operate = $this->GetValue('Operate');
 
-            $chg |= $this->AdjustAction('OperationMode', $operate);
-
-            $chg |= $this->AdjustAction('EcoMode', $operate);
-
-            $b = $operate && $ecoMode == self::$ECO_MODE_AUTO;
-            $chg |= $this->AdjustAction('FanSpeed', $b);
-
-            $chg |= $this->AdjustAction('TargetTemperature', $operate);
-         */
+        $chg |= $this->AdjustAction('QuietMode', $operate);
+        $chg |= $this->AdjustAction('PowerMode', $operate);
+        $chg |= $this->AdjustAction('ForceHeater', $operate);
+        $chg |= $this->AdjustAction('ForceDHW', $operate);
+        $chg |= $this->AdjustAction('DefrostMode', $operate);
+        $chg |= $this->AdjustAction('HolidayTimer', $operate);
 
         if ($chg) {
             $this->ReloadForm();
         }
+    }
+
+    public function SetOperate(bool $state)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'operationStatus' => $state ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetQuietMode(int $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'quietMode' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetPowerMode(int $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'powerfulRequest' => $value,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetForceHeater(bool $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'forceHeater' => $value ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetForceDHW(bool $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'forceDHW' => $value ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetDefrostMode(bool $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'forcedefrost' => $value ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetHolidayTimer(bool $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'holidayTimer' => $value ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
     }
 }
