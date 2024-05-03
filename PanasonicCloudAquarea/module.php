@@ -956,35 +956,82 @@ class PanasonicCloudAquarea extends IPSModule
         $long_delay = $this->ReadPropertyInteger('long_action_refresh_delay');
         $delay = $short_delay;
 
-        // case 'OperationMode':
-        // case 'WorkingMode':
         $r = false;
-        switch ($ident) {
-            case 'Operate':
-                $r = $this->SetOperate((bool) $value);
-                $delay = $long_delay;
-                break;
-            case 'QuietMode':
-                $r = $this->SetQuietMode((int) $value);
-                break;
-            case 'PowerMode':
-                $r = $this->SetPowerMode((int) $value);
-                break;
-            case 'ForceHeater':
-                $r = $this->SetForceHeater((bool) $value);
-                break;
-            case 'ForceDHW':
-                $r = $this->SetForceDHW((bool) $value);
-                break;
-            case 'DefrostMode':
-                $r = $this->SetDefrostMode((bool) $value);
-                break;
-            case 'HolidayTimer':
-                $r = $this->SetHolidayTimer((bool) $value);
-                break;
-            default:
-                $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
-                break;
+        if (preg_match('/^Zone([0-9]*)_(.*)$/', $ident, $r)) {
+            $zoneId = $r[1] + 1;
+            $subident = $r[2];
+            switch ($subident) {
+                case 'Operate':
+                    $r = $this->SetZoneOperate($zoneId, $value);
+                    break;
+                case 'TargetHeatTemperature':
+                    $r = $this->SetZoneTargetHeatTemperature($zoneId, $value);
+                    break;
+                case 'EcoHeatAdjust':
+                    $r = $this->SetZoneEcoHeatAdjust($zoneId, $value);
+                    break;
+                case 'ComfortHeatAdjust':
+                    $r = $this->SetZoneComfortHeatAdjust($zoneId, $value);
+                    break;
+                case 'TargetCoolTemperature':
+                    $r = $this->SetZoneTargetCoolTemperature($zoneId, $value);
+                    break;
+                case 'EcoCoolAdjust':
+                    $r = $this->SetZoneEcoCoolAdjust($zoneId, $value);
+                    break;
+                case 'ComfortCoolAdjust':
+                    $r = $this->SetZoneComfortCoolAdjust($zoneId, $value);
+                    break;
+                default:
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
+                    break;
+            }
+        } elseif (preg_match('/^Tank([0-9]*)_(.*)$/', $ident, $r)) {
+            $tankId = $r[1] + 1;
+            $subident = $r[2];
+            switch ($subident) {
+                case 'Operate':
+                    $r = $this->SetTankOperate($tankId, $value);
+                    break;
+                case 'TargetHeatTemperature':
+                    $r = $this->SetTankTargetHeatTemperature($tankId, $value);
+                    break;
+                default:
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
+                    break;
+            }
+        } else {
+            // case 'OperationMode':
+            switch ($ident) {
+                case 'Operate':
+                    $r = $this->SetOperate((bool) $value);
+                    $delay = $long_delay;
+                    break;
+                case 'WorkingMode':
+                    $r = $this->SetWorkingMode((int) $value);
+                    break;
+                case 'QuietMode':
+                    $r = $this->SetQuietMode((int) $value);
+                    break;
+                case 'PowerMode':
+                    $r = $this->SetPowerMode((int) $value);
+                    break;
+                case 'ForceHeater':
+                    $r = $this->SetForceHeater((bool) $value);
+                    break;
+                case 'ForceDHW':
+                    $r = $this->SetForceDHW((bool) $value);
+                    break;
+                case 'DefrostMode':
+                    $r = $this->SetDefrostMode((bool) $value);
+                    break;
+                case 'HolidayTimer':
+                    $r = $this->SetHolidayTimer((bool) $value);
+                    break;
+                default:
+                    $this->SendDebug(__FUNCTION__, 'invalid ident ' . $ident, 0);
+                    break;
+            }
         }
         if ($r) {
             $this->SetValue($ident, $value);
@@ -1003,12 +1050,30 @@ class PanasonicCloudAquarea extends IPSModule
 
         $operate = $this->GetValue('Operate');
 
+        $chg |= $this->AdjustAction('WorkingMode', $operate);
         $chg |= $this->AdjustAction('QuietMode', $operate);
         $chg |= $this->AdjustAction('PowerMode', $operate);
         $chg |= $this->AdjustAction('ForceHeater', $operate);
         $chg |= $this->AdjustAction('ForceDHW', $operate);
         $chg |= $this->AdjustAction('DefrostMode', $operate);
         $chg |= $this->AdjustAction('HolidayTimer', $operate);
+
+        $zone_count = $this->ReadPropertyInteger('zone_count');
+        for ($i = 0; $i < $zone_count; $i++) {
+            $chg |= $this->AdjustAction('Zone' . $i . '_Operate', $operate);
+            $chg |= $this->AdjustAction('Zone' . $i . '_TargetHeatTemperature', $operate);
+            $chg |= $this->AdjustAction('Zone' . $i . '_EcoHeatAdjust', $operate);
+            $chg |= $this->AdjustAction('Zone' . $i . '_ComfortHeatAdjust', $operate);
+            $chg |= $this->AdjustAction('Zone' . $i . '_TargetCoolTemperature', $operate);
+            $chg |= $this->AdjustAction('Zone' . $i . '_EcoCoolAdjust', $operate);
+            $chg |= $this->AdjustAction('Zone' . $i . '_ComfortCoolAdjust', $operate);
+        }
+
+        $tank_count = $this->ReadPropertyInteger('tank_count');
+        for ($i = 0; $i < $tank_count; $i++) {
+            $chg |= $this->AdjustAction('Tank' . $i . '_Operate', $operate);
+            $chg |= $this->AdjustAction('Tank' . $i . '_TargetTemperature', $operate);
+        }
 
         if ($chg) {
             $this->ReloadForm();
@@ -1023,6 +1088,19 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'operationStatus' => $state ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetWorkingMode(int $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $parameters = [
+            'specialMode' => $value,
         ];
 
         return $this->ControlDevice(__FUNCTION__, $parameters);
@@ -1101,6 +1179,207 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'holidayTimer' => $value ? 1 : 0,
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    private function CheckZoneId(int $zoneId)
+    {
+        $zone_count = $this->ReadPropertyInteger('zone_count');
+        return $zoneId > 0 && $zoneId <= $zone_count;
+    }
+
+    private function CheckTankId(int $tankId)
+    {
+        $tank_count = $this->ReadPropertyInteger('tank_count');
+        return $tankId > 0 && $tankId <= $tank_count;
+    }
+
+    public function SetZoneOperate(int $zoneId, bool $state)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        if ($this->CheckZoneId($zoneId) == false) {
+            $this->SendDebug(__FUNCTION__, 'zoneId ' . $zoneId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'zoneStatus' => [
+                'zoneId'          => $zoneId,
+                'operationStatus' => $state ? 1 : 0,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetZoneTargetHeatTemperature(int $zoneId, float $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        if ($this->CheckZoneId($zoneId) == false) {
+            $this->SendDebug(__FUNCTION__, 'zoneId ' . $zoneId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'zoneStatus' => [
+                'zoneId'  => $zoneId,
+                'heatSet' => $value,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetZoneEcoHeatAdjust(int $zoneId, float $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        if ($this->CheckZoneId($zoneId) == false) {
+            $this->SendDebug(__FUNCTION__, 'zoneId ' . $zoneId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'zoneStatus' => [
+                'zoneId'  => $zoneId,
+                'ecoHeat' => $value,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetZoneComfortHeatAdjust(int $zoneId, float $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        if ($this->CheckZoneId($zoneId) == false) {
+            $this->SendDebug(__FUNCTION__, 'zoneId ' . $zoneId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'zoneStatus' => [
+                'zoneId'      => $zoneId,
+                'comfortHeat' => $value,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetZoneTargetCoolTemperature(int $zoneId, float $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        if ($this->CheckZoneId($zoneId) == false) {
+            $this->SendDebug(__FUNCTION__, 'zoneId ' . $zoneId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'zoneStatus' => [
+                'zoneId'  => $zoneId,
+                'coolSet' => $value,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetZoneEcoCoolAdjust(int $zoneId, float $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        if ($this->CheckZoneId($zoneId) == false) {
+            $this->SendDebug(__FUNCTION__, 'zoneId ' . $zoneId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'zoneStatus' => [
+                'zoneId'  => $zoneId,
+                'ecoCool' => $value,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetZoneComfortCoolAdjust(int $zoneId, float $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        if ($this->CheckZoneId($zoneId) == false) {
+            $this->SendDebug(__FUNCTION__, 'zoneId ' . $zoneId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'zoneStatus' => [
+                'zoneId'      => $zoneId,
+                'comfortCool' => $value,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetTankOperate(int $tankId, bool $state)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $tank_count = $this->ReadPropertyInteger('tank_count');
+        if ($this->CheckTankId($tankId) == false) {
+            $this->SendDebug(__FUNCTION__, 'tankId ' . $tankId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'tankStatus' => [
+                'operationStatus' => $state ? 1 : 0,
+            ],
+        ];
+
+        return $this->ControlDevice(__FUNCTION__, $parameters);
+    }
+
+    public function SetTankTargetHeatTemperature(int $tankId, float $value)
+    {
+        if ($this->CheckAction(__FUNCTION__, true) == false) {
+            return false;
+        }
+
+        $tank_count = $this->ReadPropertyInteger('tank_count');
+        if ($this->CheckTankId($tankId) == false) {
+            $this->SendDebug(__FUNCTION__, 'tankId ' . $tankId . ' is invalid - skip', 0);
+            return false;
+        }
+
+        $parameters = [
+            'tankStatus' => [
+                'heatSet' => $value,
+            ],
         ];
 
         return $this->ControlDevice(__FUNCTION__, $parameters);
