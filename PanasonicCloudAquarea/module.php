@@ -1209,8 +1209,10 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'zoneStatus' => [
-                'zoneId'          => $zoneId,
-                'operationStatus' => $state ? 1 : 0,
+                [
+                    'zoneId'          => $zoneId,
+                    'operationStatus' => $state ? 1 : 0,
+                ],
             ],
         ];
 
@@ -1230,8 +1232,10 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'zoneStatus' => [
-                'zoneId'  => $zoneId,
-                'heatSet' => $value,
+                [
+                    'zoneId'  => $zoneId,
+                    'heatSet' => $value,
+                ],
             ],
         ];
 
@@ -1251,8 +1255,10 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'zoneStatus' => [
-                'zoneId'  => $zoneId,
-                'ecoHeat' => $value,
+                [
+                    'zoneId'  => $zoneId,
+                    'ecoHeat' => $value,
+                ],
             ],
         ];
 
@@ -1272,8 +1278,10 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'zoneStatus' => [
-                'zoneId'      => $zoneId,
-                'comfortHeat' => $value,
+                [
+                    'zoneId'      => $zoneId,
+                    'comfortHeat' => $value,
+                ],
             ],
         ];
 
@@ -1293,8 +1301,10 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'zoneStatus' => [
-                'zoneId'  => $zoneId,
-                'coolSet' => $value,
+                [
+                    'zoneId'  => $zoneId,
+                    'coolSet' => $value,
+                ],
             ],
         ];
 
@@ -1314,8 +1324,10 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'zoneStatus' => [
-                'zoneId'  => $zoneId,
-                'ecoCool' => $value,
+                [
+                    'zoneId'  => $zoneId,
+                    'ecoCool' => $value,
+                ],
             ],
         ];
 
@@ -1335,8 +1347,10 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'zoneStatus' => [
-                'zoneId'      => $zoneId,
-                'comfortCool' => $value,
+                [
+                    'zoneId'      => $zoneId,
+                    'comfortCool' => $value,
+                ],
             ],
         ];
 
@@ -1357,7 +1371,9 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'tankStatus' => [
-                'operationStatus' => $state ? 1 : 0,
+                [
+                    'operationStatus' => $state ? 1 : 0,
+                ],
             ],
         ];
 
@@ -1378,7 +1394,9 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'tankStatus' => [
-                'heatSet' => $value,
+                [
+                    'heatSet' => $value,
+                ],
             ],
         ];
 
