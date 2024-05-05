@@ -1208,7 +1208,8 @@ class PanasonicCloudAquarea extends IPSModule
         }
 
         $parameters = [
-            'zoneStatus' => [
+            'operationStatus' => $this->GetValue('Operate') ? 1 : 0,
+            'zoneStatus'      => [
                 [
                     'zoneId'          => $zoneId,
                     'operationStatus' => $state ? 1 : 0,
