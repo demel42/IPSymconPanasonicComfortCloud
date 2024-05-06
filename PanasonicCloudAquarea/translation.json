@@ -13,7 +13,7 @@
 			"Type": "Typ",
 			"Device-ID": "Geräte-ID",
 
-			"Zone count": "Anzahl Kreisläufe",
+			"Zone count": "Anzahl Heizkreise",
 			"Tank count": "Anzahl Speicher",
 
 			"save daily energy consumption": "Täglichen Energieverbrauch speichern",
