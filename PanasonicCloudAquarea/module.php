@@ -119,7 +119,7 @@ class PanasonicCloudAquarea extends IPSModule
 
         $this->MaintainVariable('ForceHeater', $this->Translate('Emergency operation heating'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
         $this->MaintainAction('ForceHeater', true);
-        $this->MaintainVariable('ForceDHW', $this->Translate('Electric Emergency operation hot water'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainVariable('ForceDHW', $this->Translate('Emergency operation hot water'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
         $this->MaintainAction('ForceDHW', true);
         $this->MaintainVariable('DefrostMode', $this->Translate('Manual defrosting'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
         $this->MaintainAction('DefrostMode', true);
