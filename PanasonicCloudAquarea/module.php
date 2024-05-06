@@ -11,7 +11,7 @@ class PanasonicCloudAquarea extends IPSModule
     use PanasonicCloudLocalLib;
 
     public static $ZONE_MAX = 2;
-    public static $TANK_MAX = 2;
+    public static $TANK_MAX = 1;
 
     public function __construct(string $InstanceID)
     {
@@ -116,9 +116,14 @@ class PanasonicCloudAquarea extends IPSModule
 
         $this->MaintainVariable('QuietMode', $this->Translate('Whisper mode'), VARIABLETYPE_INTEGER, 'PanasonicCloud.QuietMode_ASC', $vpos++, true);
         $this->MaintainVariable('PowerMode', $this->Translate('Power operation'), VARIABLETYPE_INTEGER, 'PanasonicCloud.PowerMode_ASC', $vpos++, true);
-        $this->MaintainVariable('ForceHeater', $this->Translate('Electric immersion heater heating'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
-        $this->MaintainVariable('ForceDHW', $this->Translate('Electric immersion heater hot water'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+
+        $this->MaintainVariable('ForceHeater', $this->Translate('Emergency operation heating'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainAction('ForceHeater', true);
+        $this->MaintainVariable('ForceDHW', $this->Translate('Electric Emergency operation hot water'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainAction('ForceDHW', true);
         $this->MaintainVariable('DefrostMode', $this->Translate('Manual defrosting'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
+        $this->MaintainAction('DefrostMode', true);
+
         $this->MaintainVariable('HolidayTimer', $this->Translate('Holiday timer'), VARIABLETYPE_BOOLEAN, 'PanasonicCloud.Operate', $vpos++, true);
 
         $this->MaintainVariable('DeviceActivity', $this->Translate('Activity'), VARIABLETYPE_INTEGER, 'PanasonicCloud.DeviceActivity_ASC', $vpos++, true);
@@ -258,6 +263,7 @@ class PanasonicCloudAquarea extends IPSModule
             'maximum' => self::$ZONE_MAX,
             'caption' => 'Zone count',
         ];
+        /*
         $formElements[] = [
             'type'    => 'NumberSpinner',
             'name'    => 'tank_count',
@@ -265,6 +271,7 @@ class PanasonicCloudAquarea extends IPSModule
             'maximum' => self::$TANK_MAX,
             'caption' => 'Tank count',
         ];
+         */
 
         $formElements[] = [
             'type'    => 'RowLayout',
@@ -1053,9 +1060,6 @@ class PanasonicCloudAquarea extends IPSModule
         $chg |= $this->AdjustAction('WorkingMode', $operate);
         $chg |= $this->AdjustAction('QuietMode', $operate);
         $chg |= $this->AdjustAction('PowerMode', $operate);
-        $chg |= $this->AdjustAction('ForceHeater', $operate);
-        $chg |= $this->AdjustAction('ForceDHW', $operate);
-        $chg |= $this->AdjustAction('DefrostMode', $operate);
         $chg |= $this->AdjustAction('HolidayTimer', $operate);
 
         $zone_count = $this->ReadPropertyInteger('zone_count');
@@ -1180,7 +1184,6 @@ class PanasonicCloudAquarea extends IPSModule
         $parameters = [
             'holidayTimer' => $value ? 1 : 0,
         ];
-
         return $this->ControlDevice(__FUNCTION__, $parameters);
     }
 
@@ -1209,6 +1212,7 @@ class PanasonicCloudAquarea extends IPSModule
 
         $parameters = [
             'operationStatus' => $this->GetValue('Operate') ? 1 : 0,
+            'operationMode'   => $this->GetValue('OperationMode'),
             'zoneStatus'      => [
                 [
                     'zoneId'          => $zoneId,

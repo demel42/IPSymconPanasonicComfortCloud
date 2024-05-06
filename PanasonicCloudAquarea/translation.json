@@ -41,6 +41,8 @@
 			"Holiday timer": "Urlaubstimer",
 			"Electric immersion heater heating": "E-Heizstab Heizung",
 			"Electric immersion heater hot water": "E-Heizstab Warmwasser",
+			"Emergency operation heating": "Notbetrieb Heizung",
+			"Emergency operation hot water": "Notbetrieb Warmwasser",
 			"Activity": "Aktivität",
 			"Zone {$zone}: operate": "HK{$zone}: Betrieb",
 			"Zone {$zone}: mode": "HK{$zone}: Modus",
