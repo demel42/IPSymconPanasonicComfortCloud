@@ -502,6 +502,22 @@ class PanasonicCloudAquarea extends IPSModule
 
         $device_config = @json_decode($this->ReadAttributeString('device_config'), true);
 
+        $config_operationMode = self::$OPERATION_MODE_ASC_OFF;
+        if (isset($configuration['operationMode'])) {
+            switch (strtoupper($configuration['operationMode'])) {
+                case 'HEAT':
+                    $config_operationMode = self::$OPERATION_MODE_ASC_HEAT;
+                    break;
+                case 'COOL':
+                    $config_operationMode = self::$OPERATION_MODE_ASC_COOL;
+                    break;
+                default:
+                    $this->SendDebug(__FUNCTION__, 'unknown configuration.operationMode "' . $configuration['operationMode'] . '"', 0);
+                    break;
+            }
+        }
+        $device_config['operationMode'] = $config_operationMode;
+
         $is_changed = false;
         $fnd = false;
 
@@ -1199,6 +1215,12 @@ class PanasonicCloudAquarea extends IPSModule
         return $tankId > 0 && $tankId <= $tank_count;
     }
 
+    private function GetConfigOperationMode()
+    {
+        $device_config = @json_decode($this->ReadAttributeString('device_config'), true);
+        return $device_config['operationMode'];
+    }
+
     public function SetZoneOperate(int $zoneId, bool $state)
     {
         if ($this->CheckAction(__FUNCTION__, true) == false) {
@@ -1210,13 +1232,23 @@ class PanasonicCloudAquarea extends IPSModule
             return false;
         }
 
+        if ($state) {
+            $operationStatus = 1;
+            $operationMode = $this->GetConfigOperationMode();
+            $zone_operationStatus = 1;
+        } else {
+            $operationStatus = $this->GetValue('Operate') ? 1 : 0;
+            $operationMode = self::$OPERATION_MODE_ASC_OFF;
+            $zone_operationStatus = 0;
+        }
+
         $parameters = [
-            'operationStatus' => $this->GetValue('Operate') ? 1 : 0,
-            'operationMode'   => $this->GetValue('OperationMode'),
+            'operationStatus' => $operationStatus,
+            'operationMode'   => $operationMode,
             'zoneStatus'      => [
                 [
                     'zoneId'          => $zoneId,
-                    'operationStatus' => $state ? 1 : 0,
+                    'operationStatus' => $zone_operationStatus
                 ],
             ],
         ];
@@ -1368,17 +1400,27 @@ class PanasonicCloudAquarea extends IPSModule
             return false;
         }
 
-        $tank_count = $this->ReadPropertyInteger('tank_count');
         if ($this->CheckTankId($tankId) == false) {
             $this->SendDebug(__FUNCTION__, 'tankId ' . $tankId . ' is invalid - skip', 0);
             return false;
         }
 
+        if ($state) {
+            $operationStatus = 1;
+            $operationMode = $this->GetConfigOperationMode();
+            $tank_operationStatus = 1;
+        } else {
+            $operationStatus = $this->GetValue('Operate') ? 1 : 0;
+            $operationMode = self::$OPERATION_MODE_ASC_OFF;
+            $tank_operationStatus = 0;
+        }
+
         $parameters = [
-            'operationStatus' => $this->GetValue('Operate') ? 1 : 0,
+            'operationStatus' => $operationStatus,
+            'operationMode'   => $operationMode,
             'tankStatus'      => [
                 [
-                    'operationStatus' => $state ? 1 : 0,
+                    'operationStatus' => $tank_operationStatus,
                 ],
             ],
         ];
