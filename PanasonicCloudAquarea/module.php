@@ -17,7 +17,7 @@ class PanasonicCloudAquarea extends IPSModule
     {
         parent::__construct($InstanceID);
 
-        $this->CommonContruct(__DIR__);
+        $this->CommonConstruct(__DIR__);
     }
 
     public function __destruct()
@@ -223,6 +223,11 @@ class PanasonicCloudAquarea extends IPSModule
         if ($this->GetStatus() == self::$IS_UPDATEUNCOMPLETED) {
             return $formElements;
         }
+
+        $formElements[] = [
+            'type'    => 'Label',
+            'caption' => 'The operation of Aquarea heat pumps has not yet been fully tested due to a lack of corresponding devices. Please contact the author if you need and are willing to test',
+        ];
 
         $formElements[] = [
             'type'    => 'CheckBox',

@@ -2,6 +2,8 @@
 	"translations": {
 		"de": {
 			"Panasonic ComfortCloud Aquarea Device": "Panasonic ComfortCloud Aquarea-Gerät",
+			"The operation of Aquarea heat pumps has not yet been fully tested due to a lack of corresponding devices. Please contact the author if you need and are willing to test",
+				"Der Betrieb von Aquarea-Wärmepumpen ist mangels entsprehcneder Geräte noch nicht vollständig getest. Bei Bedarf und Bereitschaft zum Testen bitte beim Autor melden",
 
 			"__function__": "CheckUpdate",
 

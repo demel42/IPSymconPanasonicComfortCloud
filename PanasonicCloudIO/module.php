@@ -13,24 +13,37 @@ class PanasonicCloudIO extends IPSModule
     // Panasonic Comfort-Cloud
     private static $API_CC = 1;
 
-    private static $base_url = 'https://accsmart.panasonic.com';
+    private static $base_url_cc = 'https://accsmart.panasonic.com';
 
-    private static $auth_endpoint = '/auth/login';
-    private static $group_endpoint = '/device/group';
+    private static $base_auth_url_cc = 'https://authglb.digital.panasonic.com';
+    private static $auth_endpoint_cc = '/authorize';
+
+    private static $login_callback_cc = '/login/callback';
+
+    private static $token_endpoint_cc = '/oauth/token';
+
+    private static $auth_v2_login_endpoint_cc = '/auth/v2/login';
+
+    private static $group_endpoint_cc = '/device/group';
 
     // +guid
-    private static $device_status_endpoint = '/deviceStatus/';
-    private static $device_status_now_endpoint = '/deviceStatus/now/';
+    private static $device_status_endpoint_cc = '/deviceStatus/';
+    private static $device_status_now_endpoint_cc = '/deviceStatus/now/';
 
-    private static $device_control_endpoint = '/deviceStatus/control/';
+    private static $device_control_endpoint_cc = '/deviceStatus/control/';
 
-    private static $device_history_endpoint = '/deviceHistoryData';
+    private static $device_history_endpoint_cc = '/deviceHistoryData';
 
-    private static $x_app_type = '1';
-    private static $x_app_version = '1.20.1';
-    private static $x_app_name = 'Comfort Cloud';
-    private static $x_cfc_api_key = '0';
-    private static $user_agent = 'G-RAC';
+    private static $app_client_id_cc = 'Xmy6xIYIitMxngjB2rHvlm6HSDNnaMJx';
+    private static $auth0_client_cc = 'eyJuYW1lIjoiQXV0aDAuQW5kcm9pZCIsImVudiI6eyJhbmRyb2lkIjoiMzAifSwidmVyc2lvbiI6IjIuOS4zIn0=';
+
+    private static $x_app_type_cc = '1';
+    private static $x_app_version_cc = '1.20.0';
+    private static $x_app_name_cc = 'Comfort Cloud';
+    private static $user_agent_cc = 'G-RAC';
+
+    private static $user_agent_auth_cc = 'okhttp/4.10.0';
+    private static $user_agent_form_cc = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Mobile Safari/537.36';
 
     private static $login_interval = 125 * 24 * 60 * 60; // 125 Tage
 
@@ -65,7 +78,7 @@ class PanasonicCloudIO extends IPSModule
     {
         parent::__construct($InstanceID);
 
-        $this->CommonContruct(__DIR__);
+        $this->CommonConstruct(__DIR__);
         $this->SemaphoreID = __CLASS__ . '_' . $InstanceID;
     }
 
@@ -90,7 +103,7 @@ class PanasonicCloudIO extends IPSModule
         $this->RegisterAttributeString('UpdateInfo', json_encode([]));
         $this->RegisterAttributeString('ModuleStats', json_encode([]));
 
-        $this->RegisterAttributeString('AccessToken', '');
+        $this->RegisterAttributeString('AccessToken_CC', '');
         $this->RegisterAttributeString('AccessToken_ASC', '');
 
         $this->SetBuffer('LastApiCall_ASC', 0);
@@ -309,10 +322,10 @@ class PanasonicCloudIO extends IPSModule
             return false;
         }
 
-        $jtoken = json_decode($this->ReadAttributeString('AccessToken'), true);
+        $jtoken = json_decode($this->ReadAttributeString('AccessToken_CC'), true);
         $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
         $this->SendDebug(__FUNCTION__, 'clear access_token=' . $access_token, 0);
-        $this->WriteAttributeString('AccessToken', '');
+        $this->WriteAttributeString('AccessToken_CC', '');
 
         IPS_SemaphoreLeave($this->SemaphoreID);
     }
@@ -390,7 +403,7 @@ class PanasonicCloudIO extends IPSModule
     private function do_HttpRequest($endpoint, $postfields, $params, $header_add, $api)
     {
         if ($api == self::$API_CC) {
-            $url = self::$base_url . $endpoint;
+            $url = self::$base_url_cc . $endpoint;
         } else {
             $url = self::$base_url_asc . $endpoint;
         }
@@ -402,12 +415,12 @@ class PanasonicCloudIO extends IPSModule
             $header_base = [
                 'Accept'          => 'application/json; charset=utf-8',
                 'Content-Type'    => 'application/json; charset=utf-8',
-                'User-Agent'      => self::$user_agent,
-                'X-APP-TYPE'      => self::$x_app_type,
-                'X-APP-VERSION'   => self::$x_app_version,
-                'X-APP-NAME'      => self::$x_app_name,
+                'User-Agent'      => self::$user_agent_cc,
+                'X-APP-TYPE'      => self::$x_app_type_cc,
+                'X-APP-VERSION'   => self::$x_app_version_cc,
+                'X-APP-NAME'      => self::$x_app_name_cc,
                 'X-APP-TIMESTAMP' => date('Y-m-d H:i:s', time()),
-                'X-CFC-API-KEY'   => self::$x_cfc_api_key,
+                'X-CFC-API-KEY'   => $this->random_string_hex(128),
             ];
         } else {
             $header_base = [
@@ -415,15 +428,11 @@ class PanasonicCloudIO extends IPSModule
                 'User-Agent'   => self::$user_agent_asc,
             ];
         }
-        if ($header_add != '') {
-            foreach ($header_add as $key => $val) {
-                $header_base[$key] = $val;
-            }
+        if (is_array($header_add)) {
+            $header_base = array_merge($header_base, $header_add);
         }
-        $header = [];
-        foreach ($header_base as $key => $val) {
-            $header[] = $key . ': ' . $val;
-        }
+        $header = $this->build_header($header_base);
+
         $mode = $postfields != '' ? 'POST' : 'GET';
         $this->SendDebug(__FUNCTION__, 'url=' . $url . ', mode=' . $mode, 0);
         $this->SendDebug(__FUNCTION__, '... header=' . print_r($header, true), 0);
@@ -499,7 +508,7 @@ class PanasonicCloudIO extends IPSModule
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
                 if ($api == self::$API_CC) {
-                    $this->WriteAttributeString('AccessToken', '');
+                    $this->WriteAttributeString('AccessToken_CC', '');
                 } else {
                     $this->WriteAttributeString('AccessToken_ASC', '');
                 }
@@ -507,7 +516,7 @@ class PanasonicCloudIO extends IPSModule
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (forbidden)';
                 if ($api == self::$API_CC) {
-                    $this->WriteAttributeString('AccessToken', '');
+                    $this->WriteAttributeString('AccessToken_CC', '');
                 } else {
                     $this->WriteAttributeString('AccessToken_ASC', '');
                 }
@@ -522,7 +531,7 @@ class PanasonicCloudIO extends IPSModule
         if ($api == self::$API_CC) {
             if ($statuscode == 0) {
                 if ($body == 'Token expires') {
-                    $this->WriteAttributeString('AccessToken', '');
+                    $this->WriteAttributeString('AccessToken_CC', '');
                     $statuscode = self::$IS_UNAUTHORIZED;
                 }
             }
@@ -621,14 +630,882 @@ class PanasonicCloudIO extends IPSModule
         return $jbody;
     }
 
-    private function GetAccessToken()
+    private function RefreshAccessToken_CC()
+    {
+        $jtoken = @json_decode($this->ReadAttributeString('AccessToken_CC'), true);
+        if (isset($jtoken['refresh_token']) == false) {
+            return false;
+        }
+
+        $refresh_token = $jtoken['refresh_token'];
+
+        $url = self::$base_auth_url_cc . self::$token_endpoint_cc;
+        $this->SendDebug(__FUNCTION__, 'url=' . $url, 0);
+
+        $header_base = [
+            'Auth0-Client'    => self::$auth0_client_cc,
+            'User-Agent'      => self::$user_agent_auth_cc,
+            'Content-Type'    => 'application/json; charset=utf-8',
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, 'header=' . print_r($header, true), 0);
+
+        $postfields = [
+            'scope'         => 'openid offline_access comfortcloud.control a2w.control',
+            'client_id'     => self::$app_client_id_cc,
+            'grant_type'    => 'refresh_token',
+            'refresh_token' => $refresh_token,
+        ];
+        $this->SendDebug(__FUNCTION__, 'postfields=' . print_r($postfields, true), 0);
+        $postdata = json_encode($postfields);
+        $this->SendDebug(__FUNCTION__, 'postdata=' . $postdata, 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, ' => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, ' => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, ' => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, ' => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        if ($statuscode == 0) {
+            $jbody = @json_decode($body, true);
+            if ($jbody == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'malformed response';
+            }
+        }
+        if ($statuscode == 0) {
+            $this->SendDebug(__FUNCTION__, 'jbody=' . print_r($jbody, true), 0);
+            foreach (['access_token', 'refresh_token', 'expires_in'] as $key) {
+                if (isset($jbody[$key]) == false) {
+                    $statuscode = self::$IS_INVALIDDATA;
+                    $err = 'missing element "' . $key . '" in "' . $body . '"' . PHP_EOL;
+                    break;
+                }
+            }
+        }
+        if ($statuscode == 0) {
+            $access_token = $jbody['access_token'];
+            $refresh_token = $jbody['refresh_token'];
+            $expires_in = $jbody['expires_in'];
+        }
+
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $this->MaintainStatus(IS_ACTIVE);
+
+        $jtoken['access_token'] = $access_token;
+        $jtoken['refresh_token'] = $refresh_token;
+        $jtoken['expires'] = time() + $expires_in - 60;
+        return $jtoken;
+    }
+
+    private function FetchAccessToken_CC()
+    {
+        $username = $this->ReadPropertyString('username');
+        $password = $this->ReadPropertyString('password');
+
+        $ret = $this->RefreshAccessToken_CC();
+        if ($ret != false) {
+            return $ret;
+        }
+
+        # Setting up PKCS data
+        $code_verifier = $this->random_string(43);
+        $code_challenge = $this->urlsafe_b64encode(hash('sha256', $code_verifier, true));
+        $state = $this->random_string(20);
+        $this->SendDebug(__FUNCTION__, 'code_verifier=' . $code_verifier . ', code_challenge=' . $code_challenge . ', state=' . $state, 0);
+
+        $pre = 'step 1';
+        $this->SendDebug(__FUNCTION__, '*** ' . $pre, 0);
+
+        $params = [
+            'scope'                => 'openid offline_access comfortcloud.control a2w.control',
+            'audience'             => 'https://digital.panasonic.com/' . self::$app_client_id_cc . '/api/v1/',
+            'protocol'             => 'oauth2',
+            'response_type'        => 'code',
+            'code_challenge'       => $code_challenge,
+            'code_challenge_method'=> 'S256',
+            'auth0Client'          => self::$auth0_client_cc,
+            'client_id'            => self::$app_client_id_cc,
+            'redirect_uri'         => 'panasonic-iot-cfc://authglb.digital.panasonic.com/android/com.panasonic.ACCsmart/callback',
+            'state'                => $state,
+        ];
+
+        $url = self::$base_auth_url_cc . self::$auth_endpoint_cc . '?' . http_build_query($params);
+        $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
+
+        $header_base = [
+            'User-Agent' => self::$user_agent_auth_cc,
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, $pre . '  => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 302) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, $pre . '  => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        if ($statuscode == 0) {
+            if (preg_match('|Location: (.*)|i', $head, $matches) == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "Location" in header';
+            } else {
+                $location = str_replace(PHP_EOL, '', $matches[1]);
+                $this->SendDebug(__FUNCTION__, $pre . ' location="' . $location . '"', 0);
+                $location_query = parse_url($location, PHP_URL_QUERY);
+                parse_str($location_query, $query);
+                $state = $query['state'];
+                $this->SendDebug(__FUNCTION__, $pre . ' state=' . $state, 0);
+            }
+        }
+        if ($statuscode == 0) {
+            if (preg_match_all('|Set-Cookie: auth0=(.*);|Ui', $head, $matches) == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "auth0" in header';
+            } else {
+                $auth0 = $matches[1][0];
+                $this->SendDebug(__FUNCTION__, $pre . ' auth0=' . $auth0, 0);
+            }
+            if (preg_match_all('|Set-Cookie: auth0_compat=(.*);|Ui', $head, $matches) == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "auth0_compat" in header';
+            } else {
+                $auth0_compat = $matches[1][0];
+                $this->SendDebug(__FUNCTION__, $pre . ' auth0_compat=' . $auth0_compat, 0);
+            }
+            if (preg_match_all('|Set-Cookie: did=(.*);|Ui', $head, $matches) == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "did" in header';
+            } else {
+                $did = $matches[1][0];
+                $this->SendDebug(__FUNCTION__, $pre . ' did=' . $did, 0);
+            }
+            if (preg_match_all('|Set-Cookie: did_compat=(.*);|Ui', $head, $matches) == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "did_compat" in header';
+            } else {
+                $did_compat = $matches[1][0];
+                $this->SendDebug(__FUNCTION__, $pre . ' did_compat=' . $did_compat, 0);
+            }
+        }
+
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $pre = 'step 2';
+        $this->SendDebug(__FUNCTION__, '*** ' . $pre, 0);
+
+        $url = $curl_info['redirect_url'];
+        $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
+
+        $header_base = [
+            'User-Agent' => self::$user_agent_auth_cc,
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, $pre . '  => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, $pre . '  => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        if ($statuscode == 0) {
+            if (preg_match_all('|Set-Cookie: _csrf=(.*);|Ui', $head, $matches) == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "_csrf" in header';
+            } else {
+                $csrf = $matches[1][0];
+                $this->SendDebug(__FUNCTION__, $pre . ' csrf=' . $csrf, 0);
+            }
+        }
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $pre = 'step 3';
+        $this->SendDebug(__FUNCTION__, '*** ' . $pre, 0);
+
+        $url = self::$base_auth_url_cc . '/usernamepassword/login';
+        $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
+
+        $cookies = [
+            '_csrf=' . $csrf,
+            'auth0=' . $auth0,
+            'auth0_compat=' . $auth0_compat,
+            'did=' . $did,
+            'did_compat=' . $did_compat,
+        ];
+        $header_base = [
+            'Auth0-Client' => self::$auth0_client_cc,
+            'User-Agent'   => self::$user_agent_auth_cc,
+            'Cookie'       => implode('; ', $cookies),
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
+
+        $postfields = [
+            'client_id'    => self::$app_client_id_cc,
+            'redirect_uri' => 'panasonic-iot-cfc://authglb.digital.panasonic.com/android/com.panasonic.ACCsmart/callback',
+            'tenant'       => 'pdpauthglb-a1',
+            'response_type'=> 'code',
+            'scope'        => 'openid offline_access comfortcloud.control a2w.control',
+            'audience'     => 'https://digital.panasonic.com/' . self::$app_client_id_cc . '/api/v1/',
+            '_csrf'        => $csrf,
+            'state'        => $state,
+            '_intstate'    => 'deprecated',
+            'username'     => $username,
+            'password'     => $password,
+            'lang'         => 'en',
+            'connection'   => 'PanasonicID-Authentication',
+        ];
+        $this->SendDebug(__FUNCTION__, $pre . ' postfields=' . print_r($postfields, true), 0);
+
+        //$postdata = json_encode($postfields);
+        $postdata = http_build_query($postfields);
+        $this->SendDebug(__FUNCTION__, $pre . ' postdata=' . $postdata, 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, $pre . '  => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, $pre . '  => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            }
+        }
+        if ($statuscode == 0) {
+            $form_data = [];
+            if (preg_match_all('|<input([^>]*)>|Ui', $body, $matches)) {
+                // $this->SendDebug(__FUNCTION__, $pre . ' matches='.print_r($matches,true).PHP_EOL;
+                foreach ($matches[1] as $match) {
+                    // $this->SendDebug(__FUNCTION__, $pre . ' match='.print_r($match,true).PHP_EOL;
+                    $name = false;
+                    $value = false;
+                    if (preg_match('| name="([^"]*)"|Ui', $match, $r)) {
+                        $name = $r[1];
+                    }
+                    if (preg_match('| value="([^"]*)"|Ui', $match, $r)) {
+                        $value = $r[1];
+                    }
+                    if ($name !== false && $value !== false) {
+                        $form_data[$name] = htmlspecialchars_decode($value);
+                    }
+                }
+            }
+            if ($form_data == []) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "input" in body';
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . ' form_data=' . print_r($form_data, true), 0);
+            }
+        }
+
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $pre = 'step 4';
+        $this->SendDebug(__FUNCTION__, '*** ' . $pre, 0);
+
+        $url = self::$base_auth_url_cc . self::$login_callback_cc;
+        $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
+
+        $cookies = [
+            '_csrf=' . $csrf,
+            'auth0=' . $auth0,
+            'auth0_compat=' . $auth0_compat,
+            'did=' . $did,
+            'did_compat=' . $did_compat,
+        ];
+        $header_base = [
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'User-Agent'   => self::$user_agent_form_cc,
+            'Cookie'       => implode('; ', $cookies),
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
+
+        $postdata = http_build_query($form_data);
+        $this->SendDebug(__FUNCTION__, $pre . ' postdata=' . $postdata, 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, $pre . '  => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 302) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, $pre . '  => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $pre = 'step 5';
+        $this->SendDebug(__FUNCTION__, '*** ' . $pre, 0);
+
+        $url = $curl_info['redirect_url'];
+        $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
+
+        $cookies = [
+            '_csrf=' . $csrf,
+            'auth0=' . $auth0,
+            'auth0_compat=' . $auth0_compat,
+            'did=' . $did,
+            'did_compat=' . $did_compat,
+        ];
+        $header_base = [
+            'User-Agent'   => self::$user_agent_form_cc,
+            'Cookie'       => implode('; ', $cookies),
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, $pre . '  => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, $pre . '  => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        if ($statuscode == 0) {
+            if (preg_match('|Location: (.*)|i', $head, $matches) == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'no "Location" in header';
+            } else {
+                $location = str_replace(PHP_EOL, '', $matches[1]);
+                $this->SendDebug(__FUNCTION__, $pre . ' location="' . $location . '"', 0);
+                $location_query = parse_url($location, PHP_URL_QUERY);
+                parse_str($location_query, $query);
+                $code = $query['code'];
+                $this->SendDebug(__FUNCTION__, $pre . ' code=' . $code, 0);
+            }
+        }
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $pre = 'step 6';
+        $this->SendDebug(__FUNCTION__, '*** ' . $pre, 0);
+
+        $url = self::$base_auth_url_cc . self::$token_endpoint_cc;
+        $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
+
+        $header_base = [
+            'Auth0-Client'    => self::$auth0_client_cc,
+            'User-Agent'      => self::$user_agent_auth_cc,
+            'Content-Type'    => 'application/json; charset=utf-8',
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
+
+        $postfields = [
+            'scope'        => 'openid',
+            'client_id'    => self::$app_client_id_cc,
+            'grant_type'   => 'authorization_code',
+            'code'         => $code,
+            'redirect_uri' => 'panasonic-iot-cfc://authglb.digital.panasonic.com/android/com.panasonic.ACCsmart/callback',
+            'code_verifier'=> $code_verifier,
+        ];
+        $this->SendDebug(__FUNCTION__, $pre . ' postfields=' . print_r($postfields, true), 0);
+        $postdata = json_encode($postfields);
+        $this->SendDebug(__FUNCTION__, $pre . ' postdata=' . $postdata, 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, $pre . '  => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, $pre . '  => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        if ($statuscode == 0) {
+            $jbody = @json_decode($body, true);
+            if ($jbody == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'malformed response';
+            }
+        }
+        if ($statuscode == 0) {
+            $this->SendDebug(__FUNCTION__, $pre . ' jbody=' . print_r($jbody, true), 0);
+            foreach (['access_token', 'refresh_token', 'expires_in'] as $key) {
+                if (isset($jbody[$key]) == false) {
+                    $statuscode = self::$IS_INVALIDDATA;
+                    $err = 'missing element "' . $key . '" in "' . $body . '"' . PHP_EOL;
+                    break;
+                }
+            }
+        }
+        if ($statuscode == 0) {
+            $access_token = $jbody['access_token'];
+            $refresh_token = $jbody['refresh_token'];
+            $expires_in = $jbody['expires_in'];
+        }
+
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $pre = 'step 7';
+        $this->SendDebug(__FUNCTION__, '*** ' . $pre, 0);
+
+        $url = self::$base_url_cc . self::$auth_v2_login_endpoint_cc;
+        $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
+
+        $header_base = [
+            'Accept'                  => 'application/json; charset=utf-8',
+            'Content-Type'            => 'application/json; charset=utf-8',
+            'User-Agent'              => self::$user_agent_cc,
+            'X-APP-TYPE'              => self::$x_app_type_cc,
+            'X-APP-VERSION'           => self::$x_app_version_cc,
+            'X-APP-NAME'              => self::$x_app_name_cc,
+            'X-APP-TIMESTAMP'         => date('Y-m-d H:i:s', time()),
+            'X-CFC-API-KEY'           => $this->random_string_hex(128),
+            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
+        ];
+        $header = $this->build_header($header_base);
+        $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
+
+        $postfields = [
+            'language'=> 0,
+        ];
+        $this->SendDebug(__FUNCTION__, $pre . ' postfields=' . print_r($postfields, true), 0);
+        $postdata = json_encode($postfields);
+        $this->SendDebug(__FUNCTION__, $pre . ' postdata=' . $postdata, 0);
+
+        $time_start = microtime(true);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $response = curl_exec($ch);
+        $cerrno = curl_errno($ch);
+        $cerror = $cerrno ? curl_error($ch) : '';
+        $curl_info = curl_getinfo($ch);
+        curl_close($ch);
+        $httpcode = $curl_info['http_code'];
+        $duration = round(microtime(true) - $time_start, 2);
+        $this->SendDebug(__FUNCTION__, $pre . '  => errno=' . $cerrno . ', httpcode=' . $httpcode . ', duration=' . $duration . 's', 0);
+
+        $statuscode = 0;
+        $err = '';
+        if ($cerrno) {
+            $statuscode = -1;
+            $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
+        }
+        if ($statuscode == 0) {
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
+        if ($statuscode == 0) {
+            $header_size = $curl_info['header_size'];
+            $head = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+
+            $this->SendDebug(__FUNCTION__, $pre . '  => head=' . $head, 0);
+            if ($body == '' || ctype_print($body)) {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            } else {
+                $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+        }
+        if ($statuscode == 0) {
+            $jbody = @json_decode($body, true);
+            if ($jbody == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'malformed response';
+            }
+        }
+        if ($statuscode == 0) {
+            $jbody = @json_decode($body, true);
+            if ($jbody == false) {
+                $statuscode = self::$IS_INVALIDDATA;
+                $err = 'malformed response';
+            }
+        }
+        if ($statuscode == 0) {
+            $this->SendDebug(__FUNCTION__, $pre . ' jbody=' . print_r($jbody, true), 0);
+            foreach (['clientId'] as $key) {
+                if (isset($jbody[$key]) == false) {
+                    $statuscode = self::$IS_INVALIDDATA;
+                    $err = 'missing element "' . $key . '" in "' . $body . '"' . PHP_EOL;
+                    break;
+                }
+            }
+        }
+        if ($statuscode == 0) {
+            $client_id = $jbody['clientId'];
+        }
+
+        $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
+        if ($collectApiCallStats) {
+            $this->ApiCallCollect($url, $err, $statuscode);
+        }
+
+        if ($statuscode) {
+            $this->SendDebug(__FUNCTION__, '    statuscode=' . $statuscode . ', err=' . $err, 0);
+            $this->MaintainStatus($statuscode);
+            return false;
+        }
+
+        $this->MaintainStatus(IS_ACTIVE);
+
+        $ret = [
+            'access_token'  => $access_token,
+            'refresh_token' => $refresh_token,
+            'client_id'     => $client_id,
+            'expires'       => time() + $expires_in - 60,
+        ];
+        return $ret;
+    }
+
+    private function GetAccessToken_CC()
     {
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
             $this->SendDebug(__FUNCTION__, 'unable to lock sempahore ' . $this->SemaphoreID, 0);
             return false;
         }
 
-        $data = $this->ReadAttributeString('AccessToken');
+        $data = $this->ReadAttributeString('AccessToken_CC');
         if ($data != '') {
             $jtoken = json_decode($data, true);
             $access_token = isset($jtoken['access_token']) ? $jtoken['access_token'] : '';
@@ -646,33 +1523,23 @@ class PanasonicCloudIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'no saved access_token', 0);
         }
 
-        $username = $this->ReadPropertyString('username');
-        $password = $this->ReadPropertyString('password');
-        $postfields = [
-            'language' => 0,
-            'loginId'  => $username,
-            'password' => $password,
-        ];
-        $jdata = $this->do_HttpRequest(self::$auth_endpoint, $postfields, '', '', self::$API_CC);
-        if ($jdata == false) {
-            $this->WriteAttributeString('AccessToken', '');
-            IPS_SemaphoreLeave($this->SemaphoreID);
-            return false;
+        $jtoken = $this->FetchAccessToken_CC();
+        if ($jtoken != false) {
+            $access_token = $jtoken['access_token'];
+            $expires = $jtoken['expires'];
+            $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expires), 0);
+            $this->WriteAttributeString('AccessToken_CC', json_encode($jtoken));
+        } else {
+            $access_token = '';
         }
-
-        $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
-        $access_token = $this->GetArrayElem($jdata, 'uToken', '');
-        $client_id = $this->GetArrayElem($jdata, 'clientId', '');
-        $expires = time() + self::$login_interval;
-        $this->SendDebug(__FUNCTION__, 'new access_token=' . $access_token . ', valid until ' . date('d.m.y H:i:s', $expires), 0);
-        $jtoken = [
-            'access_token' => $access_token,
-            'client_id'    => $client_id,
-            'expires'      => $expires,
-        ];
-        $this->WriteAttributeString('AccessToken', json_encode($jtoken));
         IPS_SemaphoreLeave($this->SemaphoreID);
         return $access_token;
+    }
+
+    private function GetClientID_CC()
+    {
+        $jtoken = @json_decode($this->ReadAttributeString('AccessToken_CC'), true);
+        return isset($jtoken['client_id']) ? $jtoken['client_id'] : false;
     }
 
     private function FetchAccessToken_ASC()
@@ -702,10 +1569,7 @@ class PanasonicCloudIO extends IPSModule
             'Referer'         => self::$base_url_asc,
         ];
         $header_base = array_merge($header_dflt, $header_add);
-        $header = [];
-        foreach ($header_base as $key => $val) {
-            $header[] = $key . ': ' . $val;
-        }
+        $header = $this->build_header($header_base);
         $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
 
         $time_start = microtime(true);
@@ -849,10 +1713,7 @@ class PanasonicCloudIO extends IPSModule
             'Referer'      => self::$base_url_asc,
         ];
         $header_base = array_merge($header_dflt, $header_add);
-        $header = [];
-        foreach ($header_base as $key => $val) {
-            $header[] = $key . ': ' . $val;
-        }
+        $header = $this->build_header($header_base);
         $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
 
         $time_start = microtime(true);
@@ -913,6 +1774,7 @@ class PanasonicCloudIO extends IPSModule
                 $location_query = parse_url($location, PHP_URL_QUERY);
                 parse_str($location_query, $query);
                 $state = $query['state'];
+                $this->SendDebug(__FUNCTION__, $pre . ' state=' . $state, 0);
             }
         }
         if ($statuscode == 0) {
@@ -977,10 +1839,7 @@ class PanasonicCloudIO extends IPSModule
             'Referer'      => self::$base_url_asc,
         ];
         $header_base = array_merge($header_dflt, $header_add);
-        $header = [];
-        foreach ($header_base as $key => $val) {
-            $header[] = $key . ': ' . $val;
-        }
+        $header = $this->build_header($header_base);
         $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
 
         $time_start = microtime(true);
@@ -1085,10 +1944,7 @@ class PanasonicCloudIO extends IPSModule
             'Cookie'       => implode('; ', $cookies),
         ];
         $header_base = array_merge($header_dflt, $header_add);
-        $header = [];
-        foreach ($header_base as $key => $val) {
-            $header[] = $key . ': ' . $val;
-        }
+        $header = $this->build_header($header_base);
         $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
 
         $postfields = [
@@ -1240,10 +2096,7 @@ class PanasonicCloudIO extends IPSModule
             'Cookie'       => implode('; ', $cookies),
         ];
         $header_base = array_merge($header_dflt, $header_add);
-        $header = [];
-        foreach ($header_base as $key => $val) {
-            $header[] = $key . ': ' . $val;
-        }
+        $header = $this->build_header($header_base);
         $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
 
         $postdata = http_build_query($form_data);
@@ -1393,7 +2246,7 @@ class PanasonicCloudIO extends IPSModule
             return;
         }
 
-        $access_token = $this->GetAccessToken();
+        $access_token = $this->GetAccessToken_CC();
         if ($access_token == false) {
             $this->MaintainStatus(self::$IS_UNAUTHORIZED);
             $msg = $this->Translate('Invalid login-data at Panasonic Comfort Cloud') . PHP_EOL;
@@ -1435,15 +2288,18 @@ class PanasonicCloudIO extends IPSModule
 
     private function GetGroups()
     {
-        $access_token = $this->GetAccessToken();
+        $access_token = $this->GetAccessToken_CC();
         if ($access_token == false) {
             return false;
         }
 
-        $url = self::$group_endpoint;
+        $client_id = $this->GetClientID_CC();
+
+        $url = self::$group_endpoint_cc;
 
         $header_add = [
-            'X-User-Authorization' => $access_token,
+            'X-Client-Id'             => $client_id,
+            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
         ];
 
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
@@ -1509,15 +2365,18 @@ class PanasonicCloudIO extends IPSModule
 
     private function GetDeviceStatus(string $guid, bool $now)
     {
-        $access_token = $this->GetAccessToken();
+        $access_token = $this->GetAccessToken_CC();
         if ($access_token == false) {
             return false;
         }
 
-        $url = ($now ? self::$device_status_now_endpoint : self::$device_status_endpoint) . $guid;
+        $client_id = $this->GetClientID_CC();
+
+        $url = ($now ? self::$device_status_now_endpoint_cc : self::$device_status_endpoint_cc) . $guid;
 
         $header_add = [
-            'X-User-Authorization' => $access_token,
+            'X-Client-Id'             => $client_id,
+            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
         ];
 
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
@@ -1629,12 +2488,14 @@ class PanasonicCloudIO extends IPSModule
 
     private function ControlDevice(string $guid, string $parameters)
     {
-        $access_token = $this->GetAccessToken();
+        $access_token = $this->GetAccessToken_CC();
         if ($access_token == false) {
             return false;
         }
 
-        $url = self::$device_control_endpoint;
+        $client_id = $this->GetClientID_CC();
+
+        $url = self::$device_control_endpoint_cc;
 
         $postfields = [
             'deviceGuid' => $guid,
@@ -1642,7 +2503,8 @@ class PanasonicCloudIO extends IPSModule
         ];
 
         $header_add = [
-            'X-User-Authorization' => $access_token,
+            'X-Client-Id'             => $client_id,
+            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
         ];
 
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
@@ -1715,15 +2577,18 @@ class PanasonicCloudIO extends IPSModule
 
     private function GetDeviceHistory(string $guid, int $dataMode, int $tstamp)
     {
-        $access_token = $this->GetAccessToken();
+        $access_token = $this->GetAccessToken_CC();
         if ($access_token == false) {
             return false;
         }
 
-        $url = self::$device_history_endpoint;
+        $client_id = $this->GetClientID_CC();
+
+        $url = self::$device_history_endpoint_cc;
 
         $header_add = [
-            'X-User-Authorization' => $access_token,
+            'X-Client-Id'             => $client_id,
+            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
         ];
 
         $postfields = [
@@ -1802,5 +2667,42 @@ class PanasonicCloudIO extends IPSModule
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         $ret = isset($jdata['dateData']) ? json_encode($jdata['dateData']) : '';
         return $ret;
+    }
+
+    private function random_string(int $length)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $randstring = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randstring .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $randstring;
+    }
+
+    private function random_string_hex(int $length)
+    {
+        $characters = '0123456789ABCDEF';
+        $randstring = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randstring .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $randstring;
+    }
+
+    private function urlsafe_b64encode($string)
+    {
+        $data = base64_encode($string);
+        $data = str_replace(['+', '/'], ['-', '_'], $data);
+        $data = rtrim($data, '=');
+        return $data;
+    }
+
+    private function build_header($headerfields)
+    {
+        $header = [];
+        foreach ($headerfields as $key => $value) {
+            $header[] = $key . ': ' . $value;
+        }
+        return $header;
     }
 }
