@@ -137,6 +137,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 2.1 @ 01.07.2024 05:40
+  - Fix: neue Version der APІ
+
 - 2.0 @ 22.06.2024 17:46
   - Fix: neues Login-Verfahren für die Comfort Cloud implementiert
   - Neu: Aquarea-Wärmepunpen werden nun unterstützt (noch nicht zuende getestet!)

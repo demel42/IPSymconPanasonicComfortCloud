@@ -38,7 +38,7 @@ class PanasonicCloudIO extends IPSModule
     private static $auth0_client_cc = 'eyJuYW1lIjoiQXV0aDAuQW5kcm9pZCIsImVudiI6eyJhbmRyb2lkIjoiMzAifSwidmVyc2lvbiI6IjIuOS4zIn0=';
 
     private static $x_app_type_cc = '1';
-    private static $x_app_version_cc = '1.20.0';
+    private static $x_app_version_cc = '1.21.0';
     private static $x_app_name_cc = 'Comfort Cloud';
     private static $user_agent_cc = 'G-RAC';
 
