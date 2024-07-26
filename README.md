@@ -137,8 +137,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
-- 2.1 @ 01.07.2024 05:40
+- 2.1 @ 26.07.2024 11:17
   - Fix: neue Version der APІ
+  - update submodule CommonStubs
 
 - 2.0 @ 22.06.2024 17:46
   - Fix: neues Login-Verfahren für die Comfort Cloud implementiert
