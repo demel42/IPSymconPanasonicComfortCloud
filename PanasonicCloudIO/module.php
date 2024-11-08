@@ -38,7 +38,7 @@ class PanasonicCloudIO extends IPSModule
     private static $auth0_client_cc = 'eyJuYW1lIjoiQXV0aDAuQW5kcm9pZCIsImVudiI6eyJhbmRyb2lkIjoiMzAifSwidmVyc2lvbiI6IjIuOS4zIn0=';
 
     private static $x_app_type_cc = '1';
-    private static $x_app_version_cc = '1.21.0';
+    private static $x_app_version_cc = '1.22.0';
     private static $x_app_name_cc = 'Comfort Cloud';
     private static $user_agent_cc = 'G-RAC';
 
@@ -412,16 +412,19 @@ class PanasonicCloudIO extends IPSModule
         }
 
         if ($api == self::$API_CC) {
+            $tstamp = time();
             $header_base = [
                 'Accept'          => 'application/json; charset=utf-8',
                 'Content-Type'    => 'application/json; charset=utf-8',
                 'User-Agent'      => self::$user_agent_cc,
-                'X-APP-TYPE'      => self::$x_app_type_cc,
-                'X-APP-VERSION'   => self::$x_app_version_cc,
-                'X-APP-NAME'      => self::$x_app_name_cc,
-                'X-APP-TIMESTAMP' => date('Y-m-d H:i:s', time()),
-                'X-CFC-API-KEY'   => $this->random_string_hex(128),
+                'x-app-type'      => self::$x_app_type_cc,
+                'x-app-version'   => self::$x_app_version_cc,
+                'x-app-name'      => self::$x_app_name_cc,
+                'x-app-timestamp' => gmdate('Y-m-d H:i:s', $tstamp),
             ];
+            if (isset($header_add['x-user-authorization-v2'])) {
+                $header_base['x-cfc-api-key'] = $this->get_cfc_api_key($tstamp, $header_add['x-user-authorization-v2']);
+            }
         } else {
             $header_base = [
                 'Content-Type' => 'application/x-www-form-urlencoded',
@@ -490,8 +493,7 @@ class PanasonicCloudIO extends IPSModule
         if ($cerrno) {
             $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -502,8 +504,7 @@ class PanasonicCloudIO extends IPSModule
             } else {
                 $this->SendDebug(__FUNCTION__, ' => body potentially contains binary data, size=' . strlen($body), 0);
             }
-        }
-        if ($statuscode == 0) {
+
             if ($httpcode == 401) {
                 $statuscode = self::$IS_UNAUTHORIZED;
                 $err = 'got http-code ' . $httpcode . ' (unauthorized)';
@@ -685,19 +686,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -707,6 +698,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, ' => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, ' => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -814,19 +813,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 302) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -836,6 +825,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 302) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -927,19 +924,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -949,6 +936,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1036,19 +1031,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1060,7 +1045,16 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
         }
+
         if ($statuscode == 0) {
             $form_data = [];
             if (preg_match_all('|<input([^>]*)>|Ui', $body, $matches)) {
@@ -1147,19 +1141,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 302) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1169,6 +1153,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 302) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
@@ -1223,10 +1215,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1314,19 +1305,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1336,6 +1317,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1378,16 +1367,17 @@ class PanasonicCloudIO extends IPSModule
         $url = self::$base_url_cc . self::$auth_v2_login_endpoint_cc;
         $this->SendDebug(__FUNCTION__, $pre . ' url=' . $url, 0);
 
+        $tstamp = time();
         $header_base = [
-            'Accept'                  => 'application/json; charset=utf-8',
+            //'Accept'                  => 'application/json; charset=utf-8',
             'Content-Type'            => 'application/json; charset=utf-8',
             'User-Agent'              => self::$user_agent_cc,
-            'X-APP-TYPE'              => self::$x_app_type_cc,
-            'X-APP-VERSION'           => self::$x_app_version_cc,
-            'X-APP-NAME'              => self::$x_app_name_cc,
-            'X-APP-TIMESTAMP'         => date('Y-m-d H:i:s', time()),
-            'X-CFC-API-KEY'           => $this->random_string_hex(128),
-            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
+            'x-app-type'              => self::$x_app_type_cc,
+            'x-app-version'           => self::$x_app_version_cc,
+            'x-app-name'              => self::$x_app_name_cc,
+            'x-app-timestamp'         => gmdate('Y-m-d H:i:s', $tstamp),
+            'x-cfc-api-key'           => $this->get_cfc_api_key($tstamp, 'Bearer ' . $access_token),
+            'x-user-authorization-v2' => 'Bearer ' . $access_token,
         ];
         $header = $this->build_header($header_base);
         $this->SendDebug(__FUNCTION__, $pre . ' header=' . print_r($header, true), 0);
@@ -1424,19 +1414,9 @@ class PanasonicCloudIO extends IPSModule
         $statuscode = 0;
         $err = '';
         if ($cerrno) {
-            $statuscode = -1;
+            $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1446,6 +1426,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1600,17 +1588,7 @@ class PanasonicCloudIO extends IPSModule
         if ($cerrno) {
             $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1620,6 +1598,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1743,17 +1729,7 @@ class PanasonicCloudIO extends IPSModule
         if ($cerrno) {
             $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 302) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1763,6 +1739,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 302) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1869,17 +1853,7 @@ class PanasonicCloudIO extends IPSModule
         if ($cerrno) {
             $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 302) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -1889,6 +1863,14 @@ class PanasonicCloudIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 302) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         $csrf = '';
@@ -1995,17 +1977,7 @@ class PanasonicCloudIO extends IPSModule
         if ($cerrno) {
             $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -2016,6 +1988,14 @@ class PanasonicCloudIO extends IPSModule
             } else {
                 // $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
                 $this->SendDebug(__FUNCTION__, $pre . '  => body=' . $body, 0);
+            }
+
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         $action_url = false;
@@ -2132,17 +2112,7 @@ class PanasonicCloudIO extends IPSModule
         if ($cerrno) {
             $statuscode = self::$IS_SERVERERROR;
             $err = 'got curl-errno ' . $cerrno . ' (' . $cerror . ')';
-        }
-        if ($statuscode == 0) {
-            if ($httpcode >= 500 && $httpcode <= 599) {
-                $statuscode = self::$IS_SERVERERROR;
-                $err = 'got http-code ' . $httpcode . ' (server error)';
-            } elseif ($httpcode != 200) {
-                $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
-            }
-        }
-        if ($statuscode == 0) {
+        } else {
             $header_size = $curl_info['header_size'];
             $head = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -2153,8 +2123,15 @@ class PanasonicCloudIO extends IPSModule
             } else {
                 $this->SendDebug(__FUNCTION__, $pre . '  => body potentially contains binary data, size=' . strlen($body), 0);
             }
-        }
 
+            if ($httpcode >= 500 && $httpcode <= 599) {
+                $statuscode = self::$IS_SERVERERROR;
+                $err = 'got http-code ' . $httpcode . ' (server error)';
+            } elseif ($httpcode != 200) {
+                $statuscode = self::$IS_HTTPERROR;
+                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+            }
+        }
         if ($statuscode == 0) {
             if (preg_match_all('|Set-Cookie: accessToken=(.*);|Ui', $head, $matches) == false) {
                 $statuscode = self::$IS_INVALIDDATA;
@@ -2298,8 +2275,8 @@ class PanasonicCloudIO extends IPSModule
         $url = self::$group_endpoint_cc;
 
         $header_add = [
-            'X-Client-Id'             => $client_id,
-            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
+            'x-client-id'             => $client_id,
+            'x-user-authorization-v2' => 'Bearer ' . $access_token,
         ];
 
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
@@ -2375,8 +2352,8 @@ class PanasonicCloudIO extends IPSModule
         $url = ($now ? self::$device_status_now_endpoint_cc : self::$device_status_endpoint_cc) . $guid;
 
         $header_add = [
-            'X-Client-Id'             => $client_id,
-            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
+            'x-client-id'             => $client_id,
+            'x-user-authorization-v2' => 'Bearer ' . $access_token,
         ];
 
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
@@ -2503,8 +2480,8 @@ class PanasonicCloudIO extends IPSModule
         ];
 
         $header_add = [
-            'X-Client-Id'             => $client_id,
-            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
+            'x-client-id'             => $client_id,
+            'x-user-authorization-v2' => 'Bearer ' . $access_token,
         ];
 
         if (IPS_SemaphoreEnter($this->SemaphoreID, self::$semaphoreTM) == false) {
@@ -2587,8 +2564,8 @@ class PanasonicCloudIO extends IPSModule
         $url = self::$device_history_endpoint_cc;
 
         $header_add = [
-            'X-Client-Id'             => $client_id,
-            'X-User-Authorization-V2' => 'Bearer ' . $access_token,
+            'x-client-id'             => $client_id,
+            'x-user-authorization-v2' => 'Bearer ' . $access_token,
         ];
 
         $postfields = [
@@ -2667,6 +2644,14 @@ class PanasonicCloudIO extends IPSModule
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
         $ret = isset($jdata['dateData']) ? json_encode($jdata['dateData']) : '';
         return $ret;
+    }
+
+    private function get_cfc_api_key($tstamp, $auth)
+    {
+        $buf = 'Comfort Cloud' . '521325fb2dd486bf4831b47644317fca' . strval($tstamp * 1000) . $auth;
+        $hash = hash('sha256', $buf);
+        $cfc = substr($hash, 0, 9) . 'cfc' . substr($hash, 9);
+        return $cfc;
     }
 
     private function random_string(int $length)

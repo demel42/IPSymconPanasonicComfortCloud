@@ -465,8 +465,11 @@ class PanasonicCloudDevice extends IPSModule
         ];
         $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
         $data = $this->SendDataToParent(json_encode($sdata));
-        $jdata = json_decode($data, true);
+        $jdata = @json_decode((string) $data, true);
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+        if ($jdata === false) {
+            return;
+        }
 
         $airflow_swing = $this->ReadPropertyInteger('airflow_swing');
         switch ($airflow_swing) {
@@ -636,8 +639,12 @@ class PanasonicCloudDevice extends IPSModule
             ];
             $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
             $data = $this->SendDataToParent(json_encode($sdata));
-            $jdata = json_decode($data, true);
+            $jdata = @json_decode((string) $data, true);
             $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
+            if ($jdata === false) {
+                return;
+            }
+
             $energyConsumption = $this->GetArrayElem($jdata, 'energyConsumption', 0, $fnd);
             if ($fnd) {
                 $this->SendDebug(__FUNCTION__, '... energyConsumption=' . $energyConsumption, 0);
@@ -1038,7 +1045,7 @@ class PanasonicCloudDevice extends IPSModule
         ];
         $this->SendDebug(__FUNCTION__, 'SendDataToParent(' . print_r($sdata, true) . ')', 0);
         $data = $this->SendDataToParent(json_encode($sdata));
-        $jdata = json_decode($data, true);
+        $jdata = @json_decode((string) $data, true);
         $this->SendDebug(__FUNCTION__, 'jdata=' . print_r($jdata, true), 0);
 
         return isset($jdata['result']) && $jdata['result'] == 0;
