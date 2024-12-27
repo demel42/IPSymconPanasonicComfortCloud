@@ -137,7 +137,7 @@ class PanasonicCloudConfig extends IPSModule
                                 break;
                         }
                         if ($guid == '') {
-                            $this->SendDebug(__FUNCTION__, 'ignore module ' . $module['id'] . ': unsupported type ' . $module['type'], 0);
+                            $this->SendDebug(__FUNCTION__, 'ignore module ' . $deviceGuid . ': unsupported type ' . $deviceType, 0);
                             continue;
                         }
                         $instIDs = IPS_GetInstanceListByModuleID($guid);

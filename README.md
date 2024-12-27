@@ -137,6 +137,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 2.2.1 @ 27.12.2024 08:29
+  - Fix: Fehler im Konfigurator, wenn Daten inkonsistent sind
+  - update submodule CommonStubs
+
 - 2.2 @ 08.11.2024 17:50
   - Fix: neue Version der API mit geändertem Zugriffsverfahren
 
