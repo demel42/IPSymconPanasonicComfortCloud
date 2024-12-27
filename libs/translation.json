@@ -2,8 +2,9 @@
 	"translations": {
 		"de": {
 			"__function__": "DeviceTypeMapping",
+			"Air conditioner (floor mounted)": "Klimaanlage (Standgerät)",
 			"Heat pump": "Wärmepumpe",
-			"Air conditioner": "Klimaanlage",
+			"Air conditioner (wall mounted)": "Klimaanlage /Wandmontage)",
 			"Unknown type": "Unbekannter Typ",
 
 			"__variableprofile__": "PanasonicCloud.Operate",

@@ -126,7 +126,8 @@ class PanasonicCloudConfig extends IPSModule
                         $type = $this->DeviceType2String($deviceType);
 
                         switch ($deviceType) {
-                            case self::$DEVICE_TYPE_AIR_CONDITIONER:
+                            case self::$DEVICE_TYPE_AIR_CONDITIONER_FLOOR:
+                            case self::$DEVICE_TYPE_AIR_CONDITIONER_WALL:
                                 $guid = '{A972DA17-4989-9CAD-2680-0CB492645050}'; // PanasonicCloudDevice
                                 break;
                             case self::$DEVICE_TYPE_HEAT_PUMP:

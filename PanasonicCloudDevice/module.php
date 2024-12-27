@@ -34,7 +34,7 @@ class PanasonicCloudDevice extends IPSModule
         $this->RegisterPropertyBoolean('log_no_parent', true);
 
         $this->RegisterPropertyString('guid', '');
-        $this->RegisterPropertyInteger('type', 0);
+        $this->RegisterPropertyInteger('type', self::$DEVICE_TYPE_UNKNOWN);
         $this->RegisterPropertyString('model', '');
 
         $this->RegisterPropertyInteger('airflow_swing', self::$AIRFLOW_SWING_UD);
@@ -69,6 +69,25 @@ class PanasonicCloudDevice extends IPSModule
         if ($message == IPS_KERNELMESSAGE && $data[0] == KR_READY) {
             $this->SetUpdateInterval();
         }
+    }
+
+    private function CheckModuleConfiguration()
+    {
+        $r = [];
+
+        $guid = $this->ReadPropertyString('guid');
+        if ($guid == '') {
+            $this->SendDebug(__FUNCTION__, '"guid" is empty', 0);
+            $r[] = $this->Translate('A device id ("guid") is required');
+        }
+
+        $type = $this->ReadPropertyInteger('type');
+        if ($type == self::$DEVICE_TYPE_UNKNOWN) {
+            $this->SendDebug(__FUNCTION__, '"type" is zero', 0);
+            $r[] = $this->Translate('The device type is required');
+        }
+
+        return $r;
     }
 
     private function CheckModuleUpdate(array $oldInfo, array $newInfo)

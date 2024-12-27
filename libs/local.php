@@ -248,17 +248,25 @@ trait PanasonicCloudLocalLib
         $this->CreateVarProfile('PanasonicCloud.PowerMode_ASC', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
     }
 
+    public static $DEVICE_TYPE_UNKNOWN = 0;
+    public static $DEVICE_TYPE_AIR_CONDITIONER_FLOOR = 1;
     public static $DEVICE_TYPE_HEAT_PUMP = 2;
-    public static $DEVICE_TYPE_AIR_CONDITIONER = 3;
+    public static $DEVICE_TYPE_AIR_CONDITIONER_WALL = 3;
 
     private function DeviceTypeMapping()
     {
         return [
+            self::$DEVICE_TYPE_UNKNOWN => [
+                'caption' => 'Unknown type',
+            ],
+            self::$DEVICE_TYPE_AIR_CONDITIONER_FLOOR => [
+                'caption' => 'Air conditioner (floor-mounted)',
+            ],
             self::$DEVICE_TYPE_HEAT_PUMP => [
                 'caption' => 'Heat pump',
             ],
-            self::$DEVICE_TYPE_AIR_CONDITIONER => [
-                'caption' => 'Air conditioner',
+            self::$DEVICE_TYPE_AIR_CONDITIONER_WALL => [
+                'caption' => 'Air conditioner (wall-mounted)',
             ],
         ];
     }

@@ -3,6 +3,10 @@
 		"de": {
 			"Panasonic ComfortCloud Device": "Panasonic ComfortCloud Gerät",
 
+			"__function__": "CheckModuleConfiguration",
+			"A device id (\"guid\") is required": "Eine Geräte-ID (\"Guid\") ist erforderlich",
+			"The device type is required": "Der Gerätetyp ist erforderlich",
+
 			"__function__": "CheckUpdate",
 			"Delete unused variable 'AirflowDirection'": "Unbenutzte Variable 'AirflowDirection' löschen",
 			"Delete unused variableprofiles 'PanasonicCloud.AirflowDirection_0', 'PanasonicCloud.AirflowDirection_1'":

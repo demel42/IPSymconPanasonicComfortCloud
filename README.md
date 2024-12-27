@@ -137,6 +137,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 2.3 @ 27.12.2024 17:16
+  - Verbesserung: Gerätetyp 1 wird nun unterstützt, vermutlich sind das die Standgeräte
+
 - 2.2.1 @ 27.12.2024 08:29
   - Fix: Fehler im Konfigurator, wenn Daten inkonsistent sind
   - update submodule CommonStubs
