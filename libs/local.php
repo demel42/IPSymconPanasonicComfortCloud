@@ -249,7 +249,7 @@ trait PanasonicCloudLocalLib
     }
 
     public static $DEVICE_TYPE_UNKNOWN = 0;
-    public static $DEVICE_TYPE_AIR_CONDITIONER_FLOOR = 1;
+    public static $DEVICE_TYPE_AIR_CONDITIONER_CHEST = 1;
     public static $DEVICE_TYPE_HEAT_PUMP = 2;
     public static $DEVICE_TYPE_AIR_CONDITIONER_WALL = 3;
 
@@ -259,14 +259,14 @@ trait PanasonicCloudLocalLib
             self::$DEVICE_TYPE_UNKNOWN => [
                 'caption' => 'Unknown type',
             ],
-            self::$DEVICE_TYPE_AIR_CONDITIONER_FLOOR => [
-                'caption' => 'Air conditioner (floor-mounted)',
+            self::$DEVICE_TYPE_AIR_CONDITIONER_CHEST => [
+                'caption' => 'Air conditioner (chest unit)',
             ],
             self::$DEVICE_TYPE_HEAT_PUMP => [
                 'caption' => 'Heat pump',
             ],
             self::$DEVICE_TYPE_AIR_CONDITIONER_WALL => [
-                'caption' => 'Air conditioner (wall-mounted)',
+                'caption' => 'Air conditioner (wall unit)',
             ],
         ];
     }
