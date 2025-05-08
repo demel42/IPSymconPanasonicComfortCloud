@@ -137,6 +137,9 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 2.4 @ 08.05.2025 15:57
+  - Fix: neue Version der APІ (App-Version 2.1.0)
+
 - 2.3 @ 28.12.2024 06:58
   - Verbesserung: Gerätetyp 1 wird nun unterstützt, vermutlich sind das die "Mini-Standtruhen"
 
