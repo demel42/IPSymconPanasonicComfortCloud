@@ -137,6 +137,14 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 2.6 @ 04.08.2025 10:14
+  - Fix: neue Version der APІ (App-Version 3.0.0).
+    Die App-Version wird in der API abgeprüft, wird aber häufig geändert, ohne das es funktionelle Änderungen in der API gibt:
+	Daher hole ich die App-Version beim Login aus der Seite der Panasonic-App im Google-Store
+
+- 2.5 @ 02.07.2025 10:41
+  - Fix: neue Version der APІ (App-Version 2.2.0)
+
 - 2.4 @ 08.05.2025 15:57
   - Fix: neue Version der APІ (App-Version 2.1.0)
 

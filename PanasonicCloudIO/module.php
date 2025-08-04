@@ -38,7 +38,7 @@ class PanasonicCloudIO extends IPSModule
     private static $auth0_client_cc = 'eyJuYW1lIjoiQXV0aDAuQW5kcm9pZCIsImVudiI6eyJhbmRyb2lkIjoiMzAifSwidmVyc2lvbiI6IjIuOS4zIn0=';
 
     private static $x_app_type_cc = '1';
-    private static $x_app_version_cc = '2.1.0';
+    private static $x_app_version_cc = '3.0.0';
     private static $x_app_name_cc = 'Comfort Cloud';
     private static $user_agent_cc = 'G-RAC';
 
@@ -105,6 +105,7 @@ class PanasonicCloudIO extends IPSModule
 
         $this->RegisterAttributeString('AccessToken_CC', '');
         $this->RegisterAttributeString('AccessToken_ASC', '');
+        $this->RegisterAttributeString('AppVersion_CC', '');
 
         $this->SetBuffer('LastApiCall_ASC', 0);
 
@@ -418,7 +419,7 @@ class PanasonicCloudIO extends IPSModule
                 'Content-Type'    => 'application/json; charset=utf-8',
                 'User-Agent'      => self::$user_agent_cc,
                 'x-app-type'      => self::$x_app_type_cc,
-                'x-app-version'   => self::$x_app_version_cc,
+                'x-app-version'   => $this->GetAppVersion_CC(false),
                 'x-app-name'      => self::$x_app_name_cc,
                 'x-app-timestamp' => gmdate('Y-m-d H:i:s', $tstamp),
             ];
@@ -748,6 +749,37 @@ class PanasonicCloudIO extends IPSModule
         $jtoken['refresh_token'] = $refresh_token;
         $jtoken['expires'] = time() + $expires_in - 60;
         return $jtoken;
+    }
+
+    private function GetAppVersion_CC($force)
+    {
+        $version = $this->ReadAttributeString('AppVersion_CC');
+
+        if ($force || $version == '') {
+            $version = '';
+            $options = [
+                'http' => [
+                    'timeout' => 30,
+                ],
+            ];
+            $context = stream_context_create($options);
+            $content = @file_get_contents('https://play.google.com/store/apps/details?id=com.panasonic.ACCsmart', false, $context);
+            if ($content === false) {
+                $this->SendDebug(__FUNCTION__, 'got error=' . print_r(error_get_last(), true), 0);
+            } else {
+                if (preg_match('/(\[\"(\d+\.\d+\.\d+)\"\])/', $content, $r)) {
+                    $version = $r[2];
+                    $this->SendDebug(__FUNCTION__, 'determined version=' . $version . ' from the panasonic app in google store', 0);
+                    $this->WriteAttributeString('AppVersion_CC', $version);
+                }
+            }
+        }
+
+        if ($version == '') {
+            $version = self::$x_app_version_cc;
+        }
+
+        return $version;
     }
 
     private function FetchAccessToken_CC()
@@ -1373,7 +1405,7 @@ class PanasonicCloudIO extends IPSModule
             'Content-Type'            => 'application/json; charset=utf-8',
             'User-Agent'              => self::$user_agent_cc,
             'x-app-type'              => self::$x_app_type_cc,
-            'x-app-version'           => self::$x_app_version_cc,
+            'x-app-version'           => $this->GetAppVersion_CC(true),
             'x-app-name'              => self::$x_app_name_cc,
             'x-app-timestamp'         => gmdate('Y-m-d H:i:s', $tstamp),
             'x-cfc-api-key'           => $this->get_cfc_api_key($tstamp, 'Bearer ' . $access_token),
