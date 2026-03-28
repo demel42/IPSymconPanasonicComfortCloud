@@ -527,7 +527,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($api == self::$API_CC) {
@@ -706,7 +706,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -864,7 +864,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 302) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -975,7 +975,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1083,7 +1083,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
 
@@ -1192,7 +1192,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 302) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         $collectApiCallStats = $this->ReadPropertyBoolean('collectApiCallStats');
@@ -1356,7 +1356,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1465,7 +1465,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1637,7 +1637,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1778,7 +1778,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 302) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {
@@ -1902,7 +1902,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 302) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         $csrf = '';
@@ -2027,7 +2027,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         $action_url = false;
@@ -2161,7 +2161,7 @@ class PanasonicCloudIO extends IPSModule
                 $err = 'got http-code ' . $httpcode . ' (server error)';
             } elseif ($httpcode != 200) {
                 $statuscode = self::$IS_HTTPERROR;
-                $err = 'got http-code ' . $httpcode . '(' . $this->HttpCode2Text($httpcode) . ')';
+                $err = 'got http-code ' . $httpcode . ' (' . $this->HttpCode2Text($httpcode) . ')';
             }
         }
         if ($statuscode == 0) {

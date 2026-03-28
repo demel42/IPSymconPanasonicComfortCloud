@@ -137,6 +137,11 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 2.7 @ 28.03.2026 10:13
+  - Fix: Anpassung für IPS 9
+  - Fix: interne Änderung
+  - update submodule CommonStubs
+
 - 2.6 @ 04.08.2025 10:14
   - Fix: neue Version der APІ (App-Version 3.0.0).
     Die App-Version wird in der API abgeprüft, wird aber häufig geändert, ohne das es funktionelle Änderungen in der API gibt; daher hole ich die App-Version beim Login aus der Seite der Panasonic-App im Google-Store
