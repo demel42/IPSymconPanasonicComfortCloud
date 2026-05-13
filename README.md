@@ -137,6 +137,10 @@ PanasonicCloud.Temperature
 
 ## 7. Versions-Historie
 
+- 2.8 @ 09.05.2026 11:36
+  - Fix: Änderung von deprecated php code
+  - update submodule CommonStubs
+
 - 2.7 @ 28.03.2026 10:13
   - Fix: Anpassung für IPS 9
   - Fix: interne Änderung

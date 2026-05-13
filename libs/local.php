@@ -202,9 +202,9 @@ trait PanasonicCloudLocalLib
         ];
         $this->CreateVarProfile('PanasonicCloud.InsideCleaning', VARIABLETYPE_INTEGER, '', 0, 0, 0, 0, '', $associations, $reInstall);
 
-        $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, ' °C', 16, 30, 0.5, 1, 'Temperature', '', $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.Temperature', VARIABLETYPE_FLOAT, ' °C', 16, 30, 0.5, 1, 'Temperature', [], $reInstall);
 
-        $this->CreateVarProfile('PanasonicCloud.Energy', VARIABLETYPE_FLOAT, ' kWh', 0, 0, 0, 1, '', '', $reInstall);
+        $this->CreateVarProfile('PanasonicCloud.Energy', VARIABLETYPE_FLOAT, ' kWh', 0, 0, 0, 1, '', [], $reInstall);
 
         $associations = [
             ['Wert' => self::$OPERATION_MODE_ASC_OFF, 'Name' => $this->Translate('Off'), 'Farbe' => -1],

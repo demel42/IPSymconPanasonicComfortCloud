@@ -433,7 +433,7 @@ class PanasonicCloudDevice extends IPSModule
         return $formActions;
     }
 
-    private function SetUpdateInterval(int $sec = null)
+    private function SetUpdateInterval(?int $sec = null)
     {
         if (is_null($sec)) {
             $sec = $this->ReadAttributeString('external_update_interval');
@@ -444,7 +444,7 @@ class PanasonicCloudDevice extends IPSModule
         $this->MaintainTimer('UpdateStatus', $sec * 1000);
     }
 
-    public function OverwriteUpdateInterval(int $sec = null)
+    public function OverwriteUpdateInterval(?int $sec = null)
     {
         if (is_null($sec)) {
             $this->WriteAttributeString('external_update_interval', '');

@@ -141,7 +141,7 @@ class PanasonicCloudConfig extends IPSModule
                             $this->SendDebug(__FUNCTION__, 'ignore module ' . $deviceGuid . ': unsupported type ' . $deviceType, 0);
                             continue;
                         }
-                        $instIDs = IPS_GetInstanceListByModuleID($guid);
+                        $instIDs = (array) IPS_GetInstanceListByModuleID($guid);
 
                         $instanceID = 0;
                         foreach ($instIDs as $instID) {
@@ -188,7 +188,7 @@ class PanasonicCloudConfig extends IPSModule
             ],
         ];
         foreach ($modules as $module) {
-            $instIDs = IPS_GetInstanceListByModuleID($module['guid']);
+            $instIDs = (array) IPS_GetInstanceListByModuleID($module['guid']);
             foreach ($instIDs as $instID) {
                 $fnd = false;
                 foreach ($entries as $entry) {
